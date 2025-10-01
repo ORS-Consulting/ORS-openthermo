@@ -8,6 +8,7 @@ from scipy.constants import g
 from thermo.volume import COSTALD_mixture
 from openthermo.properties.transport import h_inside, h_inside_wetted
 from openthermo import errors
+from openthermo.flash.michelsen import get_flash_dry
 
 
 def hem_release_rate():
@@ -1198,7 +1199,7 @@ if __name__ == "__main__":
     input["vessel_type"] = "Flat-end"
     input["orientation"] = "horizontal"
     input["liquid_level"] = 1.5
-    input["water_level"] = 0.5
+    input["water_level"] = 0.0
     input["operating_temperature"] = T
     input["operating_pressure"] = P
     input["ambient_temperature"] = 273.15
@@ -1212,35 +1213,16 @@ if __name__ == "__main__":
     input["leak_cd"] = 0.65
     input["leak_type"] = "liquid"
 
-    names = ["water", "methane", "propane", "n-butane", "i-butane", "n-decane"]
-    molefracs = [0.1, 0.8, 0.05, 0.01, 0.01, 0.10]
-    # names = ["methane"]
-    # molefracs = [1.0]
-    pseudo_names = ["C10-C11", "C12-C14", "C15+"]
-
-    pseudo_SGs = [
-        0.73,
-        0.76,
-        0.775,
-    ]  # Specific gravity values are based of the alkane series
-    pseudo_Tbs = [447, 526, 589]
-    pseudo_molefracs = [0.02, 0.02, 0.02]
-
-    input["molefracs"] = (
-        np.array((molefracs + pseudo_molefracs)) / sum(molefracs + pseudo_molefracs)
-    ).tolist()
+    names = ["methane", "propane", "n-butane", "i-butane", "n-decane"]
+    molefracs = [0.8, 0.05, 0.01, 0.01, 0.20]
 
     input["molefracs"] = molefracs
 
-    input["flash"] = get_flash(
+    input["flash"] = get_flash_dry(
         names,
         molefracs,
         P=P,
         T=T,
-        # pseudo_mole_fracs=pseudo_molefracs,
-        # pseudo_SGs=pseudo_SGs,
-        # pseudo_Tbs=pseudo_Tbs,
-        # pseudo_names=pseudo_names,
         rho=input["liquid_density"],
         model=input["eos_model"],
     )
