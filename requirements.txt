@@ -7,5 +7,6 @@ setuptools
 pytest
 scipy
 numpy 
+pandas
 matplotlib
 SciencePlots

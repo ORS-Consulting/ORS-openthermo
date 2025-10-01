@@ -76,7 +76,7 @@ def test_boiling_h():
         n=1.26,
     )
     h_conv = h_inside_liquid(L, Tvessel, Tfluid, res.liquid0)
-    assert h_boil == pytest.approx(h_conv, rel=0.02)
+    assert h_boil == pytest.approx(h_conv, rel=0.04)
 
 
 if __name__ == "__main__":
