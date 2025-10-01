@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.11"]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -24,7 +24,7 @@ jobs:
         pylint $(git ls-files '*.py') --output=lint.txt || true
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3  
+      uses: actions/upload-artifact@v4  
       with:
         name: lint.txt
         path: lint.txt
