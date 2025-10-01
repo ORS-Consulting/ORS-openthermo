@@ -12,6 +12,9 @@ Code for calculating depressurization / blowdown of pressure vessels accompanyin
 
 Download or clone the code and install from the the *openthermo* directory (no official pypi package yet)
 
+NOTE: Although rigorously validated, this code shall be considered as work-in-progress and experimental. Several elements has been left out
+of this public version such as a VLLE-flash based on legacy code as well as the ability to include pseudo-components in the EOS/flash calculations. 
+
 ```
 pip install -e .
 ```

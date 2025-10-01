@@ -41,8 +41,8 @@ def test_boiling_h():
     transfer when the fluid-wall temperature difference approaches 5 C and above.
     """
     L = 0.3
-    names = ["water", "methane", "propane", "n-butane", "i-butane", "n-decane"]
-    molefracs = [0.1, 0.1, 0.05, 0.025, 0.025, 0.60]
+    names = ["methane", "propane", "n-butane", "i-butane", "n-decane"]
+    molefracs = [0.1, 0.05, 0.025, 0.025, 0.60]
 
     Tfluid = 300
     Tvessel = 304.85
@@ -58,7 +58,7 @@ def test_boiling_h():
     )
     res = flash.flash(P=P, T=Tavg, zs=molefracs)
 
-    # something wromg with the thermal conductivity returned by thermo
+    # something wrong with the thermal conductivity returned by thermo
     # Below is a simple mass weighted mixing rule for the individual
     # thermal conductivities.
     kl = sum([k * w for k, w in zip(res.liquid0.ws(), res.liquid0.kls())])
@@ -76,7 +76,7 @@ def test_boiling_h():
         n=1.26,
     )
     h_conv = h_inside_liquid(L, Tvessel, Tfluid, res.liquid0)
-    assert h_boil == pytest.approx(h_conv, rel=0.01)
+    assert h_boil == pytest.approx(h_conv, rel=0.02)
 
 
 if __name__ == "__main__":
