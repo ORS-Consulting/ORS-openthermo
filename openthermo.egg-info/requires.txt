@@ -1,0 +1,11 @@
+thermopack
+setuptools
+pytest
+chemicals
+fluids
+ht
+thermo
+numpy
+SciencePlots
+matplotlib
+scienceplots

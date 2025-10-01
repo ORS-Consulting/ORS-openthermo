@@ -1,0 +1,11 @@
+thermopack
+fluids>=1.0.15
+thermo>=0.2.10
+chemicals
+ht
+setuptools
+pytest
+scipy
+numpy 
+matplotlib
+SciencePlots

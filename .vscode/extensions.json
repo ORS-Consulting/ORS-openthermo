@@ -1,0 +1,6 @@
+{
+    "recommendations": [
+        "ms-python.flake8",
+        "redhat.vscode-xml"
+    ]
+}

@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: openthermo
+Version: 0.0.1
+Requires-Python: <3.12
+Requires-Dist: thermopack
+Requires-Dist: setuptools
+Requires-Dist: pytest
+Requires-Dist: chemicals
+Requires-Dist: fluids
+Requires-Dist: ht
+Requires-Dist: thermo
+Requires-Dist: numpy
+Requires-Dist: SciencePlots
+Requires-Dist: matplotlib
+Requires-Dist: scienceplots
