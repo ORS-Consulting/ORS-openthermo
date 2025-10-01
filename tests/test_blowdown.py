@@ -14,7 +14,7 @@ def test_blowdown_api_dry_inadequate_costald(plot=False):
     """
     Test against HYSYS Depressurisation utility for API 521 pool fire
     exposed the wetted area of the vessel. No water present.
-    Inadeequate drainage and fire fighting available. COSTAÆD liquid
+    Inadequate drainage and fire fighting available. COSTALD liquid
     density is applied.
     """
     file_name = "Water_dry_API_inadequate_costald_history.csv"
@@ -796,7 +796,9 @@ def test_blowdown_condensable_gas_rig(plot=False):
         plt.style.use(["science", "nature", "scatter"])
         import pandas as pd
 
-        BD = pd.read_excel("..//validation//HYSYS_BLOWDOWN//BLOWDOWN.xlsx")
+        path = os.path.join(validation_path, "HYSYS_BLOWDOWN", "BLOWDOWN.xlsx")
+
+        BD = pd.read_excel(path)
 
         plt.figure(1)
         # plt.plot(t2, liwl, "-")
