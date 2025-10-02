@@ -11,3 +11,4 @@ pandas
 matplotlib
 SciencePlots
 PyYAML
+openpyxl
