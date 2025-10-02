@@ -789,7 +789,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
     r = segment.depressurize_euler()  # _euler()
     time2 = time.time()
     print(f"Elapsed time {time2-time1} sec.")
-    if True:
+    if plot:
         from matplotlib import pyplot as plt
         import scienceplots
 
