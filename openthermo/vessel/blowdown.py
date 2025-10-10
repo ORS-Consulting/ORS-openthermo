@@ -315,7 +315,7 @@ class Blowdown:
 
     def _adjust_composition(self):
         # adjust the gas / liquid / water phase composition to give the user
-        # supllied liquid levels
+        # supplied liquid levels
         res = self.flash.flash(
             T=self.operating_temperature, P=self.operating_pressure, zs=self.zi
         )
@@ -406,10 +406,14 @@ class Blowdown:
         # Mass mole/balance part (blowdown, leaks and inflows()
         ##############################################################################
         self.water_level = self.vessel.h_from_V(
-            res.liquid1.beta_volume * self.vessel.V_total
+            res.liquid1.beta * self._Vm_liq(res.liquid1) * N
         )
+        # self.liquid_level = self.vessel.h_from_V(
+        #    (res.liquid0.beta_volume + res.liquid1.beta_volume) * self.vessel.V_total
+        # )
         self.liquid_level = self.vessel.h_from_V(
-            (res.liquid0.beta_volume + res.liquid1.beta_volume) * self.vessel.V_total
+            res.liquid0.beta * self._Vm_liq(res.liquid0) * N
+            + res.liquid1.beta * self._Vm_liq(res.liquid1) * N
         )
         static_height = self.liquid_level - self.water_level
         k = res.gas.Cp_ideal_gas() / res.gas.Cv_ideal_gas()
@@ -570,6 +574,7 @@ class Blowdown:
             self.temperature.append(res.T)
             self.molefracs.append(z)
             self.enthalpy.append(res.U() * N)
+            self.liquid_dyn_level.append(self.liquid_level)
             if self.heat_transfer == "rigorous":
                 self.wetted_wall_temp.append(y[4])
                 self.unwetted_wall_temp.append(y[3])
@@ -616,7 +621,9 @@ class Blowdown:
             self.water_mass,
             self.wetted_wall_temp,
             self.unwetted_wall_temp,
+            self.liquid_dyn_level,
         ) = (
+            [],
             [],
             [],
             [],

@@ -540,7 +540,7 @@ def get_flash_dry(
         pseudo_kijs[:n_pure, :n_pure] = np.asarray(kijs)
         kijs = pseudo_kijs.tolist()
 
-        flash = FlashVL(zs, constants, properties, kijs)
+        flash = FlashVL(zs, constants, properties, kijs, model=model, rho=rho)
     return flash
 
 

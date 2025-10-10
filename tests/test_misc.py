@@ -1,7 +1,6 @@
 import pytest
 import ht
 from openthermo.properties.transport import h_inside, h_inside_liquid
-from openthermo.flash.michelsen import get_flash_dry
 
 
 def test_h_inside():
@@ -77,6 +76,68 @@ def test_boiling_h():
     )
     h_conv = h_inside_liquid(L, Tvessel, Tfluid, res.liquid0)
     assert h_boil == pytest.approx(h_conv, rel=0.04)
+
+
+def test_boiling_nucleic_Rohsenow():
+    # Checked with 10.30 Problem set 8.
+    # Copied from HT package tests
+    h_calc = [
+        ht.Rohsenow(
+            Te=i,
+            Cpl=4180,
+            kl=0.688,
+            mul=2.75e-4,
+            sigma=0.0588,
+            Hvap=2.25e6,
+            rhol=958,
+            rhog=0.597,
+            Csf=0.013,
+            n=1,
+        )
+        for i in [4.3, 9.1, 13]
+    ]
+    h_values = [2860.6242230238613, 12811.697777642301, 26146.321995188344]
+    assert h_calc == h_values
+    q_test = (
+        ht.Rohsenow(
+            Te=4.9,
+            Cpl=4217.0,
+            kl=0.680,
+            mul=2.79e-4,
+            sigma=0.0589,
+            Hvap=2.257e6,
+            rhol=957.854,
+            rhog=0.595593,
+            Csf=0.011,
+            n=1.26,
+        )
+        * 4.9
+    )
+    assert 18245.91080863059 == pytest.approx(q_test, rel=0.01)
+
+    h_Te = 1316.2269561541964
+    h_q = ht.Rohsenow(
+        q=5 * h_Te,
+        Cpl=4180,
+        kl=0.688,
+        mul=2.75e-4,
+        sigma=0.0588,
+        Hvap=2.25e6,
+        rhol=958,
+        rhog=0.597,
+    )
+    assert h_Te == pytest.approx(h_q, rel=0.01)
+
+    with pytest.raises(Exception):
+        ht.Rohsenow(
+            Cpl=4180,
+            kl=0.688,
+            mul=2.75e-4,
+            sigma=0.0588,
+            Hvap=2.25e6,
+            rhol=958,
+            rhog=0.597,
+        )
 
 
 if __name__ == "__main__":

@@ -9,7 +9,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 plt.style.use(["science", "nature"])
-# Instantiate and init tcPR object. Translated and consistent cubic EoS by le Guennec et al. (10.1016/j.fluid.2016.09.003)
 
 tc_pr = PengRobinson("N2")
 
