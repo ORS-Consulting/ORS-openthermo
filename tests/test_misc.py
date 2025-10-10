@@ -1,6 +1,121 @@
 import pytest
 import ht
+import math
 from openthermo.properties.transport import h_inside, h_inside_liquid
+import openthermo.properties.transport as tp
+from openthermo.flash.michelsen import get_flash_dry
+from openthermo.vessel.blowdown import (
+    liquid_release_bernouilli,
+    two_phase_release_fauske,
+    gas_release_rate,
+)
+from openthermo.properties.pseudo import (
+    Tc_Riazi_Daubert_SG_Tb,
+    Tc_Kesler_Lee_SG_Tb,
+    Pc_Kesler_Lee_SG_Tb,
+    Pc_Riazi_Daubert_SG_Tb,
+    MW_Kesler_Lee_SG_Tb,
+    omega_Kesler_Lee_SG_Tb_Tc_Pc,
+    HC_atomic_ratio,
+)
+
+
+def test_HC_atmic_ratio():
+    assert 1.7022132444770803 == HC_atomic_ratio(0.8587, 627)
+
+
+def test_omega_Lee_Kesler_SG_Tb():
+    assert 0.306392118159797 == omega_Kesler_Lee_SG_Tb_Tc_Pc(
+        0.7365, 365.555, 545.012, 3238323.0
+    )
+
+
+def test_MW_Kesler_Lee_SG_Tb():
+    assert 98.70887589833501 == MW_Kesler_Lee_SG_Tb(0.7365, 365.555)
+
+
+def test_Pc_Riazi_Daubert_SG_Tb():
+    assert 3219182.887436976 == Pc_Riazi_Daubert_SG_Tb(0.7365, 365.555)
+
+
+def test_Pc_Kesler_Lee_SG_Tb():
+    assert 3238323.346840464 == Pc_Kesler_Lee_SG_Tb(0.7365, 365.555)
+
+
+def test_Tc_Lee_Kessler_SG_Tb():
+    assert 545.0124354151242 == Tc_Kesler_Lee_SG_Tb(0.7365, 365.555)
+
+
+def test_Tc_Riazi_Daubert_SG_Tb():
+    assert 550.3734796518954 == Tc_Riazi_Daubert_SG_Tb(0.7365, 365.555)
+
+
+def test_NNu():
+    assert tp.Nu(1.27e8, 0) == pytest.approx(0.59 * (1.27e8) ** 0.25, abs=1.0)
+
+
+def test_NPr():
+    assert tp.Pr(120, 7.1e-4, 13) == pytest.approx(0.00655, rel=0.01)
+
+
+def test_liquid_release():
+    """
+    Liquid mass flow (kg/s) trough a hole or orifice.
+    flow conditions. The formula is based on Yellow Book equation 2.194.
+    Example from sec. 2.6.4.1
+
+    Methods for the calculation of physical effects, CPR 14E, van den Bosch and Weterings (Eds.), 1996
+    """
+    d = 0.1
+    A = math.pi * (d / 2) ** 2
+    P1 = 1.013e5
+    P2 = 1.013e5
+    rho = 812.5
+    Cd = 0.62
+    H = 11.2
+
+    assert 60.915 == pytest.approx(
+        liquid_release_bernouilli(P1, P2, rho, Cd, A, H), abs=2.5
+    )
+
+
+def test_two_phase_relief():
+    """
+    Made up example to test the two phase relief function
+    Fauske, H.K., 1982. Two-phase critical flow. In:
+    Proceedings of the 10th International Conference on Nuclear Engineering,
+    Arlington, VA, USA, April 19-23, 1982. American Society of Mechanical Engineers, New York, pp. 576-586.
+    Example sec.
+
+    """
+    P1 = 50e5
+    rho = 4.08
+    k = 1.41
+    Cd = 0.62
+    d = 0.1
+    A = math.pi * (d / 2) ** 2
+    assert 20.86497695114019 == two_phase_release_fauske(P1, 0.55 * P1, rho, Cd, A)
+
+
+def test_gas_release():
+    """
+    Gas massflow (kg/s) trough a hole at critical (sonic) or subcritical
+    flow conditions. The formula is based on Yellow Book equation 2.22.
+
+    Methods for the calculation of physical effects, CPR 14E,
+    van den Bosch and Weterings (Eds.), 1996
+
+    Example sec. 2.6.2.1 with hydrogen properties from CoolProp
+    """
+    P1 = 50e5
+    P2 = 1.013e5
+    rho = 4.08
+    k = 1.41
+    Cd = 0.62
+    d = 0.1
+    A = math.pi * (d / 2) ** 2
+
+    assert 15.31 == pytest.approx(gas_release_rate(P1, P2, rho, k, Cd, A), abs=0.3)
 
 
 def test_h_inside():
@@ -163,4 +278,4 @@ if __name__ == "__main__":
 
     # print(kls, res.liquid0.k())
 
-    test_h_inside()
+    pass

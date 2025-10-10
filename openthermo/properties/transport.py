@@ -235,7 +235,7 @@ def Nu(Ra, Pr):
     Returns
     ----------
     Nu : float
-        Nusselt numebr
+        Nusselt number
     """
     if Ra >= 1e9:
         NNu = 0.13 * Ra**0.333

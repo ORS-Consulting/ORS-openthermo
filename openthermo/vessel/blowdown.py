@@ -55,7 +55,7 @@ def two_phase_release_fauske(P1, Pc, rho, CD, area):
     flow conditions. The formula is based on Yellow Book equation 2.91.
 
     Methods for the calculation of physical effects, CPR 14E, van den Bosch and Weterings (Eds.), 1996
-    World Bank Technical Paper Number 55, Techniques for Assessing Industrial Hazardsz, 2nd print, 1990
+    World Bank Technical Paper Number 55, Techniques for Assessing Industrial Hazards, 2nd print, 1990
 
     Parameters
     ----------
