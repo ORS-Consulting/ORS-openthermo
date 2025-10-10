@@ -1,8 +1,9 @@
 from math import log, exp
 from scipy.constants import psi
 
+
 def Tc_Kesler_Lee_SG_Tb(SG, Tb):
-    r'''Estimates critical temperature of a hydrocarbon compound or petroleum
+    r"""Estimates critical temperature of a hydrocarbon compound or petroleum
     fraction using only its specific gravity and boiling point, from
     [1]_ as presented in [2]_.
 
@@ -40,14 +41,20 @@ def Tc_Kesler_Lee_SG_Tb(SG, Tb):
        Fractions." Hydrocarbon Processing (March 1976): 153-158.
     .. [2] Ahmed, Tarek H. Equations of State and PVT Analysis: Applications
        for Improved Reservoir Modeling. Gulf Pub., 2007.
-    '''
-    Tb = 9/5.*Tb # K to R
-    Tc = 341.7 + 811.1*SG + (0.4244 + 0.1174*SG)*Tb + ((0.4669 - 3.26238*SG)*1E5)/Tb
-    Tc = 5/9.*Tc # R to K
+    """
+    Tb = 9 / 5.0 * Tb  # K to R
+    Tc = (
+        341.7
+        + 811.1 * SG
+        + (0.4244 + 0.1174 * SG) * Tb
+        + ((0.4669 - 3.26238 * SG) * 1e5) / Tb
+    )
+    Tc = 5 / 9.0 * Tc  # R to K
     return Tc
 
+
 def Tc_Riazi_Daubert_SG_Tb(SG, Tb):
-    r'''Estimates critical temperature of a hydrocarbon compound or petroleum
+    r"""Estimates critical temperature of a hydrocarbon compound or petroleum
     fraction using only its specific gravity and boiling point, from
     [1]_ as presented in [2]_.
 
@@ -75,16 +82,17 @@ def Tc_Riazi_Daubert_SG_Tb(SG, Tb):
 
     References
     ----------
-    .. [1] Riazi, M. R. and Daubert, T. E., 
+    .. [1] Riazi, M. R. and Daubert, T. E.,
        Simplify Property Predictions, Hydrocarbon Processing, Vol. 59, No. 3, 1980, pp. 115-116.
     .. [2] Riazi, M.R, Characterization and Properties of Petroleum Fractions
        American Society for Testing and Materials, 2005.
-    '''
+    """
     Tc = 19.06232 * Tb**0.58848 * SG**0.3596
     return Tc
-    
+
+
 def Pc_Kesler_Lee_SG_Tb(SG, Tb):
-    r'''Estimates critical pressure of a hydrocarbon compound or petroleum
+    r"""Estimates critical pressure of a hydrocarbon compound or petroleum
     fraction using only its specific gravity and boiling point, from
     [1]_ as presented in [2]_.
 
@@ -124,22 +132,27 @@ def Pc_Kesler_Lee_SG_Tb(SG, Tb):
        Fractions." Hydrocarbon Processing (March 1976): 153-158.
     .. [2] Ahmed, Tarek H. Equations of State and PVT Analysis: Applications
        for Improved Reservoir Modeling. Gulf Pub., 2007.
-    '''
-    Tb = 9/5.*Tb # K to R
-    Pc = exp(8.3634 - 0.0566/SG - (0.24244 + 2.2898/SG + 0.11857/SG**2)*1E-3*Tb
-    + (1.4685 + 3.648/SG + 0.47227/SG**2)*1E-7*Tb**2
-    -(0.42019 + 1.6977/SG**2)*1E-10*Tb**3)
-    Pc = Pc*psi
+    """
+    Tb = 9 / 5.0 * Tb  # K to R
+    Pc = exp(
+        8.3634
+        - 0.0566 / SG
+        - (0.24244 + 2.2898 / SG + 0.11857 / SG**2) * 1e-3 * Tb
+        + (1.4685 + 3.648 / SG + 0.47227 / SG**2) * 1e-7 * Tb**2
+        - (0.42019 + 1.6977 / SG**2) * 1e-10 * Tb**3
+    )
+    Pc = Pc * psi
     return Pc
 
+
 def Pc_Riazi_Daubert_SG_Tb(SG, Tb):
-    r'''Estimates critical pressure of a hydrocarbon compound or petroleum
+    r"""Estimates critical pressure of a hydrocarbon compound or petroleum
     fraction using only its specific gravity and boiling point, from
     [1]_ as presented in [2]_.
 
     .. math::
         Pc = 5.53027\cdot 10^7 Tb^{-2.3125} SG^{2.3201}
-        
+
     Parameters
     ----------
     SG : float
@@ -166,16 +179,17 @@ def Pc_Riazi_Daubert_SG_Tb(SG, Tb):
 
     References
     ----------
-    .. [1] Riazi, M. R. and Daubert, T. E., 
+    .. [1] Riazi, M. R. and Daubert, T. E.,
        Simplify Property Predictions, Hydrocarbon Processing, Vol. 59, No. 3, 1980, pp. 115-116.
     .. [2] Riazi, M.R, Characterization and Properties of Petroleum Fractions
        American Society for Testing and Materials, 2005.
-    '''
+    """
     Pc = 5.53027e7 * Tb**-2.3125 * SG**2.3201
-    return Pc*1e5
+    return Pc * 1e5
+
 
 def MW_Kesler_Lee_SG_Tb(SG, Tb):
-    r'''Estimates molecular weight of a hydrocarbon compound or petroleum
+    r"""Estimates molecular weight of a hydrocarbon compound or petroleum
     fraction using only its specific gravity and boiling point, from
     [1]_ as presented in [2]_.
 
@@ -215,15 +229,20 @@ def MW_Kesler_Lee_SG_Tb(SG, Tb):
        Fractions." Hydrocarbon Processing (March 1976): 153-158.
     .. [2] Ahmed, Tarek H. Equations of State and PVT Analysis: Applications
        for Improved Reservoir Modeling. Gulf Pub., 2007.
-    '''
-    Tb = 9/5.*Tb # K to R
-    MW = (-12272.6 + 9486.4*SG + (4.6523 - 3.3287*SG)*Tb + (1.-0.77084*SG - 0.02058*SG**2)*
-    (1.3437 - 720.79/Tb)*1E7/Tb + (1.-0.80882*SG + 0.02226*SG**2)*
-    (1.8828 - 181.98/Tb)*1E12/Tb**3)
+    """
+    Tb = 9 / 5.0 * Tb  # K to R
+    MW = (
+        -12272.6
+        + 9486.4 * SG
+        + (4.6523 - 3.3287 * SG) * Tb
+        + (1.0 - 0.77084 * SG - 0.02058 * SG**2) * (1.3437 - 720.79 / Tb) * 1e7 / Tb
+        + (1.0 - 0.80882 * SG + 0.02226 * SG**2) * (1.8828 - 181.98 / Tb) * 1e12 / Tb**3
+    )
     return MW
 
+
 def omega_Kesler_Lee_SG_Tb_Tc_Pc(SG, Tb, Tc=None, Pc=None):
-    r'''Estimates accentric factor of a hydrocarbon compound or petroleum
+    r"""Estimates accentric factor of a hydrocarbon compound or petroleum
     fraction using only its specific gravity and boiling point, from
     [1]_ as presented in [2]_. If Tc and Pc are provided, the Kesler-Lee
     routines for estimating them are not used.
@@ -277,34 +296,46 @@ def omega_Kesler_Lee_SG_Tb_Tc_Pc(SG, Tb, Tc=None, Pc=None):
        Fractions." Hydrocarbon Processing (March 1976): 153-158.
     .. [2] Ahmed, Tarek H. Equations of State and PVT Analysis: Applications
        for Improved Reservoir Modeling. Gulf Pub., 2007.
-    '''
+    """
     if Tc is None:
         Tc = Tc_Kesler_Lee_SG_Tb(SG, Tb)
     if Pc is None:
         Pc = Pc_Kesler_Lee_SG_Tb(SG, Tb)
-    Tb = 9/5.*Tb # K to R
-    Tc = 9/5.*Tc # K to R
-    K = Tb**(1/3.)/SG
-    Tbr = Tb/Tc
+    Tb = 9 / 5.0 * Tb  # K to R
+    Tc = 9 / 5.0 * Tc  # K to R
+    K = Tb ** (1 / 3.0) / SG
+    Tbr = Tb / Tc
     if Tbr > 0.8:
-        omega = -7.904 + 0.1352*K - 0.007465*K**2 + 8.359*Tbr + ((1.408-0.01063*K)/Tbr)
+        omega = (
+            -7.904
+            + 0.1352 * K
+            - 0.007465 * K**2
+            + 8.359 * Tbr
+            + ((1.408 - 0.01063 * K) / Tbr)
+        )
     else:
-        omega = ((-log(Pc/101325.) - 5.92714 + 6.09648/Tbr + 1.28862*log(Tbr)
-        - 0.169347*Tbr**6) / (15.2518 - 15.6875/Tbr - 13.4721*log(Tbr) +0.43577*Tbr**6))
+        omega = (
+            -log(Pc / 101325.0)
+            - 5.92714
+            + 6.09648 / Tbr
+            + 1.28862 * log(Tbr)
+            - 0.169347 * Tbr**6
+        ) / (15.2518 - 15.6875 / Tbr - 13.4721 * log(Tbr) + 0.43577 * Tbr**6)
     return omega
 
-def HC_atomic_ratio(SG,Tb):
-    r'''Estimates the HC atomic ratio for petroleum fractions from specific gravity and 
+
+def HC_atomic_ratio(SG, Tb):
+    r"""Estimates the HC atomic ratio for petroleum fractions from specific gravity and
     boiling point, from [1]_ modified in [2]_. Applicable for C6-C50
 
-    The CH weight ratio (Carbon-to-hydrogen ratio) is calculated from: 
+    The CH weight ratio (Carbon-to-hydrogen ratio) is calculated from:
     .. math::
         CH = 8.7743\cdot10^{-10} \right[ \exp{7.176 \cdot 10^{-3}T_b + 30.06242 SG -7.35\cdot 10^{-3} Tb SG} \left] Tb^{-0.98445}SG^{-18.2753}
 
     The Hydrogen-to-Carbon ratio is calculated from:
     .. math::
         HC_atomic_ratio = 11.9147 / CH
-    
+
     Parameters
     ----------
     SG : float
@@ -319,7 +350,7 @@ def HC_atomic_ratio(SG,Tb):
 
     Examples
     --------
-    Example from sec. 2.6.3 [2]_ for n-tetradecylbenzene (C20H24) with HC 
+    Example from sec. 2.6.3 [2]_ for n-tetradecylbenzene (C20H24) with HC
     atimic ratio of 1.7
 
     >>> HC_atomic_ratio(0.8587,627)
@@ -333,11 +364,17 @@ def HC_atomic_ratio(SG,Tb):
        Vol. 25, No. 4, 1986, pp. 1009-1015.
     .. [2] Riazi, M.R, Characterization and Properties of Petroleum Fractions
        American Society for Testing and Materials, 2005.
-    '''
-    
-    res = 8.7743e-10*(exp(7.176e-3*Tb + 30.06242*SG -7.35e-3*Tb*SG))*Tb**-0.98445 * SG**-18.2753
+    """
+
+    res = (
+        8.7743e-10
+        * (exp(7.176e-3 * Tb + 30.06242 * SG - 7.35e-3 * Tb * SG))
+        * Tb**-0.98445
+        * SG**-18.2753
+    )
     res = 11.914683 / res
     return res
+
 
 def Zc_pseudo(omega):
     """
@@ -355,13 +392,14 @@ def Zc_pseudo(omega):
 
     References
     ----------
-    .. [1] B. I. Lee and M. G. Kessler, A Generalized thermodynamic correlation based on three-parameter 
+    .. [1] B. I. Lee and M. G. Kessler, A Generalized thermodynamic correlation based on three-parameter
         corresponding states, AIChE Journal 1975,  https://doi.org/10.1002/aic.690210313
     """
     zc_pseudo = 0.2905 - 0.085 * omega
     return zc_pseudo
 
-def Vc_pseudo(Zc,Tc,Pc):
+
+def Vc_pseudo(Zc, Tc, Pc):
     """
     The function calculates critical volume [m3/mol] for pseudo components based on definition of compresibility.
 
