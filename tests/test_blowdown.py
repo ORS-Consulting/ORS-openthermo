@@ -237,7 +237,7 @@ def test_blowdown_condensable_gas(plot=False):
 
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
-        plt.ylabel(r"Inner wall temperature (K)")
+        plt.ylabel("Inner wall temperature (K)")
         plt.savefig("plots\condensable_gas_inner_wal.png", dpi=300)
 
         plt.figure(2)
@@ -846,6 +846,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
 
 
 if __name__ == "__main__":
+    pass
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
