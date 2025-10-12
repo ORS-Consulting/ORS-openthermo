@@ -1,6 +1,8 @@
 from thermopack.cubic import PengRobinson
 from thermopack.tcPR import tcPR
 import scienceplots
+import os
+
 
 # Importing Numpy (math, arrays, etc...)
 import numpy as np
@@ -15,7 +17,8 @@ tc_pr = PengRobinson("N2")
 # Plot phase envelope
 z = np.array([1.0])
 Tc, vc, Pc = tc_pr.critical(z)
-n2 = np.loadtxt("n2.txt")
+file = os.path.join(os.path.abspath(os.path.dirname(__file__)), "n2.txt")
+n2 = np.loadtxt(file)
 plt.plot(n2[:, 0], n2[:, 1], color="blue")
 plt.plot([Tc], [Pc * 1.0e-5], "o", color="blue")
 plt.plot([16 + 273.15], [150], "^", color="blue", label="Experiment A")
