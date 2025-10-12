@@ -35,11 +35,11 @@ A few choices have been made to keep things simple:
 - No temperature stratification in vessel inventory
 - No temperature gradient through vessel wall (applicable for high heat conductivity / thin-walled vessels)
 
-Still the code can manage a number of different assumption: isothermal depressurisation (very fast), isentropic (1. law) depressurisation with and without heat transfer, rigorous partial equilibrium depressurisation. Typical calculation output is shown in \autoref{fig:pres} and \autoref{fig:wall} with experimental data included for comparison [@Szczepanski, @WONG]. 
+Still the code can manage a number of different assumption: isothermal depressurisation (very fast), isentropic (1. law) depressurisation with and without heat transfer, rigorous partial equilibrium depressurisation. Typical calculation output is shown in \autoref{fig:pres} and \autoref{fig:wall} with experimental data included for comparison [@Szczepanski@WONG]. 
 
-![Calculated pressure compared with experimental pressure. Blowdown of condensing/two-phase hydrocarbon mixture conducted at Spadeadam. \label{fig:pres}](joss/condensable_gas_pressure_rig.png)
+![Calculated pressure compared with experimental pressure. Blowdown of condensing/two-phase hydrocarbon mixture conducted at Spadeadam. \label{fig:pres}](../joss/condensable_gas_pressure_rig.png)
 
-![Calculated vessel wall temperatures in contact with gas and liquid compared with experimental data.  \label{fig:wall}](joss/condensable_gas_inner_wall_rig.png)
+![Calculated vessel wall temperatures in contact with gas and liquid compared with experimental data.  \label{fig:wall}](../joss/condensable_gas_inner_wall_rig.png)
 
 # Statement of need
 The rapid depressurisation (blowdown) of pressure vessels containing hazardous, either toxic or flammable,  substances in a chemical process plant, is an essential part of the plant process safety measures. 
