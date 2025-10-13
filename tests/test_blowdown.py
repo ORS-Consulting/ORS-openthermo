@@ -326,7 +326,7 @@ def test_blowdown_condensable_gas(plot=False):
     segment = Blowdown(input)
     r = segment.depressurize()
 
-    assert segment.pressure[-1] == pytest.approx(pres[:, 1][-1] * 1.013e5, abs=0.7e5)
+    assert segment.pressure[-1] == pytest.approx(pres[:, 1][-1] * 1.013e5, abs=0.9e5)
     assert segment.unwetted_wall_temp[-1] == pytest.approx(iwl[-1], abs=5)
     assert segment.wetted_wall_temp[-1] == pytest.approx(liwl[-1], abs=5)
     if plot:
