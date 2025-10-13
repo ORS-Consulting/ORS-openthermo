@@ -9,6 +9,7 @@ from thermo.volume import COSTALD_mixture
 from openthermo.properties.transport import h_inside, h_inside_wetted
 from openthermo import errors
 from openthermo.flash.michelsen import get_flash_dry
+from openthermo.vessel.fire import sb_fire
 
 
 def hem_release_rate():
@@ -146,6 +147,8 @@ class Blowdown:
                 self.wall_density = input["wall_heat capacity"]
             else:
                 self.wall_density = 7800
+            if input["heat_transfer"] == "rigorous_sb_fire":
+                self.sb_fire_type = input["sb_fire_type"]
         else:
             self.heat_transfer = None
         self.liq_density = input["liquid_density"]
@@ -368,8 +371,10 @@ class Blowdown:
             res = self.flash.flash(
                 T=self.operating_temperature, V=V_molar, zs=z, Pguess=Pguess
             )
-            # res = self.flash.flash(T=self.operating_temperature,V=V_molar, zs=z)
-        elif self.heat_transfer == "rigorous":
+
+        elif (
+            self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire"
+        ):
             m, N, U = y[0], y[1], y[2]
             Tuw, Tw = y[3], y[4]
             z = normalize(y[5:] / N)
@@ -400,7 +405,6 @@ class Blowdown:
             res = self.flash.flash(
                 U=U_molar, V=V_molar, zs=z, Pguess=Pguess, Tguess=Tguess
             )
-            # print(res.betas)
 
         ##############################################################################
         # Mass mole/balance part (blowdown, leaks and inflows()
@@ -408,9 +412,6 @@ class Blowdown:
         self.water_level = self.vessel.h_from_V(
             res.liquid1.beta * self._Vm_liq(res.liquid1) * N
         )
-        # self.liquid_level = self.vessel.h_from_V(
-        #    (res.liquid0.beta_volume + res.liquid1.beta_volume) * self.vessel.V_total
-        # )
         self.liquid_level = self.vessel.h_from_V(
             res.liquid0.beta * self._Vm_liq(res.liquid0) * N
             + res.liquid1.beta * self._Vm_liq(res.liquid1) * N
@@ -482,8 +483,9 @@ class Blowdown:
         ##############################################################################
         # Wall temperature balances
         ##############################################################################
-
-        if self.heat_transfer == "rigorous":
+        print("POINT1")
+        if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
+            print("POINT2")
             h_amb = 8
             h_inner_uw, h_inner_w = h_inside(
                 self.length, Tuw, res.T, res.gas
@@ -491,14 +493,26 @@ class Blowdown:
             Auw = self.vessel.A - self.wetted_area()
 
             Aw = self.wetted_area()
-            Quw = Auw * (
-                h_amb * (self.ambient_temperature - Tuw) - h_inner_uw * (Tuw - res.T)
-            )
-            Qw = Aw * (
-                h_amb * (self.ambient_temperature - Tw) - h_inner_w * (Tw - res.T)
-            )
-            # Quw = Auw * (100000 - h_inner_uw * (Tuw - res.T))
-            # Qw = Aw * (100000 - h_inner_w * (Tw - res.T))
+            if self.heat_transfer == "rigorous":
+                Quw = Auw * (
+                    h_amb * (self.ambient_temperature - Tuw)
+                    - h_inner_uw * (Tuw - res.T)
+                )
+                Qw = Aw * (
+                    h_amb * (self.ambient_temperature - Tw) - h_inner_w * (Tw - res.T)
+                )
+            elif self.heat_transfer == "rigorous_sb_fire":
+                print(
+                    "Unwetted heat flux",
+                    sb_fire(Tuw, self.sb_fire_type),
+                    "Wetted heat flux",
+                    sb_fire(Tw, self.sb_fire_type),
+                )
+                Quw = Auw * (
+                    sb_fire(Tuw, self.sb_fire_type) - h_inner_uw * (Tuw - res.T)
+                )
+                Qw = Aw * (sb_fire(Tw, self.sb_fire_type) - h_inner_w * (Tw - res.T))
+
             Cp = self.wall_heat_capacity
             m_uw = Auw * self.wall_thickness * self.wall_density
             m_w = Aw * self.wall_thickness * self.wall_density
@@ -512,20 +526,6 @@ class Blowdown:
             else:
                 dTw_dt = 0  # dTuw_dt
         else:
-            # h_inner_uw, h_inner_w = h_inside(
-            #     self.length, Tuw, res.T, res.gas
-            # ), h_inside_wetted(self.length, Tw, res.T, res)
-            # h_amb = 0
-            # Auw = self.vessel.A - self.wetted_area()
-            # Aw = self.wetted_area()
-            # Quw = Auw * (
-            #     h_amb * (self.ambient_temperature - Tuw) - h_inner_uw * (Tuw - res.T)
-            # )
-            # Qw = Aw * (
-            #     h_amb * (self.ambient_temperature - Tw) - h_inner_w * (Tw - res.T)
-            # )
-            # print("Pressure (bar):", res.P / 1e5, Quw, Qw)
-
             dTuw_dt = 0
             dTw_dt = 0
             Quw = Qw = 0
@@ -721,10 +721,6 @@ class Blowdown:
             Pguess = self.operating_pressure
             Tguess = self.operating_temperature
 
-        # gas = liq = self.flash.flash(
-        #    U=U_molar, V=V_molar, zs=z, Pguess=Pguess, Tguess=Tguess
-        # )
-
         if Ngas == 0 or Nliq == 0:
             gas = liq = self.flash.flash(
                 U=U_molar, V=V_molar, zs=z, Pguess=Pguess, Tguess=Tguess
@@ -831,10 +827,6 @@ class Blowdown:
                     options={"maxiter": 5000},
                 )
                 if not ret.success:
-                    # x0 = [
-                    #     (self.vessel.V_total - self.vessel.V_from_h(self.liquid_level))
-                    #     / self.vessel.V_total
-                    # ]
                     ret = minimize(
                         fun=tot_vol2,
                         x0=x0,
@@ -843,55 +835,16 @@ class Blowdown:
                         method="SLSQP",
                         # options={"maxiter": 2000},
                     )
-                    # ret = minimize(
-                    #     uv_mult,
-                    #     x0=x0,
-                    #     method="Nelder-Mead",
-                    #     bounds=((1e-6, (1 - 1e-6)),),
-                    # )
 
-                    # gas = self.flash.flash(T=self.gresT, P=self.resP, zs=z)
-                    # liq = self.flash.flash(T=self.lresT, P=self.resP, zs=z_liq)
                     gas = self.flash.flash(T=ret.x[0], P=ret.x[2], zs=z)
                     liq = self.flash.flash(T=ret.x[1], P=ret.x[2], zs=z_liq)
 
                 else:
                     gas = self.flash.flash(T=ret.x[0], P=ret.x[2], zs=z)
                     liq = self.flash.flash(T=ret.x[1], P=ret.x[2], zs=z_liq)
-
-                # gas = self.flash.flash(T=ret.x[0], P=ret.x[2], zs=z)
-                # liq = self.flash.flash(T=ret.x[1], P=ret.x[2], zs=z_liq)
-                # print(
-                #     Ugas,
-                #     gas.U(),
-                #     gas.V(),
-                #     liq.U(),
-                #     liq.V(),
-                #     tot_vol(ret.x),
-                #     tot_vol2(ret.x),
-                #     energy_cons_gas(ret.x),
-                #     energy_cons_liq(ret.x),
-                # )
-                # raise
             except:
                 raise
-            # gas = self.flash.flash(
-            #     V=self.vessel.V_total * ret.x / Ngas,
-            #     U=Ugas / Ngas,
-            #     zs=z,
-            #     Pguess=self.pressure[-1],
-            #     Tguess=self.gas_temperatrure[-1],
-            # )
-            # liq = self.flash.flash(
-            #     V=self.vessel.V_total * (1 - ret.x) / Nliq,
-            #     U=Uliq / Nliq,
-            #     zs=z_liq,
-            #     Pguess=self.pressure[-1],
-            #     Tguess=self.liquid_temperature[-1],
-            # )
 
-            #
-            #
             print(
                 t,
                 gas.P,

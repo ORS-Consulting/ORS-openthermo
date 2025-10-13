@@ -10,6 +10,111 @@ validation_path = os.path.join(
 )
 
 
+def test_blowdown_sbfire_costald(plot=False):
+    """
+    Test against HYSYS Depressurisation utility for S-B pool fire
+    exposing the total area of the vessel. No water present.
+    COSTALD liquid density is applied.
+    """
+    file_name = "Water_dry_API_inadequate_costald_history.csv"
+
+    path = os.path.join(validation_path, file_name)
+
+    data = np.loadtxt(path, skiprows=11, delimiter=",", usecols=(range(25)))
+
+    input = {}
+    P = 12e5
+    T = 298.15
+
+    input["mode"] = "isentropic"
+    input["heat_transfer"] = "rigorous_sb_fire"
+    input["sb_fire_type"] = "scandpower_jet"
+    input["wall_thickness"] = 0.019  # m
+    input["eos_model"] = "PR"
+    input["liquid_density"] = "costald"
+    input["max_time"] = 900
+    input["delay"] = 0
+    input["length"] = 10
+    input["diameter"] = 3
+    input["vessel_type"] = "Flat-end"
+    input["orientation"] = "horizontal"
+    input["liquid_level"] = 1.5
+    input["water_level"] = 0.0
+    input["operating_temperature"] = T
+    input["operating_pressure"] = P
+    input["ambient_temperature"] = 273
+    input["back_pressure"] = 1.01e5
+    input["bdv_orifice_size"] = 0.03  # m
+    input["bdv_orifice_cd"] = 0.84
+
+    input["leak_active"] = 0
+    input["leak_size"] = 0.01  # m
+    input["leak_cd"] = 0.65
+    input["leak_type"] = "liquid"
+
+    names = ["methane", "propane", "n-butane", "i-butane", "n-decane"]
+    molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
+
+    input["molefracs"] = molefracs
+
+    input["flash"] = get_flash_dry(
+        names,
+        molefracs,
+        P=P,
+        T=T,
+        rho=input["liquid_density"],
+        model=input["eos_model"],
+    )
+
+    segment = Blowdown(input)
+    r = segment.depressurize()
+
+    import matplotlib.pyplot as plt
+
+    name = "plots\\API521_inadequate_costald_water_dry"
+
+    if plot:
+        plt.figure(1)
+        plt.plot(
+            segment.times,
+            np.asarray(segment.pressure) / 1e5,
+            "bo",
+            label="openthermo/python",
+        )
+        plt.plot(data[:, 0], data[:, 2] + 1.013, "r-", label="HYSYS Depressurisation")
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Pressure (bar)")
+        plt.savefig(name + "_pressure.png", dpi=300)
+
+        plt.figure(2)
+        plt.plot(
+            segment.times,
+            np.asarray(segment.temperature) - 273.15,
+            "bo",
+            label="openthermo/python",
+        )
+        plt.plot(data[:, 0], data[:, 1], "r-", label="HYSYS Depressurisation")
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel(r"Temperature ($^\circ$C)")
+        plt.savefig(name + "_temperature.png", dpi=300)
+
+        plt.figure(3)
+        plt.plot(
+            segment.times,
+            np.asarray(segment.mdot) * -3600,
+            "bo",
+            label="openthermo/python",
+        )
+        plt.plot(data[:, 0], data[:, 3], "r-", label="HYSYS Depressurisation")
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Mass flow (kg/h)")
+        plt.savefig(name + "_mdot.png", dpi=300)
+        plt.show()
+
+
 def test_blowdown_api_dry_inadequate_costald(plot=False):
     """
     Test against HYSYS Depressurisation utility for API 521 pool fire
@@ -846,10 +951,10 @@ def test_blowdown_condensable_gas_rig(plot=False):
 
 
 if __name__ == "__main__":
-    pass
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
     # test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
+    test_blowdown_sbfire_costald(plot=True)
