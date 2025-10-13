@@ -298,26 +298,4 @@ def test_sb():
 
 
 if __name__ == "__main__":
-    # names = ["water", "methane", "propane", "n-butane", "i-butane", "n-decane"]
-    # molefracs = [0.1, 0.1, 0.05, 0.025, 0.025, 0.60]
-    # Tfluid = 310
-    # Tvessel = 300
-    # Tavg = (Tfluid + Tvessel) / 2
-    # P = 12.013e5
-    # flash = get_flash(
-    #     names,
-    #     molefracs,
-    #     P=P,
-    #     T=Tavg,
-    #     rho="eos",
-    #     model="PR",
-    # )
-    # res = flash.flash(P=P, T=Tavg, zs=molefracs)
-
-    # kls = 0
-    # for i in range(len(res.liquid0.ws())):
-    #     kls += res.liquid0.ws()[i] * res.liquid0.kls()[i]
-
-    # print(kls, res.liquid0.k())
-
     pass
