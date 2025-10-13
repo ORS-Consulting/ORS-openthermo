@@ -289,13 +289,8 @@ def test_blowdown_condensable_gas(plot=False):
     input["delay"] = 0
 
     input["length"] = 2.25
-    # input["diameter"] = 1.130
     input["diameter"] = 1.13
     input["vessel_type"] = "ASME F&D"
-    # input["length"] = 2.75
-    # # input["diameter"] = 1.130
-    # input["diameter"] = 1.09
-    # input["vessel_type"] = "ASME F&D"
     input["orientation"] = "horizontal"
     input["liquid_level"] = 0.0
     input["water_level"] = 0.0

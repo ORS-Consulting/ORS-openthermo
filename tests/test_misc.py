@@ -4,6 +4,7 @@ import math
 from openthermo.properties.transport import h_inside, h_inside_liquid
 import openthermo.properties.transport as tp
 from openthermo.flash.michelsen import get_flash_dry
+from openthermo.vessel import fire
 from openthermo.vessel.blowdown import (
     liquid_release_bernouilli,
     two_phase_release_fauske,
@@ -253,6 +254,47 @@ def test_boiling_nucleic_Rohsenow():
             rhol=958,
             rhog=0.597,
         )
+
+
+def test_stefan_boltzmann():
+    alpha = 1
+    e_flame = 1
+    e_surface = 0
+    h = 100
+    Tflame = 635 + 273.15
+    Tradiative = 635 + 273.15
+    assert (
+        fire.stefan_boltzmann(
+            alpha, e_flame, e_surface, h, Tflame, Tradiative, 20 + 273.15
+        )
+    ) == pytest.approx(1e5, abs=100)
+
+
+def test_pool_fire_api521():
+    assert fire.pool_fire_api521(273 + 50) == pytest.approx(45.5e3, abs=100)
+
+
+def test_jet_fire_api521():
+    assert fire.jet_fire_api521(273 + 50) == pytest.approx(83.5e3, abs=500)
+
+
+def test_jet_fire_scandpower():
+    assert fire.jet_fire_scandpower(273 + 20) == pytest.approx(94.5e3, abs=1000)
+
+
+def test_pool_fire_scandpower():
+    assert fire.pool_fire_scandpower(273 + 20) == pytest.approx(88.5e3, abs=500)
+
+
+def test_sb():
+    assert fire.sb_fire(273 + 50, "api_jet") == pytest.approx(83.5e3, abs=500)
+    assert fire.sb_fire(273 + 50, "api_pool") == pytest.approx(45.5e3, abs=100)
+    assert fire.sb_fire(273 + 20, "scandpower_pool") == pytest.approx(88.5e3, abs=500)
+    assert fire.sb_fire(273 + 20, "scandpower_jet") == pytest.approx(94.5e3, abs=1000)
+    try:
+        Q = fire.sb_fire(273 + 20, "scand_jet") == pytest.approx(94.5e3, abs=1000)
+    except ValueError:
+        pass
 
 
 if __name__ == "__main__":
