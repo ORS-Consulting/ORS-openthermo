@@ -483,9 +483,7 @@ class Blowdown:
         ##############################################################################
         # Wall temperature balances
         ##############################################################################
-        print("POINT1")
         if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
-            print("POINT2")
             h_amb = 8
             h_inner_uw, h_inner_w = h_inside(
                 self.length, Tuw, res.T, res.gas

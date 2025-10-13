@@ -71,7 +71,7 @@ def test_blowdown_sbfire_costald(plot=False):
 
     import matplotlib.pyplot as plt
 
-    name = "plots\\API521_inadequate_costald_water_dry"
+    name = "plots\\SB_fire_water_dry"
 
     if plot:
         plt.figure(1)
