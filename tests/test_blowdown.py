@@ -116,6 +116,8 @@ def test_blowdown_sbfire_costald(plot=False):
         plt.plot(segment.times, segment.unwetted_wall_temp, label="Unwetted wall")
         plt.xlabel("Time (s)")
         plt.ylabel("Temperature (K)")
+        plt.legend(loc="best")
+        plt.savefig(name + "_wall_temp.png", dpi=300)
 
         plt.show()
 
@@ -289,13 +291,8 @@ def test_blowdown_condensable_gas(plot=False):
     input["delay"] = 0
 
     input["length"] = 2.25
-    # input["diameter"] = 1.130
     input["diameter"] = 1.13
     input["vessel_type"] = "ASME F&D"
-    # input["length"] = 2.75
-    # # input["diameter"] = 1.130
-    # input["diameter"] = 1.09
-    # input["vessel_type"] = "ASME F&D"
     input["orientation"] = "horizontal"
     input["liquid_level"] = 0.0
     input["water_level"] = 0.0
@@ -329,6 +326,9 @@ def test_blowdown_condensable_gas(plot=False):
     segment = Blowdown(input)
     r = segment.depressurize()
 
+    assert segment.pressure[-1] == pytest.approx(pres[:, 1][-1] * 1.013e5, abs=0.9e5)
+    assert segment.unwetted_wall_temp[-1] == pytest.approx(iwl[-1], abs=5)
+    assert segment.wetted_wall_temp[-1] == pytest.approx(liwl[-1], abs=5)
     if plot:
         from matplotlib import pyplot as plt
         import scienceplots
@@ -416,7 +416,15 @@ def test_blowdown_nitrogen(plot=False):
     segment = Blowdown(input)
     r = segment.depressurize()
     # segment.plot()
-
+    assert segment.pressure[-1] == pytest.approx(
+        input["validation"]["pressure"]["pres"][-1] * 1e5, abs=1e5
+    )
+    assert segment.unwetted_wall_temp[-1] == pytest.approx(
+        input["validation"]["temperature"]["wall_outer"]["temp"][-1], abs=2
+    )
+    assert segment.temperature[-1] == pytest.approx(
+        input["validation"]["temperature"]["gas_high"]["temp"][-1], abs=3
+    )
     if plot:
         from matplotlib import pyplot as plt
         import scienceplots
@@ -899,6 +907,12 @@ def test_blowdown_condensable_gas_rig(plot=False):
     r = segment.depressurize_euler()  # _euler()
     time2 = time.time()
     print(f"Elapsed time {time2-time1} sec.")
+    assert segment.pressure[-1] == pytest.approx(pres[:, 1][-1] * 1.013e5, abs=0.7e5)
+    assert segment.unwetted_wall_temp[-1] == pytest.approx(iwl[-1], abs=2)
+    assert segment.wetted_wall_temp[-1] == pytest.approx(liwl[-1], abs=2)
+    assert segment.gas_temperatrure[-1] == pytest.approx(gl[-1], abs=2)
+    assert segment.liquid_temperature[-1] == pytest.approx(ll[-1], abs=2)
+
     if plot:
         from matplotlib import pyplot as plt
         import scienceplots
@@ -956,10 +970,11 @@ def test_blowdown_condensable_gas_rig(plot=False):
 
 
 if __name__ == "__main__":
+    # pass
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
-    test_blowdown_api_dry_inadequate_costald(plot=True)
+    # test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
-    # test_blowdown_sbfire_costald(plot=True)
+    test_blowdown_sbfire_costald(plot=True)
