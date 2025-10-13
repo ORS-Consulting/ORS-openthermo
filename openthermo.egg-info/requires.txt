@@ -6,6 +6,10 @@ fluids
 ht
 thermo
 numpy
+scipy
 SciencePlots
+pandas
 matplotlib
 scienceplots
+PyYAML
+openpyxl

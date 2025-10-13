@@ -1,3 +1,4 @@
+LICENSE
 README.md
 pyproject.toml
 setup.cfg
@@ -17,5 +18,5 @@ openthermo/properties/__init__.py
 openthermo/properties/pseudo.py
 openthermo/properties/transport.py
 tests/test_blowdown.py
+tests/test_flash.py
 tests/test_misc.py
-tests/test_thermo.py
