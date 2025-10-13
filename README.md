@@ -1,4 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![codecov](https://codecov.io/gh/ORS-Consulting/ORS-openthermo/graph/badge.svg?token=4TBNKIGO3F)](https://codecov.io/gh/ORS-Consulting/ORS-openthermo)
+
 # ORS - openthermo
 ```
                           __  __                            
