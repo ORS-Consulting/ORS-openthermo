@@ -32,7 +32,7 @@ def test_blowdown_sbfire_costald(plot=False):
     input["wall_thickness"] = 0.019  # m
     input["eos_model"] = "PR"
     input["liquid_density"] = "costald"
-    input["max_time"] = 900
+    input["max_time"] = 600
     input["delay"] = 0
     input["length"] = 10
     input["diameter"] = 3
@@ -67,7 +67,6 @@ def test_blowdown_sbfire_costald(plot=False):
     )
     segment = Blowdown(input)
     r = segment.depressurize()
-
     import matplotlib.pyplot as plt
 
     name = "plots\\SB_fire_water_dry"
@@ -111,6 +110,13 @@ def test_blowdown_sbfire_costald(plot=False):
         plt.xlabel("Time (s)")
         plt.ylabel("Mass flow (kg/h)")
         plt.savefig(name + "_mdot.png", dpi=300)
+
+        plt.figure(4)
+        plt.plot(segment.times, segment.wetted_wall_temp, label="Wetted wall")
+        plt.plot(segment.times, segment.unwetted_wall_temp, label="Unwetted wall")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Temperature (K)")
+
         plt.show()
 
 
@@ -953,8 +959,7 @@ if __name__ == "__main__":
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
-    # test_blowdown_api_dry_inadequate_costald(plot=True)
+    test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
-    print("Running test for SB fire - Costald")
-    test_blowdown_sbfire_costald(plot=True)
+    # test_blowdown_sbfire_costald(plot=True)

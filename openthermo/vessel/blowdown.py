@@ -484,7 +484,6 @@ class Blowdown:
         # Wall temperature balances
         ##############################################################################
         if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
-            print("Going in wall temp balance")
             h_amb = 8
             h_inner_uw, h_inner_w = h_inside(
                 self.length, Tuw, res.T, res.gas
@@ -529,7 +528,11 @@ class Blowdown:
         if self.mode == "adiabatic":
             dU_dt = res.gas.U() * dN_dt_bdv + leak_U * dN_dt_leak
         elif self.mode == "isentropic":
-            dU_dt = res.gas.H() * dN_dt_bdv + leak_H * dN_dt_leak - (Quw + Qw)
+            dU_dt = (
+                res.gas.H() * dN_dt_bdv
+                + leak_H * dN_dt_leak
+                + (Auw * h_inner_uw * (Tuw - res.T) + Aw * h_inner_w * (Tw - res.T))
+            )
         elif self.mode == "fire":
             dU_dt = (
                 res.gas.H() * dN_dt_bdv + leak_H * dN_dt_leak + self._get_heat_load_W()
@@ -553,7 +556,10 @@ class Blowdown:
             self.times.append(t)
             if self.mode == "isothermal":
                 self.sol.append([y[0], y[1]])  # , y[2]])
-            elif self.heat_transfer == "rigorous":
+            elif (
+                self.heat_transfer == "rigorous"
+                or self.heat_transfer == "rigorous_sb_fire"
+            ):
                 self.sol.append([y[0], y[1], y[2], y[3], y[4]])
             else:
                 self.sol.append([y[0], y[1], y[2]])
@@ -568,7 +574,10 @@ class Blowdown:
             self.molefracs.append(z)
             self.enthalpy.append(res.U() * N)
             self.liquid_dyn_level.append(self.liquid_level)
-            if self.heat_transfer == "rigorous":
+            if (
+                self.heat_transfer == "rigorous"
+                or self.heat_transfer == "rigorous_sb_fire"
+            ):
                 self.wetted_wall_temp.append(y[4])
                 self.unwetted_wall_temp.append(y[3])
             else:
@@ -577,7 +586,9 @@ class Blowdown:
 
         if self.mode == "isothermal":
             return np.array([dm_dt, dN_dt] + dNs_dt)
-        elif self.heat_transfer == "rigorous":
+        elif (
+            self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire"
+        ):
             return np.array([dm_dt, dN_dt, dU_dt, dTuw_dt, dTw_dt] + dNs_dt)
         else:
             return np.array([dm_dt, dN_dt, dU_dt] + dNs_dt)
@@ -637,7 +648,9 @@ class Blowdown:
         fun = self._blowdown_gov_eqns
         if self.mode == "isothermal":
             y0 = [self.m0, N0] + Ns.tolist()
-        elif self.heat_transfer == "rigorous":
+        elif (
+            self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire"
+        ):
             y0 = [self.m0, N0, U0] + [T, T] + Ns.tolist()
         else:
             y0 = [self.m0, N0, U0] + Ns.tolist()
@@ -947,14 +960,14 @@ class Blowdown:
         if Ngas == 0 or Nliq == 0:
             dUgas_dt = (
                 gas.H() * dN_dt_bdv
-                - Quw
+                + Auw * h_inner_uw * (Tuw - gas.T)
                 + Qlg
                 - (gas.liquid0.U() + gas.liquid0.U()) / 2 * dn_gas_to_liq_dt
                 + (liq.gas.U() + liq.gas.U()) / 2 * dn_liq_to_gas_dt
             )
 
             dUliq_dt = (
-                -Qw
+                +Aw * h_inner_w * (Tw - liq.T)
                 - Qlg
                 + (gas.liquid0.U() + gas.liquid0.U()) / 2 * dn_gas_to_liq_dt
                 - (liq.gas.U() + liq.gas.U()) / 2 * dn_liq_to_gas_dt
