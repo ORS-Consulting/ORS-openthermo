@@ -375,7 +375,6 @@ class Blowdown:
         elif (
             self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire"
         ):
-            print("ENtering rigours")
             m, N, U = y[0], y[1], y[2]
             Tuw, Tw = y[3], y[4]
             z = normalize(y[5:] / N)
@@ -485,6 +484,7 @@ class Blowdown:
         # Wall temperature balances
         ##############################################################################
         if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
+            print("Going in wall temp balance")
             h_amb = 8
             h_inner_uw, h_inner_w = h_inside(
                 self.length, Tuw, res.T, res.gas
