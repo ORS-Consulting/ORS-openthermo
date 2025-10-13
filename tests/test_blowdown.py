@@ -65,7 +65,6 @@ def test_blowdown_sbfire_costald(plot=False):
         rho=input["liquid_density"],
         model=input["eos_model"],
     )
-
     segment = Blowdown(input)
     r = segment.depressurize()
 
@@ -957,4 +956,5 @@ if __name__ == "__main__":
     # test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
+    print("Running test for SB fire - Costald")
     test_blowdown_sbfire_costald(plot=True)

@@ -500,12 +500,6 @@ class Blowdown:
                     h_amb * (self.ambient_temperature - Tw) - h_inner_w * (Tw - res.T)
                 )
             elif self.heat_transfer == "rigorous_sb_fire":
-                print(
-                    "Unwetted heat flux",
-                    sb_fire(Tuw, self.sb_fire_type),
-                    "Wetted heat flux",
-                    sb_fire(Tw, self.sb_fire_type),
-                )
                 Quw = Auw * (
                     sb_fire(Tuw, self.sb_fire_type) - h_inner_uw * (Tuw - res.T)
                 )
