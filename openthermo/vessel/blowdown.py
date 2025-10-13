@@ -479,6 +479,7 @@ class Blowdown:
 
         dm_dt = dm_dt_bdv + dm_dt_leak
         dN_dt = dN_dt_bdv + dN_dt_leak
+        print("SB heat flux", sb_fire(Tuw, self.sb_fire_type))
 
         ##############################################################################
         # Wall temperature balances
