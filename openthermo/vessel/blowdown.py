@@ -136,6 +136,7 @@ class Blowdown:
     def __init__(self, input):
         self.mode = input["mode"]
         if "heat_transfer" in input:
+            print("Heat trabsfer detected")
             self.ambient_temperature = input["ambient_temperature"]
             self.heat_transfer = input["heat_transfer"]
             self.wall_thickness = input["wall_thickness"]
@@ -148,6 +149,8 @@ class Blowdown:
             else:
                 self.wall_density = 7800
             if input["heat_transfer"] == "rigorous_sb_fire":
+                print("SB detected")
+
                 self.sb_fire_type = input["sb_fire_type"]
         else:
             self.heat_transfer = None
@@ -479,7 +482,6 @@ class Blowdown:
 
         dm_dt = dm_dt_bdv + dm_dt_leak
         dN_dt = dN_dt_bdv + dN_dt_leak
-        print("SB heat flux", sb_fire(Tuw, self.sb_fire_type))
 
         ##############################################################################
         # Wall temperature balances
