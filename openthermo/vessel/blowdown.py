@@ -150,7 +150,6 @@ class Blowdown:
             if input["heat_transfer"] == "rigorous_sb_fire":
                 self.sb_fire_type = input["sb_fire_type"]
         else:
-            print("HT none")
             self.heat_transfer = None
         self.liq_density = input["liquid_density"]
         self.delay = input["delay"]
@@ -376,6 +375,7 @@ class Blowdown:
         elif (
             self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire"
         ):
+            print("ENtering rigours")
             m, N, U = y[0], y[1], y[2]
             Tuw, Tw = y[3], y[4]
             z = normalize(y[5:] / N)
