@@ -1,4 +1,5 @@
-from openthermo.flash.michelsen import get_flash_dry
+from openthermo.flash.michelsen import get_flash_dry, flash_results
+from thermopack.cubic import PengRobinson
 import pytest
 
 
@@ -143,3 +144,58 @@ def test_flash_PH_COCO():
 
     res2 = flash.flash(P=1e5, H=res.H(), zs=molefracs)
     assert res2.T == pytest.approx(237.53, rel=4e-3)
+
+
+def test_thermopack_pseudo():
+    import numpy as np
+
+    P = 5.0e6
+    T = 300.0
+    names = ["C1", "C2", "C3", "NC4"]
+    molefracs = [0.64, 0.06, 0.28, 0.02]
+
+    eos = PengRobinson(",".join(names))
+    cindices = range(1, eos.nc + 1)
+    Tclist = np.array([eos.critical_temperature(i) for i in cindices])
+    Pclist = np.array([eos.critical_pressure(i) for i in cindices])
+    acflist = np.array([eos.acentric_factor(i) for i in cindices])
+    Mwlist = np.array([eos.compmoleweight(i) * 1e-3 for i in cindices])  # kg/mol
+    kijmat = [[eos.get_kij(i, j) for i in cindices] for j in cindices]
+    res = eos.two_phase_tpflash(press=P, temp=T, z=[0.64, 0.06, 0.28, 0.02])
+
+    eos = PengRobinson("PSEUDO,PSEUDO,PSEUDO,PSEUDO")
+    eos.init_pseudo(
+        comps="PSEUDO1, PSEUDO2, PSEUDO2,PSEUDO3",
+        Tclist=Tclist,
+        Pclist=Pclist,
+        acflist=acflist,
+        Mwlist=Mwlist,
+    )
+    _ = [[eos.set_kij(i, j, kijmat[i - 1][j - 1]) for i in cindices] for j in cindices]
+
+    res2 = eos.two_phase_tpflash(press=P, temp=T, z=[0.64, 0.06, 0.28, 0.02])
+    print(res2.betaL, res2.betaV)
+    assert res2.betaV == pytest.approx(res.betaV, rel=1e-5)
+    assert res2.betaL == pytest.approx(res.betaL, rel=1e-5)
+
+
+def test_print_thermo():
+    P = 5.0e6
+    T = 300.0
+    names = ["methane", "ethane", "propane", "n-butane"]
+    molefracs = [0.64, 0.06, 0.28, 0.02]
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        P=P,
+        T=T,
+        rho="eos",
+        model="PR",
+    )
+    res = flash.flash(P=P, T=T, zs=molefracs)
+    flash_result = flash_results(res)
+    assert flash_result[1][4] == res.gas.beta
+
+
+if __name__ == "__main__":
+    main
