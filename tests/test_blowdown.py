@@ -20,7 +20,7 @@ def test_blowdown_sbfire_costald(plot=False):
 
     path = os.path.join(validation_path, file_name)
 
-    data = np.loadtxt(path, skiprows=2, delimiter=",", usecols=(range(25)))
+    data = np.loadtxt(path, skiprows=2, delimiter=",", usecols=(range(17)))
 
     input = {}
     P = 12e5
@@ -31,7 +31,7 @@ def test_blowdown_sbfire_costald(plot=False):
     input["sb_fire_type"] = "scandpower_jet"
     input["wall_thickness"] = 0.019  # m
     input["eos_model"] = "PR"
-    input["liquid_density"] = "costald"
+    input["liquid_density"] = "eos"
     input["max_time"] = 600
     input["delay"] = 0
     input["length"] = 10
@@ -114,26 +114,22 @@ def test_blowdown_sbfire_costald(plot=False):
         plt.figure(4)
         plt.plot(
             segment.times,
-            segment.wetted_wall_temp,
+            np.asarray(segment.wetted_wall_temp) - 273.15,
             "bo",
-            label="openthermo Wetted wall",
+            label="openthermo Wetted",
         )
-        plt.plot(
-            data[:, 0], data[:, 10], "b--", label="HYSYS Depressurisation Wetted wall"
-        )
+        plt.plot(data[:, 0], data[:, 10], "b--", label="HYSYS Depressurisation Wetted")
         plt.plot(
             segment.times,
-            segment.unwetted_wall_temp,
+            np.asarray(segment.unwetted_wall_temp) - 273.15,
             "ro",
-            label="openthermo Unwetted wall",
+            label="openthermo Unwetted",
         )
-        plt.plot(
-            data[:, 0], data[:, 10], "r--", label="HYSYS Depressurisation Unwetted wall"
-        )
+        plt.plot(data[:, 0], data[:, 9], "r--", label="HYSYS Depressurisation Unwetted")
 
         plt.xlabel("Time (s)")
-        plt.ylabel("Temperature (K)")
-
+        plt.ylabel("Wall temperature (C)")
+        plt.legend(loc="best")
         plt.show()
 
 
