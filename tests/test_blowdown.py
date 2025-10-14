@@ -16,11 +16,11 @@ def test_blowdown_sbfire_costald(plot=False):
     exposing the total area of the vessel. No water present.
     COSTALD liquid density is applied.
     """
-    file_name = "Water_dry_API_inadequate_costald_history.csv"
+    file_name = "sb_test_unisim.csv"
 
     path = os.path.join(validation_path, file_name)
 
-    data = np.loadtxt(path, skiprows=11, delimiter=",", usecols=(range(25)))
+    data = np.loadtxt(path, skiprows=2, delimiter=",", usecols=(range(25)))
 
     input = {}
     P = 12e5
@@ -112,8 +112,25 @@ def test_blowdown_sbfire_costald(plot=False):
         plt.savefig(name + "_mdot.png", dpi=300)
 
         plt.figure(4)
-        plt.plot(segment.times, segment.wetted_wall_temp, label="Wetted wall")
-        plt.plot(segment.times, segment.unwetted_wall_temp, label="Unwetted wall")
+        plt.plot(
+            segment.times,
+            segment.wetted_wall_temp,
+            "bo",
+            label="openthermo Wetted wall",
+        )
+        plt.plot(
+            data[:, 0], data[:, 10], "b--", label="HYSYS Depressurisation Wetted wall"
+        )
+        plt.plot(
+            segment.times,
+            segment.unwetted_wall_temp,
+            "ro",
+            label="openthermo Unwetted wall",
+        )
+        plt.plot(
+            data[:, 0], data[:, 10], "r--", label="HYSYS Depressurisation Unwetted wall"
+        )
+
         plt.xlabel("Time (s)")
         plt.ylabel("Temperature (K)")
 
@@ -959,7 +976,7 @@ if __name__ == "__main__":
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
-    test_blowdown_api_dry_inadequate_costald(plot=True)
+    # test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
-    # test_blowdown_sbfire_costald(plot=True)
+    test_blowdown_sbfire_costald(plot=True)
