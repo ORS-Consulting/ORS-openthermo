@@ -198,4 +198,4 @@ def test_print_thermo():
 
 
 if __name__ == "__main__":
-    main
+    pass
