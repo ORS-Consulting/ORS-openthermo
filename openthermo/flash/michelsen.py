@@ -43,11 +43,28 @@ class FlashVL:
         self.properties = properties
         # self.zs = normalize(zs)
         self.model = 1
+        print(len(names) * ["PSEUDO"])
+        print(names)
+
         if model == 2 or model == "SRK":
             self.model = 2
-            self.eos = SoaveRedlichKwong(",".join(names))
+            # self.eos = SoaveRedlichKwong(",".join(names))
+            self.eos = SoaveRedlichKwong(",".join(len(names) * ["PSEUDO"]))
         else:
-            self.eos = PengRobinson(",".join(names))
+            # self.eos = PengRobinson(",".join(names))
+            self.eos = PengRobinson(",".join(len(names) * ["PSEUDO"]))
+        cindices = range(1, self.eos.nc + 1)
+        self.eos.init_pseudo(
+            comps=",".join(names),
+            Tclist=constants.Tcs,
+            Pclist=constants.Pcs,
+            acflist=constants.omegas,
+            Mwlist=constants.MWs,
+        )
+        _ = [
+            [self.eos.set_kij(i, j, kijs[i - 1][j - 1]) for i in cindices]
+            for j in cindices
+        ]
 
         self.kijs = kijs
         self.zs = list(np.asarray(zs) / sum(zs))

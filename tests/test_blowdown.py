@@ -1267,7 +1267,7 @@ def test_isentropic(plot=False):
 
 
 if __name__ == "__main__":
-    # pass
+    pass
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
