@@ -78,7 +78,7 @@ def COSTALD_Vm(phase):
 
     # Vm = COSTALD_mixture(phase.zs, phase.T, phase.Tcs, phase.Vcs, phase.omegas)
     Vm = COSTALD_mixture(phase.zs, phase.T, phase.Tcs, V_char, omega)
-    return Vm  # COSTALD_mixture(phase.zs, phase.T, phase.Tcs, phase.Vcs, phase.omegas)
+    return Vm
 
 
 def h_inside(L, Tvessel, Tfluid, fluid):

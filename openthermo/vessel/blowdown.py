@@ -5,7 +5,7 @@ from scipy.integrate import ode
 from scipy.optimize import minimize
 import math
 from scipy.constants import g
-from thermo.volume import COSTALD_mixture
+from openthermo.properties.transport import COSTALD_rho, COSTALD_Vm
 from openthermo.properties.transport import h_inside, h_inside_wetted
 from openthermo import errors
 from openthermo.flash.michelsen import get_flash_dry
@@ -193,7 +193,9 @@ class Blowdown:
         if self.liq_density == "eos":
             return phase.rho_mass()
         elif self.liq_density == "costald":
-            Vm = COSTALD_mixture(phase.zs, phase.T, phase.Tcs, phase.Vcs, phase.omegas)
+            Vm = COSTALD_Vm(
+                phase
+            )  # COSTALD_mixture(phase.zs, phase.T, phase.Tcs, phase.Vcs, phase.omegas)
             rho = 1 / Vm * phase.MW() / 1000
             return rho
 
@@ -203,21 +205,14 @@ class Blowdown:
         elif self.liq_density == "costald":
             Vmn = 0
             for phase in phases:
-                Vmn += (
-                    COSTALD_mixture(
-                        phase.zs, phase.T, phase.Tcs, phase.Vcs, phase.omegas
-                    )
-                    * phase.beta
-                )
+                Vmn += COSTALD_Vm(phase) * phase.beta
             return 1 / Vmn * (phases.MW() / 1000)
 
     def _Vm_liq(self, phase):
         if self.liq_density == "eos":
             return phase.V()
         elif self.liq_density == "costald":
-            return COSTALD_mixture(
-                phase.zs, phase.T, phase.Tcs, phase.Vcs, phase.omegas
-            )
+            return COSTALD_Vm(phase)
 
     def _setup_fire(self, input):
         if "fire_type" in input:
@@ -350,6 +345,7 @@ class Blowdown:
             )
 
         self.m0 = V_gas * res.gas.rho_mass() + V_liquid * liq_rho + V_water * water_rho
+        self.N0 = N_tot
         self.z_adjust = zs
 
     def _blowdown_gov_eqns(
@@ -597,6 +593,27 @@ class Blowdown:
         self.stamp_success.append(hash((t, (yi for yi in y))))
         return None
 
+    def adjust_initial_moles(self):
+
+        def residual_moles(N0):
+            res = (
+                self.flash.flash(
+                    T=self.operating_temperature,
+                    V=self.vessel.V_total / N0,
+                    zs=self.z_adjust,
+                ).P
+                - self.operating_pressure
+            ) ** 2
+            return res
+
+        res = minimize(
+            residual_moles,
+            x0=self.N0,
+            method="Nelder-Mead",
+            bounds=[(self.N0 * 0.9, self.N0 * 1.1)],
+        )
+        return res.x[0]
+
     def depressurize(self):
         # find vessel mass
         # and start mole
@@ -604,7 +621,13 @@ class Blowdown:
             P=self.operating_pressure, T=self.operating_temperature, zs=self.z_adjust
         )
 
-        N0 = self.m0 / (res.MW() / 1000)  # self.vessel.V_total / res.V()
+        N0 = self.N0
+        if self.liq_density == "costald":
+            # This is a hack - with COSTALD the initial pressure via UV / TV flash does not match
+            # To achieve a match in pressure the initial moles are re-adjusted
+            N0 = (
+                self.adjust_initial_moles()
+            )  # self.m0 / (res.MW() / 1000)  # self.vessel.V_total / res.V()
         H0 = res.H() * N0
         U0 = res.U() * N0
         S0 = res.S() * N0

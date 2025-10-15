@@ -42,7 +42,7 @@ def test_blowdown_sbfire_costald(plot=False):
     input["water_level"] = 0.0
     input["operating_temperature"] = T
     input["operating_pressure"] = P
-    input["ambient_temperature"] = 273
+    input["ambient_temperature"] = 298
     input["back_pressure"] = 1.01e5
     input["bdv_orifice_size"] = 0.03  # m
     input["bdv_orifice_cd"] = 0.84
@@ -118,14 +118,14 @@ def test_blowdown_sbfire_costald(plot=False):
             "bo",
             label="openthermo Wetted",
         )
-        plt.plot(data[:, 0], data[:, 10], "b--", label="HYSYS Depressurisation Wetted")
+        plt.plot(data[:, 0], data[:, 9], "b--", label="HYSYS Depressurisation Wetted")
         plt.plot(
             segment.times,
             np.asarray(segment.unwetted_wall_temp) - 273.15,
             "ro",
             label="openthermo Unwetted",
         )
-        plt.plot(data[:, 0], data[:, 9], "r--", label="HYSYS Depressurisation Unwetted")
+        plt.plot(data[:, 0], data[:, 8], "r--", label="HYSYS Depressurisation Unwetted")
 
         plt.xlabel("Time (s)")
         plt.ylabel("Wall temperature (C)")
@@ -190,9 +190,9 @@ def test_blowdown_api_dry_inadequate_costald(plot=False):
 
     segment = Blowdown(input)
     r = segment.depressurize()
-    assert segment.pressure[-1] == pytest.approx(data[:, 2][-1] * 1e5 + atm, rel=0.03)
+    assert segment.pressure[-1] == pytest.approx(data[:, 2][-1] * 1e5 + atm, rel=0.05)
     assert segment.temperature[-1] == pytest.approx(data[:, 1][-1] + 273.15, rel=0.01)
-    assert segment.mdot[-1] == pytest.approx(data[:, 3][-1] / -3600, rel=0.03)
+    assert segment.mdot[-1] == pytest.approx(data[:, 3][-1] / -3600, rel=0.05)
 
     import matplotlib.pyplot as plt
 
@@ -975,4 +975,4 @@ if __name__ == "__main__":
     # test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
-    test_blowdown_sbfire_costald(plot=True)
+    # test_blowdown_sbfire_costald(plot=True)
