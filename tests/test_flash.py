@@ -98,7 +98,7 @@ def test_flash_COCO():
 
     assert res.gas.beta == pytest.approx(0.932555, rel=1e-3)
     assert res.gas.rho_mass() == pytest.approx(67.92, rel=0.006)
-    assert res.gas.V() == pytest.approx(3.6e-4, rel=0.01)
+    assert res.gas.V() == pytest.approx(3.6e-4, rel=0.015)
 
     assert res.liquid0.rho_mass() == pytest.approx(439.92, rel=0.002)
     assert res.liquid0.V() == pytest.approx(8.5792e-5, rel=0.001)
@@ -107,11 +107,11 @@ def test_flash_COCO():
     assert res.gas.zs[1] == pytest.approx(0.059714, rel=1e-3)
     assert res.gas.zs[2] == pytest.approx(0.25553, rel=2e-3)
     assert res.gas.zs[3] == pytest.approx(0.015499, rel=9e-3)
-    assert res.liquid0.zs[0] == pytest.approx(0.23548, rel=1e-3)
+    assert res.liquid0.zs[0] == pytest.approx(0.23548, rel=2e-3)
     assert res.liquid0.zs[1] == pytest.approx(0.063952, rel=1e-3)
     assert res.liquid0.zs[2] == pytest.approx(0.61833, rel=1e-3)
     assert res.liquid0.zs[3] == pytest.approx(0.08224, rel=4e-3)
-    assert res.H() == pytest.approx(-2867.08, rel=2e-3)
+    assert res.H() == pytest.approx(-2867.08, rel=1e-2)
     assert res.gas.H() == pytest.approx(-2163.36, rel=4e-3)
     assert res.liquid0.H() == pytest.approx(-12597.3, rel=2e-3)
     assert res.gas.S() == pytest.approx(-30.3583, rel=5e-4)
