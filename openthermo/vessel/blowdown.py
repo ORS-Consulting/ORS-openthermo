@@ -524,11 +524,14 @@ class Blowdown:
         if self.mode == "adiabatic":
             dU_dt = res.gas.U() * dN_dt_bdv + leak_U * dN_dt_leak
         elif self.mode == "isentropic":
-            dU_dt = (
-                res.gas.H() * dN_dt_bdv
-                + leak_H * dN_dt_leak
-                + (Auw * h_inner_uw * (Tuw - res.T) + Aw * h_inner_w * (Tw - res.T))
-            )
+            if self.heat_transfer is not None:
+                dU_dt = (
+                    res.gas.H() * dN_dt_bdv
+                    + leak_H * dN_dt_leak
+                    + (Auw * h_inner_uw * (Tuw - res.T) + Aw * h_inner_w * (Tw - res.T))
+                )
+            else:
+                dU_dt = res.gas.H() * dN_dt_bdv + leak_H * dN_dt_leak
         elif self.mode == "fire":
             dU_dt = (
                 res.gas.H() * dN_dt_bdv + leak_H * dN_dt_leak + self._get_heat_load_W()
