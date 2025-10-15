@@ -11,7 +11,7 @@
     /_/                                                     
 ```
 
-Code for calculating depressurization / blowdown of pressure vessels accompanying a [paper](https://doi.org/10.26434/chemrxiv-2025-00xzc) submitted to [Process Safety Progress](https://aiche.onlinelibrary.wiley.com/journal/15475913). 
+Code for calculating depressurization / blowdown of pressure vessels accompanying a [paper](https://doi.org/10.26434/chemrxiv-2025-00xzc-v2) submitted to [Process Safety Progress](https://aiche.onlinelibrary.wiley.com/journal/15475913). 
 
 Download or clone the code and install from the the *openthermo* directory (no official pypi package yet)
 

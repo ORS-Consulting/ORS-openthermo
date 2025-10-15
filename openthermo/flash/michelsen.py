@@ -378,7 +378,6 @@ class FlashVL:
                 else:
                     err = abs((self.PT_flash(T=res.x[0], P=res.x[1]).U() - U) / U)
                     +abs((self.PT_flash(T=res.x[0], P=res.x[1]).V() - V) / V)
-
                 if err > 1e-6:
                     raise ValueError("UV-flash failed to converge")
 
