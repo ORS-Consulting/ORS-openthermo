@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Anders Andreasen
+# Copyright (c) 2021-2025 Anders Andreasen
 # Published under an MIT license
 
 

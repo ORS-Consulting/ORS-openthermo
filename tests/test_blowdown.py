@@ -320,8 +320,8 @@ def test_blowdown_condensable_gas(plot=False):
     input["leak_cd"] = 0.65
     input["leak_type"] = "liquid"
 
-    names = ["water", "methane", "ethane", "propane", "n-butane"]
-    molefracs = [0.0, 0.64, 0.06, 0.28, 0.02]
+    names = ["methane", "ethane", "propane", "n-butane"]
+    molefracs = [0.64, 0.06, 0.28, 0.02]
 
     input["molefracs"] = molefracs
 
@@ -347,11 +347,7 @@ def test_blowdown_condensable_gas(plot=False):
         plt.style.use(["science", "nature", "scatter"])
 
         plt.figure(1)
-        # plt.plot(t2, liwl, "-")
-        # plt.plot(t2, liwh, "-")
         plt.fill_between(t2, liwh, liwl, alpha=0.2, label="Exp. wetted")
-        # plt.plot(t, iwl, "-")
-        # plt.plot(t, iwh, "-")
         plt.fill_between(t, iwh, iwl, alpha=0.2, label="Exp. unwetted")
         plt.plot(segment.times, segment.wetted_wall_temp, label="Model wetted")
         plt.plot(segment.times, segment.unwetted_wall_temp, label="Model unwetted")
@@ -374,15 +370,9 @@ def test_blowdown_condensable_gas(plot=False):
 def test_blowdown_nitrogen(plot=False):
     import yaml
 
-    file_name = "N2_I1.yml"
-    input_file = os.path.join(validation_path, file_name)
-
-    with open(input_file) as infile:
-        input = yaml.load(infile, Loader=yaml.FullLoader)
-
     P = 150e5
     T = 289.0
-
+    input = {}
     input["mode"] = "isentropic"
     input["heat_transfer"] = "rigorous"
     input["wall_thickness"] = 0.025  # m
@@ -410,8 +400,8 @@ def test_blowdown_nitrogen(plot=False):
     input["leak_cd"] = 0.65
     input["leak_type"] = "liquid"
 
-    names = ["water", "nitrogen"]
-    molefracs = [0.0, 1.0]
+    names = ["nitrogen"]
+    molefracs = [1.0]
 
     input["molefracs"] = molefracs
 
@@ -427,6 +417,12 @@ def test_blowdown_nitrogen(plot=False):
     segment = Blowdown(input)
     r = segment.depressurize()
     # segment.plot()
+    file_name = "N2_I1.yml"
+    input_file = os.path.join(validation_path, file_name)
+
+    with open(input_file) as infile:
+        input = yaml.load(infile, Loader=yaml.FullLoader)
+
     assert segment.pressure[-1] == pytest.approx(
         input["validation"]["pressure"]["pres"][-1] * 1e5, abs=1e5
     )
@@ -756,7 +752,7 @@ def test_blowdown_non_condensable(plot=False):
         # rho=input["liquid_density"],
         # model=input["eos_model"],
     )
-
+    input["time_step"] = 10
     segment = Blowdown(input)
     r = segment.depressurize()
     if plot:
@@ -1270,10 +1266,10 @@ if __name__ == "__main__":
     pass
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
-    # test_blowdown_non_condensable(plot=True)
+    test_blowdown_non_condensable(plot=True)
     # test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
     # test_isothermal(plot=True)
     # test_adiabatic(plot=True)
-    test_isentropic(plot=True)
+    # test_isentropic(plot=True)

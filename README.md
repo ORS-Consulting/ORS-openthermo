@@ -1,5 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/ORS-Consulting/ORS-openthermo/graph/badge.svg?token=4TBNKIGO3F)](https://codecov.io/gh/ORS-Consulting/ORS-openthermo)
+[![Python application](https://github.com/ORS-Consulting/ORS-openthermo/actions/workflows/python-app.yml/badge.svg)](https://github.com/ORS-Consulting/ORS-openthermo/actions/workflows/python-app.yml)
 
 # ORS - openthermo
 ```
@@ -15,8 +16,8 @@ Code for calculating depressurization / blowdown of pressure vessels accompanyin
 
 Download or clone the code and install from the the *openthermo* directory (no official pypi package yet)
 
-NOTE: Although rigorously validated, this code shall be considered as work-in-progress and experimental. Several elements has been left out
-of this public version such as a VLLE-flash based on legacy code as well as the ability to include pseudo-components in the EOS/flash calculations. 
+NOTE: Although rigorously validated, this code shall be considered as work-in-progress and experimental. Several elements have been left out
+of this public version such as a VLLE-flash based on legacy code.
 
 ```
 pip install -e .

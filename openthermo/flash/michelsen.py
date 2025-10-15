@@ -43,8 +43,6 @@ class FlashVL:
         self.properties = properties
         # self.zs = normalize(zs)
         self.model = 1
-        print(len(names) * ["PSEUDO"])
-        print(names)
 
         if model == 2 or model == "SRK":
             self.model = 2

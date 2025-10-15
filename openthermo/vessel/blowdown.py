@@ -7,6 +7,7 @@ import math
 from scipy.constants import g
 from openthermo.properties.transport import COSTALD_rho, COSTALD_Vm
 from openthermo.properties.transport import h_inside, h_inside_wetted
+from openthermo.validation import validate_mandatory_ruleset
 from openthermo import errors
 from openthermo.flash.michelsen import get_flash_dry
 from openthermo.vessel.fire import sb_fire
@@ -134,6 +135,24 @@ def gas_release_rate(P1, P2, rho, k, CD, area):
 
 class Blowdown:
     def __init__(self, input):
+        flash = input["flash"]
+        del input["flash"]
+        _ = validate_mandatory_ruleset(input)
+        input["flash"] = flash
+
+        self._read_input(input)
+        if self.mode == "fire":
+            self._setup_fire(input)
+
+        self._setup_tank()
+        if "flash" in input:
+            self.flash = input["flash"]
+            # self.zi = self.flash.zs
+            self.zi = (np.array(input["molefracs"]) / sum(input["molefracs"])).tolist()
+
+        self._adjust_composition()
+
+    def _read_input(self, input):
         self.mode = input["mode"]
         if "heat_transfer" in input:
             self.ambient_temperature = input["ambient_temperature"]
@@ -151,9 +170,30 @@ class Blowdown:
                 self.sb_fire_type = input["sb_fire_type"]
         else:
             self.heat_transfer = None
+        if "water_level" in input:
+            self.water_level = input["water_level"]
+        else:
+            self.water_level = 0
+        if "delay" in input:
+            self.delay = input["delay"]
+        else:
+            self.delay = 0
+        if "leak_active" in input:
+            self.leak_active = input["leak_active"]
+            if "leak_type" in input:
+                self.leak_type = input["leak_type"]
+            if "leak_size" in input:
+                self.leak_size = input["leak_size"]
+            else:
+                self.leak_size = 0.0
+            if "leak_cd" in input:
+                self.leak_cd = input["leak_cd"]
+            else:
+                self.leak_cd = 0.0
+        else:
+            self.leak_active = 0
+
         self.liq_density = input["liquid_density"]
-        self.delay = input["delay"]
-        self.leak_active = input["leak_active"]
         self.max_time = input["max_time"]
         self.shutdown = 0
         self.length = input["length"]
@@ -161,33 +201,18 @@ class Blowdown:
         self.vessel_type = input["vessel_type"]
         self.vessel_orientation = input["orientation"]
         self.liquid_level = input["liquid_level"]
-        self.water_level = input["water_level"]
         self.operating_temperature = input["operating_temperature"]
         self.ambient_temperature = input["ambient_temperature"]
         self.operating_pressure = input["operating_pressure"]
         self.back_pressure = input["back_pressure"]
         self.orifice_size = input["bdv_orifice_size"]
         self.orifice_cd = input["bdv_orifice_cd"]
-        self.leak_type = input["leak_type"]
-        self.leak_size = input["leak_size"]
-        self.leak_cd = input["leak_cd"]
         self.orifice_area = self.orifice_size**2 / 4 * math.pi
         self.leak_area = self.leak_size**2 / 4 * math.pi
         if "time_step" in input:
             self.dt = input["time_step"]
         else:
             self.dt = 1
-
-        if self.mode == "fire":
-            self._setup_fire(input)
-
-        self._setup_tank()
-        if "flash" in input:
-            self.flash = input["flash"]
-            # self.zi = self.flash.zs
-            self.zi = (np.array(input["molefracs"]) / sum(input["molefracs"])).tolist()
-
-        self._adjust_composition()
 
     def _liq_density(self, phase):
         if self.liq_density == "eos":
@@ -757,7 +782,6 @@ class Blowdown:
             gas = liq = self.flash.flash(
                 U=U_molar, V=V_molar, zs=z, Pguess=Pguess, Tguess=Tguess
             )
-            print(gas.P, liq.P, gas.T, liq.T)
         else:
 
             def uv_mult(x):
@@ -877,23 +901,6 @@ class Blowdown:
             except:
                 raise
 
-            print(
-                t,
-                gas.P,
-                liq.P,
-                gas.T,
-                liq.T,
-                Ugas,
-                Uliq,
-                # Ngas,
-                # Nliq,
-                # z,
-                # gas.betas,
-                # liq.betas,
-            )
-            # if not ret.success:
-            #    print(ret)
-            #    assert 0 == 1
         # ##############################################################################
         # Mass mole/balance part (blowdown, leaks and inflows()
         ##############################################################################
