@@ -630,7 +630,7 @@ $$\frac{dQ}{dt} = \dot{Q} = h A ( T_{s} - T_{gas} ) $$  {#eq:newton}
 
 - $d Q$ is the change in thermal energy due to convective heat transfer. [J]
 - $d t$ is the change in time during the heat transfer. [s]
-- $h$ is the convective heat transfer. [W/m$^2$ $\cdot$ K ]
+- $h$ is the convective heat transfer. [W/m$$^2$$K ]
 - $A$ is the area normal to the direction of the heat transfer. [m$^2$]
 - $T_{s}$ is the inner surface temperature of the geometry. [K]
 - $T_{gas}$ is the temperature of the bulk gas inside the vessel. [K]
