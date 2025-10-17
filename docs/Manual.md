@@ -16,7 +16,7 @@ The thermodynamic state inside the vessel changes over time as seen from immedia
 This is caused by change in fluid inventory (density) due to flow of gas and/or liquid out of the vessel.
 Further, heat is transferred from or to the surroundings via convective heat transfer on the in- and outside of the vessel with heat being conducted through the vessel wall. Due to differences in thermal resistance the vessel wall will obtain a temperature different from the fluid. Depending on the assumptions regarding the description of the fluid inside the vessel, the gas and liquid may have the same temperature (equilibrium assumption) or the two-phases may have different temperature (partial equilibrium assumption).
 
-![openthermo main sketch](img/vessel_sketch.png){#fig:logo}
+![openthermo main sketch](docs/img/vessel_sketch.png){#fig:logo}
 
 Running the code is as simple as:
 
@@ -538,7 +538,7 @@ The control volume sketched in [@Fig:firstlaw], separated from the surrounding b
 
 A general mass balance or continuity equation can be written:
 
-![Control volume with one entrance and one exit. The image has been sourced from [@firstlaw].](img/First_law_open_system.png){#fig:firstlaw}
+![Control volume with one entrance and one exit. The image has been sourced from [@firstlaw].](docs/img/First_law_open_system.png){#fig:firstlaw}
 
 $$ \frac{m_{cv}}{dt} + \Delta \left( \dot{m} \right)_{fs}= 0 $$ {#eq:continuity}
 
