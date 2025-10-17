@@ -10,6 +10,7 @@ jobs:
 
       - name: Goto doc dir
         run: cd docs
+      - name: Make output dir
         run: mkdir output  # create output dir
       - uses: docker://pandoc/latex:3.5
         with:
