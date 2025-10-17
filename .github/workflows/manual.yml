@@ -15,7 +15,7 @@ jobs:
       - uses: docker://pandoc/latex:3.5
         with:
           #args: --output=output/result.pdf ${{ steps.files_list.outputs.files }}
-          args: --toc --filter pandoc-crossref --citeproc --bibliography=references.bib --top-level-division=chapter  --number-sections --listings  --template  https://raw.githubusercontent.com/Wandmalfarbe/pandoc-latex-template/v2.4.0/eisvogel.tex --output=output/Manual.pdf  Manual.md
+          args: --toc --filter pandoc-crossref --citeproc --bibliography=references.bib --top-level-division=chapter  --number-sections --listings  --template  https://raw.githubusercontent.com/Wandmalfarbe/pandoc-latex-template/v2.4.0/eisvogel.tex --output=output/Manual.pdf  docs/Manual.md
       - uses: actions/upload-artifact@v4
         with:
           name: output
