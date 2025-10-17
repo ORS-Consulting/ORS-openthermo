@@ -253,7 +253,7 @@ If heat transfer is to be considered the calculation type `energybalance` is req
 Based on the ambient (external) temperature, the fluid temperature, and the U-value, the heat flux Q is calculated for each time step.
 In this calculation method the temperature of the vessel wall is not calculated:
 
-$ Q = UA(T_{ambient} - T_{fluid})  $
+$$ Q = UA(T_{ambient} - T_{fluid})  $$
 
 - Fixed Q: The external heat flux, Q, applied to the fluid is specified and constant.
 The ambient temperature is not required.
@@ -540,46 +540,46 @@ A general mass balance or continuity equation can be written:
 
 ![Control volume with one entrance and one exit. The image has been sourced from [@firstlaw].](img/First_law_open_system.png){#fig:firstlaw}
 
-$ \frac{m_{cv}}{dt} + \Delta \left( \dot{m} \right)_{fs}= 0 $ {#eq:continuity}
+$$ \frac{m_{cv}}{dt} + \Delta \left( \dot{m} \right)_{fs}= 0 $$ {#eq:continuity}
 
 The first term is the accumulation term i.e. the rate of change of the mass inside the control volume, $m_cv$, and the $\Delta$ in the second term represents the difference between the outflow and the inflow
 
-$ \Delta \left( \dot{m} \right) _{fs} = \dot{m}_2 - \dot{m}_1 $
+$$ \Delta \left( \dot{m} \right) _{fs} = \dot{m}_2 - \dot{m}_1 $$
 
 An energy balance for the control volume, with the first law of thermodynamics applied, needs to account for all the energy modes with can cross the control surface. Each stream has a total energy
 
-$ U + \frac{1}{2}u^2 + zg $
+$$ U + \frac{1}{2}u^2 + zg $$
 
 where the first term is the specific internal energy, the second term is the kinetic energy and the last term is the potential energy.
 The rate at which each stream transports energy in or out of the control volume is given by
 
-$ \dot{m} (U + \frac{1}{2}u^2 + zg) $
+$$ \dot{m} (U + \frac{1}{2}u^2 + zg) $$
 
 and in total
 
-$  \Delta \left[ \dot{m} (U + \frac{1}{2}u^2 + zg) \right]_{fs}$
+$$  \Delta \left[ \dot{m} (U + \frac{1}{2}u^2 + zg) \right]_{fs}$$
 
 Furthermore, work (not to be confused with shaft work) is also associated with each stream in order to move the stream into or out from the control volume (one can think of a hypothetical piston pushing the fluid at constant pressure), and the work is equal to $PV$ on the basis of the specific fluid volume.
 The work rate for each stream is
 
-$ \dot{m}(PV) $
+$$ \dot{m}(PV) $$
 
 and in total
 
-$ \Delta\left[ \dot{m}(PV) \right]_{fs} $
+$$ \Delta\left[ \dot{m}(PV) \right]_{fs} $$
 
 Further, heat may be transferred to (or from) the control volume at a rate $\dot{Q}$ and shaft work may be applied, $\dot{W}_{shaft}$.
 Combining all this with the accumulation term given by the change in total internal energy the following general energy balance can be written:
 
-$ \frac{d(mU)_{cv}}{dt} + \Delta \left[ \dot{m} (U + \frac{1}{2}u^2 + zg) \right]_{fs} + \Delta \left[ \dot{m}(PV) \right]_{fs} = \dot{Q} +\dot{W}_{shaft}   $
+$$ \frac{d(mU)_{cv}}{dt} + \Delta \left[ \dot{m} (U + \frac{1}{2}u^2 + zg) \right]_{fs} + \Delta \left[ \dot{m}(PV) \right]_{fs} = \dot{Q} +\dot{W}_{shaft}   $$
 
 Applying the relation $H = U + PV$, setting $\dot{W}_{shaft} = 0$ since no shaft work is applied to or extracted from the vessel, and assuming that kinetic and potential energy changes can be omitted the energy balance simplifies to:
 
-$ \frac{d(mU)_{cv}}{dt} + \Delta \left[ \dot{m} H \right]_{fs} = \dot{Q}  $
+$$ \frac{d(mU)_{cv}}{dt} + \Delta \left[ \dot{m} H \right]_{fs} = \dot{Q}  $$
 
 The equation can be further simplified if only a single port acting as either inlet or outlet is present:
 
-$ \frac{d(mU)_{cv}}{dt} + \dot{m} H  = \dot{Q}  $ {#eq:energybalance}
+$$ \frac{d(mU)_{cv}}{dt} + \dot{m} H  = \dot{Q}  $$ {#eq:energybalance}
 
 where the sign of $\dot{m}$ determines if the control volume is either emptied or filled.
 The continuity equation [@Eq:continuity] and the energy balance [@Eq:energybalance] combined with the equation of state are the key equations that shall be solved/integrated in order to calculate the change in temperature and pressure as a function of time.
@@ -592,7 +592,7 @@ This condition is referred to as choked flow.
 The maximum downstream pressure for the flow to still be sonic (Ma = 1), is when $P_d = P_c$.
 The ratio of the critical and upstream pressure is defined by equation [@Eq:P_critical].
 
-$ \frac{P_{c}}{P_u}=\left (\frac{2}{k+1} \right)^\frac{k}{k-1} $ {#eq:P_critical}
+$$ \frac{P_{c}}{P_u}=\left (\frac{2}{k+1} \right)^\frac{k}{k-1} $$ {#eq:P_critical}
 
 - $P_c$ is the critical pressure. [kPa]
 - $P_d$ is the downstream pressure. [kPa]
@@ -605,9 +605,9 @@ To account for the difference in choked and non-choked flow a set limit pressure
 If the downstream pressure, $P_{down}$, is below the pressure limit, $ P_{limit}$, then the flow is choked, and the pressure used, $P_{used}$, in equation [@Eq:massfloworifice] should be the pressure limit, $P_{limit}$.
 Otherwise if the downstream pressure, $P_{down}$, is greater than or equal to the pressure limit, $P_{limit}$, the flow is no longer choked and the pressure used should be the downstream pressure, $P_{down}$ [@yellowbook].
 
-$ P_{limit}=P_{up} \cdot \left ( \frac{2}{k+1} \right ) ^{\frac{k}{k-1}} $ {#eq:plimit}
+$$ P_{limit}=P_{up} \cdot \left ( \frac{2}{k+1} \right ) ^{\frac{k}{k-1}} $$ {#eq:plimit}
 
-$ \dot{m}_{flow}= C_d  \cdot A \cdot\sqrt{\left ( \frac{2 k}{k-1}\right )  \cdot  P_{up} \cdot \rho \cdot \left (  \frac{P_{used}}{P_{up}} \right )^{\frac{2}{k}} \left (1-\left ( \frac{P_{used}}{P_{up}} \right ) ^{\frac{k-1}{k}} \right )} $ {#eq:massfloworifice}
+$$ \dot{m}_{flow}= C_d  \cdot A \cdot\sqrt{\left ( \frac{2 k}{k-1}\right )  \cdot  P_{up} \cdot \rho \cdot \left (  \frac{P_{used}}{P_{up}} \right )^{\frac{2}{k}} \left (1-\left ( \frac{P_{used}}{P_{up}} \right ) ^{\frac{k-1}{k}} \right )} $$ {#eq:massfloworifice}
 
 - $\rho$ is the density of the gas upstream. $[kg/m^3]$
 - $P_{limit}$ is the pressure limit of the upstream absolute pressure. $[bara]$
@@ -626,7 +626,7 @@ Experiments have indicated that the internal heat transfer mechanism for a vesse
 
 To determine the heat transfer for the gas-wall interface, the following is applied cf. equation [@Eq:newton]:
 
-$\frac{dQ}{dt} = \dot{Q} = h A ( T_{s} - T_{gas} ) $  {#eq:newton}
+$$\frac{dQ}{dt} = \dot{Q} = h A ( T_{s} - T_{gas} ) $$  {#eq:newton}
 
 - $d Q$ is the change in thermal energy due to convective heat transfer. [J]
 - $d t$ is the change in time during the heat transfer. [s]
@@ -638,7 +638,7 @@ $\frac{dQ}{dt} = \dot{Q} = h A ( T_{s} - T_{gas} ) $  {#eq:newton}
 The convective heat transfer will need to be estimated for the the gas-wall interface, by the use of empirical relations for the Nusselt number.
 The Nusselt number describes the ratio of convective heat transfer to conductive heat transfer, normal to a surface area, as given in equation [@eq:Nu].
 
-$ Nu=\frac{hL}{k} $ {#eq:Nu}
+$$ Nu=\frac{hL}{k} $$ {#eq:Nu}
 
 - $Nu$ is the Nusselt number. [-]
 - $h$ is the convective heat transfer. [W/m$^2$\cdot$K]
@@ -649,7 +649,7 @@ The characteristic length $L$ used is the height of the gas volume i.e. the leng
 
 The empirical correlations used to calculate the Nusselt number of the gas-wall interface is a function of the Rayleigh number, which can be defined by the Grashof number and Prandtl number, as in equation [@Eq:rayleigh_gas]:
 
-$ Ra=Gr \cdot Pr $ {#eq:rayleigh_gas}
+$$ Ra=Gr \cdot Pr $$ {#eq:rayleigh_gas}
 
 - $Ra$ is the Rayleigh number. [-]
 - $Gr$ is the Grashof  number. [-]
@@ -657,11 +657,11 @@ $ Ra=Gr \cdot Pr $ {#eq:rayleigh_gas}
 
 The Grashof number is a dimensionless number which approximates the ratio of the buoyancy forces to viscous forces, as given in equation [@Eq:grashof_gas}:
 
-$ Gr=\frac{\beta g\rho^2 L^3 \Delta T }{\mu^2} $ {#eq:grashof_gas}
+$$ Gr=\frac{\beta g\rho^2 L^3 \Delta T }{\mu^2} $$ {#eq:grashof_gas}
 
 The Prandtl number is a dimensionless number defined as the ratio of the momentum diffusivity to thermal diffusivity, as given in equation [@Eq:prandtl_gas]:
 
-$ Pr=\frac{c_p \mu}{k} $ {#eq:prandtl_gas}
+$$ Pr=\frac{c_p \mu}{k} $$ {#eq:prandtl_gas}
 
 - $\beta$ is the coefficient of volume expansion. [1/K]
 - $g$ is the standard acceleration of gravity. [m/s$^2$]
@@ -681,7 +681,7 @@ A heat transfer coefficient shall be provided.
 ### Conduction
 For accurate prediction of the outer and especially the inner wall temperature for correct estimation of internal convective heat transfer and the average material temperature, the general equation of 1-D unsteady heat transfer shall be solved:
 
-$ \frac{\delta T}{\delta t} = \frac{k}{\rho c_p} \frac{\delta^2 T}{\delta x^2} $
+$$ \frac{\delta T}{\delta t} = \frac{k}{\rho c_p} \frac{\delta^2 T}{\delta x^2} $$
 
 - T is temperature
 - x is the spatial (1-D) coordinate
@@ -693,7 +693,7 @@ To be solved, the initial values and boundary values must be specified.
 In its default state (if thermal cobductivity is not applied for the vessel), HydDown does not include the unsteady heat transfer model, i.e. the assumption is that the temperature from outer to inner surface is uniform and equal to the average temperature.
 This is obviously a crude approximation, but might be justified depending in the Biot number:
 
-$ Bi = \frac{hL}{k} $
+$$ Bi = \frac{hL}{k} $$
 
 The Biot number is a simple measure of the ratio of the heat transfer resistances at the surface of a body to the inside of a body.
 The ratio gives an indication to which extent the temperature will vary in space (gradient) when the body is subject to a displacement in temperature at the surface boundary layer.
@@ -710,7 +710,7 @@ Especially for vessels with low conductivity materials (or very thick walls) acc
 The heat transfer from the flame to the shell is modelled using the recommended approach from Scandpower [@scandpower] and API [@API521].
 The heat transfer from the flame to the vessel shell is divided into radiation, convection, and reradiation as seen in equation [@Eq:flame]:
 
-$ q_f=\underbrace{{\alpha}_s \cdot {\varepsilon}_f \cdot \sigma \cdot T_f^4}_\text{Radiation}+\underbrace{h_f \cdot (T_f-T_s(t))}_\text{Convection}-\underbrace{{\varepsilon}_s \cdot \sigma \cdot T_s(t)^4 }_\text{Reradiation} $ {#eq:flame}
+$$ q_f=\underbrace{{\alpha}_s \cdot {\varepsilon}_f \cdot \sigma \cdot T_f^4}_\text{Radiation}+\underbrace{h_f \cdot (T_f-T_s(t))}_\text{Convection}-\underbrace{{\varepsilon}_s \cdot \sigma \cdot T_s(t)^4 }_\text{Reradiation} $$ {#eq:flame}
 
 - $q_f$ is the flame heat flux. [W/m$^2$]
 - ${\alpha}_s$ is the vessel surface absorptivity. [-]
@@ -734,7 +734,7 @@ The convective heat transfer coefficients for a jet fire and a pool fire, and re
 The flame temperature is found by solving equation [@Eq:flame2] for the incident heat flux in relation to the ambient conditions.
 The flame temperature is kept constant throughout the simulation:
 
-$ q_{total}=\sigma \cdot T_f^4 + h_f \cdot (T_f-T_{amb})$ {#eq:flame2}
+$$ q_{total}=\sigma \cdot T_f^4 + h_f \cdot (T_f-T_{amb})$$ {#eq:flame2}
 
 - $q_{total}$ is the incident flame heat flux as given in table [@Tbl:heatfluxes1]. [W/m$^2$]
 - $T_{amb}$ is the ambient temperature $\approx$ 293 K (20$^\circ$ C)
@@ -752,9 +752,9 @@ The heat flux used to calculate the flame temperature is given in table [@tbl:he
 ## Model implementation
 A simple (naive) explicit Euler scheme is implemented to integrate the mass balance over time, with the mass rate being calculated from an orifice/valve equation as described in [@Sec:flow]:
 
-$ m_{cv}(i+1) =  m_{cv}(i) + \dot{m}(i) \Delta t  $ {#eq:euler_mass}
+$$ m_{cv}(i+1) =  m_{cv}(i) + \dot{m}(i) \Delta t  $$ {#eq:euler_mass}
 
-$\dot{m}(i) = f(P,T,) $
+$$\dot{m}(i) = f(P,T,) $$
 
 For each step, the mass relief/ left in the vessel is known.
 Since the volume is fixed the mass density is directly given.
@@ -776,8 +776,8 @@ For an isothermal process, the solution procedure for each calculation step is t
 ### Energy balance
 The general first law applied to a flow process as outlined in [@Sec:firstlaw] subject to an explicit Euler scheme is:
 
-$ D(i+1) = \frac{m_{cv}(i+1)}{V} $
-$ U_{cv}(i+1) = \frac{m_{cv}(i)U_{cv}(i) - \left( \dot{m}(i) H (i) +  \dot{Q}(i) \right) \Delta t}{m_{cv}(i+1)}  $ {#eq:firstlaw_euler}
+$$ D(i+1) = \frac{m_{cv}(i+1)}{V} $$
+$$ U_{cv}(i+1) = \frac{m_{cv}(i)U_{cv}(i) - \left( \dot{m}(i) H (i) +  \dot{Q}(i) \right) \Delta t}{m_{cv}(i+1)}  $$ {#eq:firstlaw_euler}
 
 The above assumes that mass flow is positive when leaving the control volume and heat rate is positive when transferred to the control volume.
 $H(i)$ is the specific enthalpy of the fluid in the control volume for a discharging process and it is equal to the energy of the entering stream for a filling process.
@@ -785,7 +785,7 @@ The heat rate is calculated as outlined in [#Sec:heat].
 
 For the vessel wall a simple heat balance is also made:
 
-$ T_{wall}(i+1) = T_{wall}(i)  + \frac{\dot{Q}_{outer} - \dot{Q}_{inner} } {c_p m_{vessel}} \Delta t $
+$$ T_{wall}(i+1) = T_{wall}(i)  + \frac{\dot{Q}_{outer} - \dot{Q}_{inner} } {c_p m_{vessel}} \Delta t $$
 
 where $\dot{Q}_{outer}$ is the convective heat transfer to or from the ambient surroundings from the outer surface of the vessel, with positive values indicating that heat is transferred from the surroundings to the vessel wall.
 This is either a fixed heat transfer coefficient with a specified ambient temperature (outer surface) or a calculated fire heat load.
