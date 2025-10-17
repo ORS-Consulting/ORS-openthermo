@@ -11,74 +11,53 @@ listings: True
 ---
 
 # Introduction
-*openthermo* is an open source Python3 tool for calculation of vessel depressurization / blowdown. The main phenomena modelled are visualized in Figure [@Fig:logo].
+*openthermo* is an open source Python3 tool for calculation of vessel depressurization / blowdown. The main phenomena modelled are visualized in [@Fig:logo].
 The thermodynamic state inside the vessel changes over time as seen from immediately observable variables temperature (T) and pressure (P).
 This is caused by change in fluid inventory (density) due to flow of gas and/or liquid out of the vessel.
 Further, heat is transferred from or to the surroundings via convective heat transfer on the in- and outside of the vessel with heat being conducted through the vessel wall. Due to differences in thermal resistance the vessel wall will obtain a temperature different from the fluid. Depending on the assumptions regarding the description of the fluid inside the vessel, the gas and liquid may have the same temperature (equilibrium assumption) or the two-phases may have different temperature (partial equilibrium assumption).
 
 ![openthermo main sketch](docs/img/vessel_sketch.png){#fig:logo}
 
-Running the code is as simple as:
+## Citing *openthermo*
+If you use *openthermo* please cite the following reference:
 
-    Python main.py input.yml
-
-where `main.py` is the main script and `input.yml` is the input file in Yaml syntax.
-
-## Citing openthremo
-If you use *openthermo* please cite the following reference [@Andreasen2021]:
-
-Andreasen, A., Stegelmann, C. (2025). Open source pressure vessel blowdown modelling under partial phase equilibrium. Process Safety Progress (In review), https://doi.org/10.21105/joss.03695
+Andreasen, A., Stegelmann, C. (2025). Open source pressure vessel blowdown modelling under partial phase equilibrium. Process Safety Progress (Under review)
 
     @article{AndreasenStegelmann,
-      #doi = {10.21105/joss.03695},
-      #url = {https://doi.org/10.21105/joss.03695},
       year = {2025},
       publisher = {Wiley},
-      #volume = {6},
-      #number = {66},
-      #pages = {3695},
       author = {Anders Andreasen and Carsten Stegelmann},
-      title = {Open source pressure vessel blowdown modelling under partial phase equilibrium},
+      title = {Open source pressure vessel blowdown modelling under partial phase equilibrium (Under review)},
       journal = {Process Safety Progress}
     }
 
-This manual can be cited as [@Andreasen2024]:
-
-Anders Andreasen. HydDown - User guide and technical reference. 2024. ⟨hal-04858235⟩
-
-    @report{Andreasen2024,
-      url = {https://hal.science/hal-04858235},
-      year = {2024},
-      publisher = {HAL open science},
-      author = {Anders Andreasen},
-      title = {HydDown -- user guide and technical reference},
-    }
+A preprint of the paper is available on ChemRxiv: https://doi.org/10.26434/chemrxiv-2025-00xzc-v2. 
 
 ## Background
 ### Early works
-The foundation of *openthermo* was laid by Carsten Stegelmann, more than a decade ago, who developed code for running blowdown calculations in a spreadsheet relying heavily on VBA and a legacy flash calculation routine (DLL) coded in FORTRAN by late Prof. Michael Michelsen. This worked surprisingly well and executed very efficiently. The short-comings where lacking heat transfer modelling as well as an *equilibrium* only approach i.e. two-phase fluids were in full equilibrium at all times. 
+The foundation of *openthermo* was laid by Carsten Stegelmann, more than a decade ago, who developed code for running blowdown calculations in a spreadsheet relying heavily on VBA and a legacy flash calculation routine (DLL) coded in FORTRAN by late Prof. Michael Michelsen [@michelsen_isothermal_1982;@michelsen_isothermal_1982-1]. This worked surprisingly well and executed very efficiently. The short-comings where lacking heat transfer modelling as well as an *equilibrium* only approach i.e. two-phase fluids were in full equilibrium at all times. 
 
 ### Challenges
 The VBA code provided tricky to maintain in a version control system, and in the meantime the availability of high-quality thermodynamic packages for Python increased significantly. However, reimplementing an entire codebase is a time-consuming task, and this proved difficult to manage working full time as engineering consultants, and years went by without being able to fully to the long haul required. 
 
 ### Proof of concept
-Having worked together in the same company, Carsten and I split ways 5 years ago. Then the Covid-19 hit and that freed up some spare time for me, staying at home without a lot of activities being possible and that lead to the development of HydDown. It started as a small spare-time project for calculation of vessel filling and depressurization behaviour. At that time the expectation was that a lot of engineering work was expected in high-pressure storage and filling stations. The work on HydDown served as a proof of concept for an efficient implementation in Python mainly provided by the [Coolprop](http://www.coolprop.org/) back-end [@doi:10.1021/ie4033999]. Eventually HydDown matured and is now in a state where it can model heat transfer in both steel and dual-layer low thermal conductivity composites during depressurisation/pressurisation. However, it cannot manage two-phase (gas/liquid) behaviour due to limitations in the flash calculation. Thus, a change in thermodynamic back-end was inevitable.
+Having worked together in the same company, Carsten and I split ways 5 years ago. Then the Covid-19 hit and that freed up some spare time for me, staying at home without a lot of activities being possible and that lead to the development of [HydDown](https://github.com/andr1976/HydDown) [@Andreasen2021]. It started as a small spare-time project for calculation of vessel filling and depressurization behaviour. At that time the expectation was that a lot of engineering work was expected in high-pressure storage and filling stations. The work on HydDown served as a proof of concept for an efficient implementation in Python mainly provided by the [Coolprop](http://www.coolprop.org/) back-end [@doi:10.1021/ie4033999]. Eventually HydDown matured and is now in a state where it can model heat transfer in both steel and dual-layer low thermal conductivity composites during depressurisation/pressurisation. However, it cannot manage two-phase (gas/liquid) behaviour due to limitations in the flash calculation. Thus, a change in thermodynamic back-end was inevitable.
 
 ### *openthermo* development
 Recently, I joined ORS Consulting with Carsten, and we revived our plans for a rigorous blowdown simulation tool. The remaining challenge was the more complex two-phase (or three-phase) flash problem and the non-equilibrium / partial equilibrium assumption. 
-At all times the big inspiration has been the work done at Empirical College London, University College London and later on also Università Politecnica delle Marche on the codes BLOWDOWN, BLOWSIM and VBsim, respectively. The former was also acquired by AspenTech and made available in HYSYS. Further the motivation has also been to have a tool easily accessible as a supplement to commerical (and expensive) tools. Both to reduce load on license pools, but also to provide more efficient workflows. We wanted to make the tool open source and available to the public, but license limitations on the legacy flash calculation by Prof. Michelsen required an alternative flash calculation. Several tools are now available such as Python *thermo*, NeqSim and *thermopack*. Handling vessel depressurisation, which is effectively an UV-flash problem (Internal Energy - Volume) requires extremely many flash calculations to be performed. Thus, a fast and stable flash calculation is required. In order to provide speed and stability the preliminary choice has been *thermopack* from SINTEF, although it may change in the future in order to provide a three-phase (VLLE) flash.   
+At all times the big inspiration has been the work done at Empirical College London, University College London and later on also Università Politecnica delle Marche on the codes BLOWDOWN, BLOWSIM and VBsim, respectively. The former was also acquired by AspenTech and made available in HYSYS. Further the motivation has also been to have a tool easily accessible as a supplement to commerical (and expensive) tools. Both to reduce load on license pools, but also to provide more efficient workflows. We wanted to make the tool open source and available to the public, but license limitations on the legacy flash calculation by Prof. Michelsen required an alternative flash calculation. Several tools are now available such as Python [*thermo*](https://github.com/CalebBell/thermo) [@thermo], [NeqSim](https://equinor.github.io/neqsimhome/) [@neqsim] and [*thermopack*](https://thermotools.github.io/thermopack/) . Handling vessel depressurisation, which is effectively an UV-flash problem (Internal Energy - Volume) requires extremely many flash calculations to be performed. Thus, a fast and stable flash calculation is required. In order to provide speed and stability the preliminary choice has been [*thermopack* from SINTEF](https://thermotools.github.io/thermopack/), although it may change in the future in order to provide a three-phase (VLLE) flash.   
 
 ## Limitations and implementation details 
 A few choices has been made to keep things simple:
 
-- [thermopack](http://www.coolprop.org/) is used as thermodynamic backend
+- [*thermopack*](https://thermotools.github.io/thermopack/) [@thermopack] is used as thermodynamic backend
 - Thermodynamic and transport properties (enthalpy, entropy, internal energy, liquid density, thermal conductivity, viscosity) is provided via Python *thermo* / *chemicals*.
 - No temperature stratification inside bulk phases
 - No temperature gradient through vessel wall. 
 - Heat transfer is modelled as constant or simplified using empirical correlations
 - Only single and two-phase (VLE) is handled. Three-phase (VLLE) cannot currently be modelled in the open source version.
-- Currently only the Peng-Robinson (PR) and Soave-Redlich-Kwong cubic equations of state are made available.  
-- *openthermo* and it's legacy code is built by engineers NOT software developers.  
+- Currently only the Peng-Robinson (PR) [@peng_new_1976] and Soave-Redlich-Kwong [@SOAVE19721197] cubic equations of state are made available.  
+- *openthermo* and it's legacy code has been built by engineers NOT software developers.  
 
 Ignoring temperature gradients in the vessel wall is an acceptable assumption for (not too thick) steel vessel walls. However, low thermal conductivity materials cannot accurately be modelled. In order to do so a 1-D heat transfer model shall be implemented. 
 
@@ -91,39 +70,43 @@ The source code can be obtained either from GitHub (via `git` or via the latest 
 
 The main branch is located here:
 
-[`https://github.com/andr1976/HydDown`](https://github.com/andr1976/HydDown)
+[`https://github.com/ORS-Consulting/ORS-openthermo`](https://github.com/ORS-Consulting/ORS-openthermo)
 
 Clone the repo by:
 
-    git clone https://github.com/andr1976/HydDown.git
+    git clone https://github.com/ORS-Consulting/ORS-openthermo.git
 
 Running from source via `git` the dependencies must be installed manually from the repo root dir:
 
     pip install -r requirements.txt
+    pip install -e .
 
-Installation of latest release via **pip** also installe dependecies automatically:
+Alternatively `pip` can install directly from github:
 
-    pip install hyddown
+    pip install git+https://github.com/ORS-Consulting/ORS-openthermo.git
 
-In case `pip` links to a v2.7 of Python you will get an error. If so try the following:
+Installation of latest release via **pip** also installs dependencies automatically (still pending):
 
-    Python3 -m pip install hyddown
-
-where Python3 is the symlink or full path to the Python3 executable installed on your system.
+    pip install openthermo
 
 ## Requirements
-
 - [Python](http://www.Python.org) 
+- [thermopack](https://thermotools.github.io/thermopack/)
+- [thermno](https://thermo.readthedocs.io/index.html)
+- [chemicals](https://chemicals.readthedocs.io/index.html)
+- [ht](https://ht.readthedocs.io/en/release/)
+- [fluids](https://fluids.readthedocs.io/)
+- [Scipy](https://www.scipy.org/)
 - [Numpy](https://numpy.org/)
 - [matplotlib](https://matplotlib.org/)
-- [Coolprop (6.4.1)](http://www.coolprop.org/)
+- [SciencePlots](https://github.com/garrettj403/SciencePlots)
 - [cerberus](https://docs.Python-cerberus.org/en/latest/)
 - [PyYaml](https://pypi.org/project/PyYAML/)
 - [pandas](https://pandas.pydata.org/)
-- [Scipy](https://www.scipy.org/)
 - [tqdm](https://tqdm.github.io/)
+- [openpyxl](https://openpyxl.readthedocs.io/en/stable/)
 
-The script is running on Windows 10/11 x64, with stock Python installation from Python.org and packages installed using pip.
+The code is running on Windows 10/11 x64, with stock Python installation from Python.org and packages installed using pip.
 It should also run on Linux (it does on an Ubuntu image on GitHub) or in any conda environment as well, but this hasn't been checked.
 
 ## Testing
@@ -131,11 +114,7 @@ Although testing is mainly intended for automated testing (CI) during developmen
 
     python -m pytest
 
-run from the root folder. In writing 33+ test should pass.
-
-For the package installed with pip navigate to the install directory `../site-packages/openthermo` and run:
-
-    python -m pytest
+run from the root folder. 
 
 ## Units of measure
 The SI unit system is adapted for this project.
@@ -164,9 +143,9 @@ As will be noted when presenting the equations implemented in the code, some of 
 However, it is important to note that unit conversions are built in to the methods implemented, so the user shall not worry about unit conversion.  
 
 ## Credit
-In the making of this document a great deal of material has been sourced (and modified) from a former colleague's M.Sc. thesis [@iskov], from co-published papers [@Bjerre2017][@safety4010011] and from on-line material published under permissive licenses (with proper citation). 
+In the making of this document a great deal of material has been sourced (and modified) from a former colleague's M.Sc. thesis [@iskov], from co-published papers [@Bjerre2017;@safety4010011] and from on-line material published under permissive licenses (with proper citation). In particular the HydDown manual [@Andreasen2024] has been heavily scavenged for usable material,  
 
-Further, the making of this project would not have possible without the awesome [CoolProp](http://www.coolprop.org/) library [@doi:10.1021/ie4033999].
+Further, the making of this project would not have possible without the magnificent [*thermopack*](https://thermotools.github.io/thermopack/) library [@thermopack].
 I am also thankful for enlightening discussions with former colleague Jacob Gram Iskov Eriksen (Ramboll Energy, Denmark)  and former and now present colleague Carsten Stegelmann (ORS Consulting).
 
 The present document is typeset using Markdown + [pandoc](https://pandoc.org/) with the [Eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template.
@@ -197,111 +176,37 @@ SOFTWARE.
 
 # Usage
 ## Basic usage
-From the source repository, running the code is as simple as:
-
-    Python src/main.py input.yml
-
-where main.py is the main script and input.yml is the input file in Yaml syntax.
-
-The Yaml input file is edited to reflect the system of interest.
-
-Further, a usable copy of a main script is installed in the Python installation Scripts/ folder:
-
-    /Python3x/Scripts/hyddown_main.py
-
-or from GitHub/in the source folder:
-
-    HydDown/Scripts/hyddown_main.py
-
-Various example files are included for inspiration under site-packages:
-
-    /site-packages/hyddown/examples/
-
-or in the git/source directory tree
-
-    HydDown/src/hyddown/examples/
+A minimal example for running *openthermo* is provided below:
 
 ## Demos
-A few demonstrations of the codes capability are available as [`streamlit`](https://streamlit.io/) apps:
-
-- Vessel gas pressurisation/depressurization for various gases at [`https://share.streamlit.io/andr1976/hyddown/main/scripts/streamlit_app.py`](https://share.streamlit.io/andr1976/hyddown/main/scripts/streamlit_app.py)
-- Response to external fire of vessel equipped with a PSV using the Stefan-Boltzmann fire equation at[`https://share.streamlit.io/andr1976/hyddown/main/scripts/streamlit_sbapp.py`](https://share.streamlit.io/andr1976/hyddown/main/scripts/streamlit_sbapp.py)
-- Vessel depressurization including slow opening of valve at [`https://share.streamlit.io/andr1976/hyddown/main/scripts/streamlit_cvapp.py`](https://share.streamlit.io/andr1976/hyddown/main/scripts/streamlit_cvapp.py)
-
-The various streamlit apps are also included in the scripts folder for running the scripts on a local machine.
 
 ## Calculation methods
 The following methods are implemented:
 
-- Isothermal: constant temperature of the fluid during depressurization (for a very slow process with a large heat reservoir)
-- Isenthalpic: constant enthalpy of the fluid, no heat transfer with surroundings, no work performed by the expanding fluid for depressurization, no work added from inlet stream
-- Isentropic: constant entropy of the fluid, no heat transfer with surroundings, PV work performed by the expanding fluid
-- Isenergetic: constant internal energy of the fluid
-- Energy balance: this is the most general case and is based on the first law of thermodynamics applied to a flow process.
+- Isothermal: constant temperature of the fluid during depressurization 
+- Adiabatic: the energy balance does not account for work done by the fluid during discharge. No heat transfer is included.  
+- Isentropic: the energy balance accounts for work done by the fluid during discharge. This method can be run without or with heat transfer modelled. A variation of this method includes external backgorund heat load from a fire (pool or jet) using the Stefan-Boltzmann equation. 
+- Fire: This method is a variant of the isentropic method where an API 521 pool-fire heat load is applied to the wetted surface inside the vessel. No other heat transfer is included.  
 
-For `isothermal`/`isenthalpic`/`isentropic`/`isenergetic` calculations the minimal input required are:
+For calculations the minimal input required are:
 
-- Initial conditions (pressure, temperature)
+- Initial conditions (pressure, temperature, liquid level)
 - vessel dimensions (ID, length)
-- valve parameters (Cd, diameter, backpressure)
-- Calculation setup (time step, end time)
-- Type of gas
+- orifice parameters (Cd, diameter, back-pressure)
+- Calculation setup (end time)
+- Fluid components and composition
 
-If heat transfer is to be considered the calculation type `energybalance` is required. A few options are possible:
+For rigorous heat transfer additional input are required:
 
-- Fixed U: U-value, i.e. overall heat transfer coefficient, is required and ambient temperature required.
-Based on the ambient (external) temperature, the fluid temperature, and the U-value, the heat flux Q is calculated for each time step.
-In this calculation method the temperature of the vessel wall is not calculated:
-
-$$ Q = UA(T_{ambient} - T_{fluid})  $$
-
-- Fixed Q: The external heat flux, Q, applied to the fluid is specified and constant.
-The ambient temperature is not required.
-Further, the vessel wall temperature is redundant and not calculated.
-- Specified h: The external heat transfer coefficient must be specified and either the internal heat transfer coefficient is provided or calculated from the assumption of natural convection from a vertical cylinder at high Gr number.
-Ambient temperature is required. Using this method the wall temperature is calculated from an energy balance over the vessel wall taking in and out flux to/from the external ambient plenum as well as heat flux to/from the fluid inventory into account.
-- Fire: The Stefan-Boltzmann equation is applied for estimating the external heat duty.
-The fire heat flux depends on the vessel wall temperature, and the wall temperature is continuously updated as in the method with specified h.
+- Vessel thickness
+- Vessel material heat capacity
+- Vessel material density
+- Ambient temperature or a Stefan-Boltzmann external fire heat load type. 
 
 More elaborate description of the required input for the different calculation types are provided in [@Sec:input].
 
-## Script
-HydDown comes with a script which can be used as a command-line tool to start calculations.
-If an input filename (path) is given as the first argument, this input file will be used.
-If no arguments are passed, the script will look for an input file with the name `input.yml`.
-The content of the main script is shown below:
-
-
-~~~ {.Python}
-import yaml
-import sys
-from hyddown import HydDown
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        input_filename = sys.argv[1]
-    else:
-        input_filename = "input.yml"
-
-    with open(input_filename) as infile:
-        input = yaml.load(infile, Loader=yaml.FullLoader)
-
-
-    hdown=HydDown(input)
-    hdown.run()
-    hdown.verbose=1
-    hdown.plot()
-~~~
-
-## Module import
-To use HydDown simple import the main calculation class `HydDown`.
-
-~~~ {.Python}
-from hyddown import HydDown
-~~~
-
 ## Input file examples
-When using HydDown a dictionary holding all relevant input in order for HydDown to do vessel calculations shall be provided when the class is initialized. One way is to read an input file. For HydDown a Yaml format is chosen, but if JSON is a preference this should also work with the Yaml parser being substituted with a JSON parser.
+When using *openthermo* a dictionary holding all relevant input in order for the program to do vessel calculations shall be provided when the class is initialized. 
 
 An example of a minimal file for an isentropic vessel depressurization (no heat transfer) is shown below
 
@@ -354,23 +259,6 @@ heat_transfer:
   temp_ambient: 288.
   h_outer: 5
   h_inner: 'calc'
-validation:
-  temperature:
-    gas_high:
-      time: [0.050285, ... , 99.994]
-      temp: [288.93, ... ,241.29]
-    gas_low:
-      time: [0.32393, ..., 100.11]
-      temp: [288.67, ... ,215.28]
-    wall_low:
-      time: [0.32276, ... , 100.08]
-      temp: [288.93, ... ,281.72]
-    wall_high:
-      time: [0.049115, ... ,100.06]
-      temp: [289.18, ... ,286.09]
-  pressure:
-    time: [0.28869, ... , 98.367]
-    pres: [150.02, ... ,1.7204]
 ~~~
 
 ## Input fields and hierarchy {#sec:input}
@@ -387,147 +275,15 @@ heat_transfer: depends on calculation type
 validation: optional
 ~~~
 
-### Calculation
-
-The subfields under `calculation`, with value formats and options are:
-
-~~~ {.Yaml}
-calculation:
-  type: "isothermal", "isentropic", "isenthalpic", "constantU", "energybalance"
-  time_step: number
-  end_time: number
-~~~
-
-The simulation end time is specified as well as the fixed time step used in the integration of the differential equations to be solved.
-The four main calculation types are shown as well.
-
-### Vessel
-
-~~~ {.Yaml}
-vessel:
-  length: number, mandatory
-  diameter: number, mandatory
-  thickness: number, required when heat transfer is calculated
-  heat_capacity: number, required when heat transfer is calculated
-  density: number, required when heat transfer is calculated
-  thermal_conductivity: number, required for 1-D transient heat transfer
-  liner_thickness: number, required only for bi-material 1-D transient heat transfer
-  liner_heat_capacity: number, required only for bi-material 1-D transient heat transfer 
-  liner_density: number, required only for bi-material 1-D transient heat transfer
-  liner_thermal_conductivity: number, required only for bi-material 1-D transient heat transfer  
-  orientation: string, required when heat transfer is calculated
-~~~
-
-### Initial
-~~~ {.Yaml}
-initial:
-  temperature: number, mandatory
-  pressure: number, mandatory
-  fluid: string, mandatory , e.g. "N2", "H2"
-~~~
-
-### Valve
-The `valve` field determines the mode of the process is it for depressurization/discharge from the vessel using the value `discharge` or if mass flow is entering the vessel, filling it up/increasing pressure with the value `filling`.
-
-Different types of mass flow devices can be specified:
-
-- Restriction `orifice`
-- Relief valve/pressure safety valve (only for `discharge` not `filling`)
-- Control valve (`controlvalve`)
-- A specified mass flow (`mdot`)
-
-For the physical devices a `back_pressure` is required for the flow calculations.
-The value of the `back_pressure` **is also used to specify the reservoir pressure when the vessel is filled**.
-See also [@Sec:flow] for details about the calculation of flow rates.
-
-~~~ {.Yaml}
-valve:
-  flow: string, mandatory "discharge" or "filling"
-  type: string, mandatory "orifice", "controlvalve", "psv", "mdot"
-  back_pressure: number, required for type "orifice", "controlvalve" and "psv"
-  diameter: number, required for "orifice" and "psv"
-  discharge_coef: number, required for "orifice" and "psv"
-  Cv: number, required for "control_valve"
-  characteristic:  string, optional for "control_valve"
-  time_constant: number, optional for "control_valve"
-~~~
-
-For the calculations using a control valve as mass transfer device a linear rate for the actuator can be specified using the `time_constant` field. An associated valve characteristic is associated in order to translate the linear actuator rate to an opening Cv (of max. Cv). Three caracteristics can be specified:
-
-- Linear
-- Equal percentage (exponential)
-- Quick opening/fast (square root)
-
-### Heat transfer
-For more information about the actual estimation of heat transfer see also [@Sec:heat]. For the case of `fire` heat input predetermined parameters for the Stefan-Boltzmann fire equation are used to calculate different background heat loads cf. [@Tbl:fire]
-
-| Source          |  Fire type      |       Heat load ($kW/m^2$) |
-|-----------------|-----------------|----------------------------|
-| API521          | Pool            |                   60       |
-| API521          | Jet             |                  100       |
-| Scandpower      | Pool            |                  100       |
-| Scandpower      | Jet             |                  100       |
-
-: Fire heat loads {#tbl:fire}
-
-~~~ {.Yaml}
-heat_transfer:
-  type: string, mandatory, "specified_h", "specified_Q", "specified_U", "s-b"
-  temp_ambient: number, required for type "specified_h", "specified_U"
-  h_outer: number, required for type "specified_h"
-  h_inner: number or 'calc', required for type "specified_h"
-  U_fix: number, required for type "specified_U"
-  Q_fix: number, required for type "specified_Q"
-  fire: string, required for type "s-b", 'api_pool','api_jet','scandpower_pool','scandpower_jet'
-  D_thoat: number, required for flow type "filling", set to vessel ID as a starting point
-~~~
-
-### Validation
-In order to plot measured data against simulated data the field `validation` is included.
-
-The following arrays (one or more) are supported in the sub-field `temperature`:
-
-- `gas_high`: highest measured values of the bulk gas
-- `gas_low`: lowest measured values of the bulk gas
-- `gas_mean`: average measured values of the bulk gas
-- `wall_mean`: average measured values of the vessel (inner) wall
-- `wall_high`  i.e. highest measured values of the vessel (inner) wall
-- `wall_low`  i.e. lowest measured values of the vessel (inner) wall
-- `wall_outer`  i.e. external measured values of the vessel (outer) wall
-- `wall_inner`  i.e. internal measured values of the vessel (inner) wall
-
-For each of the above fields arrays for `time`and `temp`shall be supplied with matching length.
-
-A field for measured vessel pressure is also possible, where `time`and `pres` shall be identical length arrays. See also example below.
-
-~~~ {.Yaml}
-validation:
-  temperature:
-    gas_high:
-      time: [0.050285, ... , 99.994]
-      temp: [288.93, ... ,241.29]
-    gas_low:
-      time: [0.32393, ..., 100.11]
-      temp: [288.67, ... ,215.28]
-    wall_low:
-      time: [0.32276, ... , 100.08]
-      temp: [288.93, ... ,281.72]
-    wall_high:
-      time: [0.049115, ... ,100.06]
-      temp: [289.18, ... ,286.09]
-  pressure:
-    time: [0.28869, ... , 98.367]
-    pres: [150.02, ... ,1.7204]
-~~~
-
 
 # Theory
-In this chapter the basic theory and governing equations for the model implementation in HydDown is presented.
+In this chapter the basic theory and governing equations for the model implementation in *openthermo* is presented.
 The following main topics are covered:
 
 - thermodynamics
 - mass transfer
 - heat transfer
+- Partial equilibrium 
 
 ## Thermodynamics
 
@@ -793,13 +549,4 @@ $\dot{Q}_{inner}$ is the internal heat transfer, either a fixed number or calcul
 
 The remaining steps are update of temperature and pressure.
 
-# Validation
 
-# Similar software
-To be written
-
-# Future developmet of HydDown
-To be written 
-
-# Example use cases 
-To be written
