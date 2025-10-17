@@ -641,7 +641,7 @@ The Nusselt number describes the ratio of convective heat transfer to conductive
 $$ Nu=\frac{hL}{k} $$ {#eq:Nu}
 
 - $Nu$ is the Nusselt number. [-]
-- $h$ is the convective heat transfer. [W/m$^2$\cdot$K]
+- $h$ is the convective heat transfer. [W/m$^2$K]
 - $L$ is a characteristic length of the geometry. [m]
 - $k$ is the thermal conductivity of the gas. [W/m$\cdot$K]
 
