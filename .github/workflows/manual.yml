@@ -8,19 +8,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: create file list
-        id: files_list
-        run: |
-          echo "Lorem ipsum" > lorem_1.md  # create two example files
-          echo "dolor sit amet" > lorem_2.md
-          mkdir output  # create output dir
-          # this will also include README.md
-          echo "files=$(printf '"%s" ' *.md)" > $GITHUB_OUTPUT
-
+      - name: Goto doc dir
+        run: cd docs
+        run: mkdir output  # create output dir
       - uses: docker://pandoc/latex:3.5
         with:
-          args: --output=output/result.pdf ${{ steps.files_list.outputs.files }}
-          
+          #args: --output=output/result.pdf ${{ steps.files_list.outputs.files }}
+          args: --toc --filter pandoc-crossref --citeproc --bibliography=references.bib --top-level-division=chapter  --number-sections --listings  --template  https://raw.githubusercontent.com/Wandmalfarbe/pandoc-latex-template/v2.4.0/eisvogel.tex --output=output/Manual.pdf  Manual.md
       - uses: actions/upload-artifact@v4
         with:
           name: output
