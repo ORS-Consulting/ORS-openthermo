@@ -192,6 +192,9 @@ class Blowdown:
                 self.leak_cd = 0.0
         else:
             self.leak_active = 0
+            self.leak_size = 0.0
+            self.leak_cd = 1
+            self.leak_type = "gas"
 
         self.liq_density = input["liquid_density"]
         self.max_time = input["max_time"]
@@ -344,7 +347,6 @@ class Blowdown:
         )
 
         for i in range(4):
-            # print(res.betas)
             liq_rho = self._liq_density(res.liquid0)
             water_rho = self._liq_density(res.liquid1)
             V_gas = self.vessel.V_total - self.vessel.V_from_h(self.liquid_level)
@@ -575,39 +577,48 @@ class Blowdown:
         ##############################################################################
         # Storing out at each integration step
         ##############################################################################
-
-        if True:
-            self.times.append(t)
-            if self.mode == "isothermal":
-                self.sol.append([y[0], y[1]])  # , y[2]])
-            elif (
-                self.heat_transfer == "rigorous"
-                or self.heat_transfer == "rigorous_sb_fire"
-            ):
-                self.sol.append([y[0], y[1], y[2], y[3], y[4]])
+        self.times.append(t)
+        if self.mode == "isothermal":
+            self.sol.append([y[0], y[1]])  # , y[2]])
+        elif (
+            self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire"
+        ):
+            self.sol.append([y[0], y[1], y[2], y[3], y[4]])
+        else:
+            self.sol.append([y[0], y[1], y[2]])
+        self.mdot.append(dm_dt)
+        self.mdot_bdv.append(dm_dt_bdv)
+        self.mdot_leak.append(dm_dt_leak)
+        self.gas_mass.append(N * res.gas.beta * (res.gas.MW() / 1000))
+        self.liquid_mass.append(N * res.liquid0.beta * (res.liquid0.MW() / 1000))
+        self.water_mass.append(N * res.liquid1.beta * (res.liquid1.MW() / 1000))
+        self.pressure.append(res.P)
+        self.temperature.append(res.T)
+        self.molefracs.append(z)
+        self.enthalpy.append(res.U() * N)
+        self.liquid_dyn_level.append(self.liquid_level)
+        if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
+            self.wetted_wall_temp.append(y[4])
+            self.unwetted_wall_temp.append(y[3])
+            if self.heat_transfer == "rigorous":
+                self.heatflux_outside_gas.append(
+                    h_amb * (self.ambient_temperature - Tuw)
+                )
+                self.heatflux_outside_liquid.append(
+                    h_amb * (self.ambient_temperature - Tw)
+                )
             else:
-                self.sol.append([y[0], y[1], y[2]])
-            self.mdot.append(dm_dt)
-            self.mdot_bdv.append(dm_dt_bdv)
-            self.mdot_leak.append(dm_dt_leak)
-            self.gas_mass.append(N * res.gas.beta * (res.gas.MW() / 1000))
-            self.liquid_mass.append(N * res.liquid0.beta * (res.liquid0.MW() / 1000))
-            self.water_mass.append(N * res.liquid1.beta * (res.liquid1.MW() / 1000))
-            self.pressure.append(res.P)
-            self.temperature.append(res.T)
-            self.molefracs.append(z)
-            self.enthalpy.append(res.U() * N)
-            self.liquid_dyn_level.append(self.liquid_level)
-            if (
-                self.heat_transfer == "rigorous"
-                or self.heat_transfer == "rigorous_sb_fire"
-            ):
-                self.wetted_wall_temp.append(y[4])
-                self.unwetted_wall_temp.append(y[3])
-            else:
-                self.wetted_wall_temp.append(0)
-                self.unwetted_wall_temp.append(0)
-
+                self.heatflux_outside_gas.append(sb_fire(Tuw, self.sb_fire_type))
+                self.heatflux_outside_liquid.append(sb_fire(Tw, self.sb_fire_type))
+            self.heatflux_inside_gas.append(h_inner_uw * (Tuw - res.T))
+            self.heatflux_inside_liquid.append(h_inner_w * (Tw - res.T))
+        else:
+            self.wetted_wall_temp.append(0)
+            self.unwetted_wall_temp.append(0)
+            self.heatflux_outside_gas.append(0)
+            self.heatflux_outside_liquid.append(0)
+            self.heatflux_inside_gas.append(0)
+            self.heatflux_inside_liquid.append(0)
         if self.mode == "isothermal":
             return np.array([dm_dt, dN_dt] + dNs_dt)
         elif (
@@ -677,7 +688,15 @@ class Blowdown:
             self.wetted_wall_temp,
             self.unwetted_wall_temp,
             self.liquid_dyn_level,
+            self.heatflux_outside_gas,
+            self.heatflux_outside_liquid,
+            self.heatflux_inside_gas,
+            self.heatflux_inside_liquid,
         ) = (
+            [],
+            [],
+            [],
+            [],
             [],
             [],
             [],
@@ -746,9 +765,7 @@ class Blowdown:
 
         return r
 
-    def _blowdown_gov_eqns_euler(
-        self, t, y, dt
-    ):  # , times):#, sol, mdot, pressure, temperature, gas_mass, molefracs, enthalpy):
+    def _blowdown_gov_eqns_euler(self, t, y, dt):
         m, Ngas, Nliq, Ugas, Uliq = y[0], y[1], y[2], y[3], y[4]
         Tuw, Tw = y[5], y[6]
         N = Ngas + Nliq
@@ -872,8 +889,6 @@ class Blowdown:
             )
 
             try:
-                # print("Running double UV flash")
-                # )
                 ret = minimize(
                     fun=tot_vol2,
                     x0=x0,
@@ -929,8 +944,6 @@ class Blowdown:
         dn_liq_to_gas_dt = liq.gas.beta * Nliq / (dt * 1.1)
         dNgas_dt = dN_dt_bdv - dn_gas_to_liq_dt + dn_liq_to_gas_dt
         dNliq_dt = dn_gas_to_liq_dt - dn_liq_to_gas_dt
-
-        # print(t, dn_gas_to_liq_dt, dn_liq_to_gas_dt)
 
         ##############################################################################
         # Wall temperature balances
@@ -1044,8 +1057,8 @@ class Blowdown:
         self.sol.append([y[0], y[1], y[2], y[3], y[4], y[5], y[6]])
         self.mdot.append(dm_dt)
         self.mdot_bdv.append(dm_dt_bdv)
-        # self.gas_mass.append(N * res.gas.beta * (res.gas.MW() / 1000))
-        # self.liquid_mass.append(N * res.liquid0.beta * (res.liquid0.MW() / 1000))
+        self.gas_mass.append(N * res.gas.beta * (res.gas.MW() / 1000))
+        self.liquid_mass.append(N * res.liquid0.beta * (res.liquid0.MW() / 1000))
         # self.water_mass.append(N * res.liquid1.beta * (res.liquid1.MW() / 1000))
         self.pressure.append(gas.P)
         self.temperature.append(gas.T)
@@ -1056,6 +1069,11 @@ class Blowdown:
         self.gas_temperatrure.append(gas.T)
         self.liquid_temperature.append(liq.T)
         self.liquid_level = self.vessel.h_from_V(liq.V() * (Nliq + dNliq_dt * dt))
+        self.liquid_dyn_level.append(self.liquid_level)
+        self.heatflux_outside_gas.append(h_inner_uw * (Tuw - y[5]))
+        self.heatflux_outside_liquid.append(h_inner_w * (Tw - y[6]))
+        self.heatflux_inside_gas.append(h_inner_uw * (Tuw - gas.T))
+        self.heatflux_inside_liquid.append(h_inner_w * (Tw - liq.T))
         return np.array(
             [dm_dt, dNgas_dt, dNliq_dt, dUgas_dt, dUliq_dt, dTuw_dt, dTw_dt]
             + dNs_gas_dt
@@ -1092,7 +1110,17 @@ class Blowdown:
             self.unwetted_wall_temp,
             self.gas_temperatrure,
             self.liquid_temperature,
+            self.liquid_dyn_level,
+            self.heatflux_outside_gas,
+            self.heatflux_outside_liquid,
+            self.heatflux_inside_gas,
+            self.heatflux_inside_liquid,
         ) = (
+            [],
+            [],
+            [],
+            [],
+            [],
             [],
             [],
             [],
@@ -1138,31 +1166,44 @@ class Blowdown:
 
         return r
 
-    def plot(self):
-        # print(self.pressure)
+    def plot(self, filename=None):
         import matplotlib.pyplot as plt
 
+        plt.clf()
         plt.figure()
         plt.plot(self.times, np.array(self.pressure) / 1e5, "bo", label="Pressure")
         plt.xlabel("Time (sec)")
         plt.ylabel("Pressure (bar)")
-
         plt.legend(shadow=True)
+        if filename is not None:
+            plt.savefig(f"{filename}_pressure.png")
+
         plt.figure()
-        plt.plot(self.times, -np.array(self.mdot) * 3600, label="Mass inventory")
+        plt.plot(self.times, -np.array(self.mdot) * 3600, label="Mass flow")
         plt.xlabel("Time (sec)")
         plt.ylabel("Blowdown mass flow(kg/h)")
-
-        # plt.figure()
-        # plt.plot(self.times, np.array(self.enthalpy) / 1e6, label="Enthalpy")
-        # plt.xlabel("Time (sec)")
-        # plt.ylabel("Enthalpy (MJ)")
-        # plt.show()
+        plt.legend(loc="best")
+        if filename is not None:
+            plt.savefig(f"{filename}_mass_flow.png")
 
         plt.figure()
-        plt.plot(
-            self.times, np.asarray(self.temperature) - 273.15, label="Fluid temperature"
-        )
+        if hasattr(self, "gas_temperatrure"):
+            plt.plot(
+                self.times,
+                np.asarray(self.gas_temperatrure) - 273.15,
+                label="Gas temperature",
+            )
+            plt.plot(
+                self.times,
+                np.asarray(self.liquid_temperature) - 273.15,
+                label="Liquid temperature",
+            )
+        else:
+            plt.plot(
+                self.times,
+                np.asarray(self.temperature) - 273.15,
+                label="Fluid temperature",
+            )
         plt.plot(
             self.times,
             np.asarray(self.unwetted_wall_temp) - 273.15,
@@ -1174,8 +1215,47 @@ class Blowdown:
         plt.legend(loc="best")
         plt.xlabel("Time (sec)")
         plt.ylabel("Temperature (K)")
+        if filename is not None:
+            plt.savefig(f"{filename}_temperature.png")
 
-        plt.show()
+        plt.figure()
+        plt.plot(self.times, np.array(self.liquid_dyn_level), label="Liquid level (m)")
+        plt.xlabel("Time (sec)")
+        plt.ylabel("Liquid level (m)")
+        plt.legend(loc="best")
+        if filename is not None:
+            plt.savefig(f"{filename}_liquid_level.png")
+
+        if self.heat_transfer is not None:
+            plt.figure()
+            plt.plot(
+                self.times,
+                np.array(self.heatflux_outside_gas),
+                label="Heat flux outside gas side (W/m2)",
+            )
+            plt.plot(
+                self.times,
+                np.array(self.heatflux_outside_liquid),
+                label="Heat flux outside liquid side (W/m2)",
+            )
+            plt.plot(
+                self.times,
+                np.array(self.heatflux_inside_gas),
+                label="Heat flux inside gas side (W/m2)",
+            )
+            plt.plot(
+                self.times,
+                np.array(self.heatflux_inside_liquid),
+                label="Heat flux inside liquid side (W/m2)",
+            )
+            plt.xlabel("Time (sec)")
+            plt.ylabel("Heat flux (W/m2)")
+            plt.legend(loc="best")
+            if filename is not None:
+                plt.savefig(f"{filename}_heatflux.png")
+
+        if filename is None:
+            plt.show()
 
 
 if __name__ == "__main__":
