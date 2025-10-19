@@ -63,4 +63,4 @@ import time
 
 time1 = time.time()
 segment = Blowdown(input)
-r = segment.depressurize()  # _euler()
+r = segment.depressurize_euler()  # _euler()
