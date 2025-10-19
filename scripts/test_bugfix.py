@@ -52,6 +52,5 @@ molefracs = [0.64, 0.06, 0.28, 0.02]
 input["molefracs"] = molefracs
 input["component_names"] = names
 
-time1 = time.time()
 segment = Blowdown(input)
 r = segment.depressurize()  # _euler()
