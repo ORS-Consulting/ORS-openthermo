@@ -13,3 +13,4 @@ SciencePlots
 PyYAML
 openpyxl
 Cerberus>=1.3.3
+tqdm
