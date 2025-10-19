@@ -3,7 +3,6 @@ import numpy as np
 import pytest
 from scipy.constants import atm
 from openthermo.vessel.blowdown import Blowdown
-from openthermo.flash.michelsen import get_flash_dry
 
 validation_path = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), "..", "validation"
