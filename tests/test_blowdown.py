@@ -56,15 +56,7 @@ def test_blowdown_sbfire_costald(plot=False):
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
+    input["component_names"] = names
     segment = Blowdown(input)
     r = segment.depressurize()
     import matplotlib.pyplot as plt
@@ -178,16 +170,7 @@ def test_blowdown_api_dry_inadequate_costald(plot=False):
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
-
+    input["component_names"] = names
     segment = Blowdown(input)
     r = segment.depressurize()
     assert segment.pressure[-1] == pytest.approx(data[:, 2][-1] * 1e5 + atm, rel=0.05)
@@ -324,16 +307,7 @@ def test_blowdown_condensable_gas(plot=False):
     molefracs = [0.64, 0.06, 0.28, 0.02]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
-
+    input["component_names"] = names
     segment = Blowdown(input)
     r = segment.depressurize()
 
@@ -404,16 +378,7 @@ def test_blowdown_nitrogen(plot=False):
     molefracs = [1.0]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
-
+    input["component_names"] = names
     segment = Blowdown(input)
     r = segment.depressurize()
     # segment.plot()
@@ -562,16 +527,7 @@ def test_blowdown_nitrogen_co2(plot=False):
     molefracs = [0.70, 0.30]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        # rho=input["liquid_density"],
-        # model=input["eos_model"],
-    )
-
+    input["component_names"] = names
     segment = Blowdown(input)
     r = segment.depressurize_euler()
     # segment.plot()
@@ -743,15 +699,8 @@ def test_blowdown_non_condensable(plot=False):
     molefracs = [0.91, 0.09]
 
     input["molefracs"] = molefracs
+    input["component_names"] = names
 
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        # rho=input["liquid_density"],
-        # model=input["eos_model"],
-    )
     input["time_step"] = 10
     segment = Blowdown(input)
     r = segment.depressurize()
@@ -898,15 +847,8 @@ def test_blowdown_condensable_gas_rig(plot=False):
     molefracs = [0.64, 0.06, 0.28, 0.02]
 
     input["molefracs"] = molefracs
+    input["component_names"] = names
 
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        # rho=input["liquid_density"],
-        # model=input["eos_model"],
-    )
     import time
 
     time1 = time.time()
@@ -1012,15 +954,7 @@ def test_isothermal(plot=False):
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
+    input["component_names"] = names
 
     segment = Blowdown(input)
     r = segment.depressurize()
@@ -1106,15 +1040,7 @@ def test_adiabatic(plot=False):
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
+    input["component_names"] = names
 
     segment = Blowdown(input)
     r = segment.depressurize()
@@ -1196,25 +1122,18 @@ def test_isentropic(plot=False):
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
+    input["component_names"] = names
 
     segment = Blowdown(input)
     r = segment.depressurize()
     segment.plot("dummy")
     import matplotlib.pyplot as plt
 
-    name = "plots\\adiabatic_multiphase"
+    name = "plots\\isentropic_multiphase"
     assert segment.pressure[-1] == pytest.approx((0.989978) * 1e5 + atm, abs=0.2e5)
     assert segment.temperature[-1] == pytest.approx(22.3469 + 273.15, abs=0.3)
     if plot:
+        plt.clf()
         plt.figure(1)
         plt.plot(
             segment.times,
@@ -1267,4 +1186,4 @@ if __name__ == "__main__":
     # test_blowdown_nitrogen_co2(plot=True)
     # test_isothermal(plot=True)
     # test_adiabatic(plot=True)
-    test_isentropic(plot=True)
+    # test_isentropic(plot=True)
