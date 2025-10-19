@@ -3,6 +3,7 @@ from chemicals import normalize
 import numpy as np
 from scipy.integrate import ode
 from scipy.optimize import minimize
+from tqdm import tqdm
 import math
 from scipy.constants import g
 from openthermo.properties.transport import COSTALD_rho, COSTALD_Vm
@@ -11,6 +12,9 @@ from openthermo.validation import validate_mandatory_ruleset
 from openthermo import errors
 from openthermo.flash.michelsen import get_flash_dry
 from openthermo.vessel.fire import sb_fire
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 def hem_release_rate():
@@ -730,6 +734,8 @@ class Blowdown:
         r.set_solout(self._solout)
         dt = min(50, self.max_time / 20)
         step = 0
+        nsteps = self.max_time / dt
+        progress_bar = tqdm(total=nsteps, desc="openthermo")
 
         if self.delay > 0:
             if (dt) >= self.delay:
@@ -739,6 +745,7 @@ class Blowdown:
             while r.successful() and (r.t + first_dt) < self.delay:
                 step += 1
                 r.integrate(r.t + dt)
+                progress_bar.update(1)
             r.integrate(self.delay)
             self.shutdown = 1
         else:
@@ -747,6 +754,7 @@ class Blowdown:
         while r.successful() and (r.t + dt) <= self.max_time:
             step += 1
             r.integrate(r.t + dt)
+            progress_bar.update(1)
         r.integrate(self.max_time)
 
         # Identifying unsuccessfull cases
@@ -1146,12 +1154,14 @@ class Blowdown:
         # r.set_initial_value(y0)
         # r.set_solout(self._solout)
         dt = self.dt  # min(50, self.max_time / 20)
+        nsteps = int(self.max_time / dt)
         step = 0
 
         t = 0
         self.shutdown = 1
 
-        while t < self.max_time:
+        for i in tqdm(range(nsteps), desc="openthermo"):
+            # while t < self.max_time:
             # if t < 10:
             #     dt = 0.1
             # elif t < 100:
