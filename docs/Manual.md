@@ -179,102 +179,7 @@ SOFTWARE.
 A minimal example for running *openthermo* is provided below. The example is for an isentropic blowdown i.e. with a rigorous energy and mass balance, taking into accout work done by the discharged fluid, but without any heat transfer. 
 
 ```
-```
-
-## Demos
-
-## Calculation methods
-The following methods are implemented:
-
-- Isothermal: constant temperature of the fluid during depressurization 
-- Adiabatic: the energy balance does not account for work done by the fluid during discharge. No heat transfer is included.  
-- Isentropic: the energy balance accounts for work done by the fluid during discharge. This method can be run without or with heat transfer modelled. A variation of this method includes external backgorund heat load from a fire (pool or jet) using the Stefan-Boltzmann equation. 
-- Fire: This method is a variant of the isentropic method where an API 521 pool-fire heat load is applied to the wetted surface inside the vessel. No other heat transfer is included.  
-
-For calculations the minimal input required are:
-
-- Initial conditions (pressure, temperature, liquid level)
-- vessel dimensions (ID, length)
-- orifice parameters (Cd, diameter, back-pressure)
-- Calculation setup (end time)
-- Fluid components and composition
-
-For rigorous heat transfer additional input are required:
-
-- Vessel thickness
-- Vessel material heat capacity
-- Vessel material density
-- Ambient temperature or a Stefan-Boltzmann external fire heat load type. 
-
-More elaborate description of the required input for the different calculation types are provided in [@Sec:input].
-
-## Input file examples
-When using *openthermo* a dictionary holding all relevant input in order for the program to do vessel calculations shall be provided when the class is initialized. 
-
-An example of a minimal file for an isentropic vessel depressurization (no heat transfer) is shown below
-
-~~~ {.Yaml}
-vessel:
-  length: 1.524
-  diameter: 0.273
-initial:
-  temperature: 388.0
-  pressure: 15000000.
-  fluid: "N2"
-calculation:
-  type: "isentropic"
-  time_step: 0.05
-  end_time: 100.
-valve:
-  flow: "discharge"
-  type: "orifice"
-  diameter: 0.00635
-  discharge_coef: 0.8
-  back_pressure: 101300.
-~~~
-
-A more elaborate example which includes heat transfer and with validation data (some data points dropped for simplicity) included:
-
-~~~ {.Yaml}
-vessel:
-  length: 1.524
-  diameter: 0.273
-  thickness: 0.025
-  heat_capacity: 500
-  density: 7800.
-  orientation: "vertical"
-initial:
-  temperature: 288.0
-  pressure: 15000000.
-  fluid: "N2"
-calculation:
-  type: "energybalance"
-  time_step: 0.05
-  end_time: 100.
-valve:
-  flow: "discharge"
-  type: "orifice"
-  diameter: 0.00635
-  discharge_coef: 0.8
-  back_pressure: 101300.
-heat_transfer:
-  type: "specified_h"
-  temp_ambient: 288.
-  h_outer: 5
-  h_inner: 'calc'
-~~~
-
-## Input fields and hierarchy {#sec:input}
-In the following the full hierarchy of input for the different calculation types is summarised.
-
-At the top level the following fields are accepted, with the last being optional and the second last dependant on calculation type:
-
-~~~ {.Yaml}
-initial: mandatory
-vessel: mandatory
-calculation: mandatory
-valve: mandatory
-heat_transffrom openthermo.vessel.blowdown import Blowdown
+from openthermo.vessel.blowdown import Blowdown
 from openthermo.flash.michelsen import get_flash_dry
 
 input = {}
@@ -312,9 +217,48 @@ input["flash"] = get_flash_dry(
 )
 
 segment = Blowdown(input)
-segment.depressurize()    
-~~~
+segment.depressurize()
+segment.plot()    
+```
 
+## Demos
+
+## Calculation methods
+The following methods are implemented:
+
+- Isothermal: constant temperature of the fluid during depressurization 
+- Adiabatic: the energy balance does not account for work done by the fluid during discharge. No heat transfer is included.  
+- Isentropic: the energy balance accounts for work done by the fluid during discharge. This method can be run without or with heat transfer modelled. A variation of this method includes external backgorund heat load from a fire (pool or jet) using the Stefan-Boltzmann equation. 
+- Fire: This method is a variant of the isentropic method where an API 521 pool-fire heat load is applied to the wetted surface inside the vessel. No other heat transfer is included.  
+
+For calculations the minimal input required are:
+
+- Initial conditions (pressure, temperature, liquid level)
+- vessel dimensions (ID, length)
+- orifice parameters (Cd, diameter, back-pressure)
+- Calculation setup (end time)
+- Fluid components and composition
+
+For rigorous heat transfer additional input are required:
+
+- Vessel thickness
+- Vessel material heat capacity
+- Vessel material density
+- Ambient temperature or a Stefan-Boltzmann external fire heat load type. 
+
+More elaborate description of the required input for the different calculation types are provided in [@Sec:input].
+
+## Input file examples
+When using *openthermo* a dictionary holding all relevant input in order for the program to do vessel calculations shall be provided when the class is initialized. 
+
+An example of a minimal file for an isentropic vessel depressurization (no heat transfer) is shown below. 
+
+
+
+## Input fields and hierarchy {#sec:input}
+In the following the full hierarchy of input for the different calculation types is summarised.
+
+At the top level the following fields are accepted, with the last being optional and the second last dependant on calculation type:
 
 
 # Theory
@@ -329,6 +273,9 @@ The following main topics are covered:
 ## Thermodynamics
 
 ### Equation of state
+Currently only the Peng-Robinson [@peng_new_1976] and Soave-Redlich-Kwong [SOAVE19721197] cubic equations of stare are available despite many being available in both *thermopack* and *thermo*. In the future more cubic equations of state may be made available. 
+
+For more background information and theory regarding the equations of state, please refer to e.g. [*thermo* documentation](https://thermo.readthedocs.io/thermo.eos_mix.html), the [DWSIM user guide](https://github.com/DanWBR/dwsim/blob/windows/PlatformFiles/Common/docs/User_Guide.pdf), a [*thermopack* memo](https://github.com/thermotools/thermopack/blob/main/docs/memo/thermopack/thermopack2013.pdf).
 
 ### First law for flow process {#sec:firstlaw}
 The control volume sketched in [@Fig:firstlaw], separated from the surrounding by a control surface, is used as a basis for the analysis of an open thermodynamic system with flowing streams (fs) in and out, according to [@sva]
