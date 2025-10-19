@@ -1179,7 +1179,6 @@ def test_isentropic(plot=False):
     input["eos_model"] = "PR"
     input["liquid_density"] = "eos"
     input["max_time"] = 900
-    input["delay"] = 0
     input["length"] = 10
     input["diameter"] = 3
     input["vessel_type"] = "Flat-end"
@@ -1192,11 +1191,6 @@ def test_isentropic(plot=False):
     input["back_pressure"] = 1.01e5
     input["bdv_orifice_size"] = 0.03  # m
     input["bdv_orifice_cd"] = 0.84
-
-    input["leak_active"] = 0
-    input["leak_size"] = 0.01  # m
-    input["leak_cd"] = 0.65
-    input["leak_type"] = "liquid"
 
     names = ["methane", "propane", "n-butane", "i-butane", "n-decane"]
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
@@ -1214,6 +1208,7 @@ def test_isentropic(plot=False):
 
     segment = Blowdown(input)
     r = segment.depressurize()
+    segment.plot("dummy")
     import matplotlib.pyplot as plt
 
     name = "plots\\adiabatic_multiphase"
@@ -1266,10 +1261,10 @@ if __name__ == "__main__":
     pass
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
-    test_blowdown_non_condensable(plot=True)
+    # test_blowdown_non_condensable(plot=True)
     # test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
     # test_isothermal(plot=True)
     # test_adiabatic(plot=True)
-    # test_isentropic(plot=True)
+    test_isentropic(plot=True)
