@@ -1247,7 +1247,7 @@ def test_blowdown_sbfire_n2(plot=False):
     import matplotlib.pyplot as plt
 
     segment.plot(filename="plots\\SB_fire_nitrogen")
-
+    name = "plots\\SB_fire_nitrogen"
     if plot:
         plt.figure(1)
         plt.plot(
