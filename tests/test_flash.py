@@ -1,6 +1,7 @@
 from openthermo.flash.michelsen import get_flash_dry, flash_results
 from thermopack.cubic import PengRobinson
 import pytest
+from chemicals import normalize
 
 
 def test_flash_dry():
@@ -146,6 +147,65 @@ def test_flash_PH_COCO():
     assert res2.T == pytest.approx(237.53, rel=4e-3)
 
 
+def test_flash_pseudo_COCO():
+    "Testing som basic results from COCO"
+    P = 33.013e5
+    T = 60 + 273.15
+    names = [
+        "carbon dioxide",
+        "methane",
+        "ethane",
+        "propane",
+        "Isobutane",
+        "n-butane",
+        "Isopentane",
+        "n-pentane",
+        "n-hexane",
+    ]
+    pseudo_names = ["T120", "T143", "T166", "T207", "T264", "T330", "T390", "T466"]
+    pseudo_Tbs = [393.18, 415.68, 439.46, 480.49, 537.34, 602.77, 662.98, 738.69]
+    pseudo_SGs = [0.7411, 0.755, 0.7695, 0.799, 0.8387, 0.8754, 0.90731, 0.94575]
+    molefracs = [
+        0.015898772,
+        0.52556663,
+        0.062495175,
+        0.042396727,
+        0.0085593391,
+        0.022198286,
+        0.011299128,
+        0.012808007,
+        0.022789246,
+    ]
+    pseudo_molefracs = [
+        0.008509343,
+        0.012799012,
+        0.016598718,
+        0.065394951,
+        0.063395105,
+        0.049696163,
+        0.029097753,
+        0.030497645,
+    ]
+    assert (
+        len(pseudo_molefracs) == len(pseudo_names) == len(pseudo_SGs) == len(pseudo_Tbs)
+    )
+    assert len(names) == len(molefracs)
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        pseudo_names=pseudo_names,
+        pseudo_molefracs=pseudo_molefracs,
+        pseudo_SGs=pseudo_SGs,
+        pseudo_Tbs=pseudo_Tbs,
+        P=P,
+        T=T,
+        rho="eos",
+        model="PR",
+    )
+    res = flash.flash(P=P, T=T, zs=normalize(molefracs + pseudo_molefracs))
+    print(res.betas)
+
+
 def test_thermopack_pseudo():
     import numpy as np
 
@@ -198,4 +258,5 @@ def test_print_thermo():
 
 
 if __name__ == "__main__":
-    pass
+    test_flash_pseudo_COCO()
+    # pass

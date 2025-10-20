@@ -31,12 +31,13 @@ name_map = np.loadtxt(
 
 class FlashVL:
     def __init__(self, zs, constants, properties, kijs, model="PR", rho=None):
-        names = []
-        for CAS in constants.CASs:
-            if CAS not in name_map[:, 1]:
-                raise ValueError("CAS %s not in name mapping" % CAS)
-            else:
-                names.append(name_map[np.where(name_map[:, 1] == CAS)[0][0], 2])
+        # names = []
+        # for CAS in constants.CASs:
+        #    if CAS not in name_map[:, 1]:
+        #        raise ValueError("CAS %s not in name mapping" % CAS)
+        #    else:
+        #        names.append(name_map[np.where(name_map[:, 1] == CAS)[0][0], 2])
+        #        print(names[-1])
 
         self.vectorized = False
         self.constants = constants
@@ -47,13 +48,13 @@ class FlashVL:
         if model == 2 or model == "SRK":
             self.model = 2
             # self.eos = SoaveRedlichKwong(",".join(names))
-            self.eos = SoaveRedlichKwong(",".join(len(names) * ["PSEUDO"]))
+            self.eos = SoaveRedlichKwong(",".join(len(constants.names) * ["PSEUDO"]))
         else:
             # self.eos = PengRobinson(",".join(names))
-            self.eos = PengRobinson(",".join(len(names) * ["PSEUDO"]))
+            self.eos = PengRobinson(",".join(len(constants.names) * ["PSEUDO"]))
         cindices = range(1, self.eos.nc + 1)
         self.eos.init_pseudo(
-            comps=",".join(names),
+            comps=",".join(constants.names),
             Tclist=constants.Tcs,
             Pclist=constants.Pcs,
             acflist=constants.omegas,
@@ -478,7 +479,7 @@ def get_flash_dry(
     pure_comp_names,
     pure_comp_molefracs,
     pseudo_names=None,
-    pseudo_mole_fracs=None,
+    pseudo_molefracs=None,
     pseudo_SGs=None,
     pseudo_Tbs=None,
     P=None,
@@ -493,7 +494,7 @@ def get_flash_dry(
     pure_constants, properties = ChemicalConstantsPackage.from_IDs(pure_comp_names)
     kijs = ip.get_interaction_parameters(pure_constants.CASs)
 
-    if pseudo_names is None and pseudo_mole_fracs is None:
+    if pseudo_names is None and pseudo_molefracs is None:
         zs = normalize(
             pure_comp_molefracs
         )  # pure_comp_molefracs/sum(pure_comp_molefracs)
@@ -514,7 +515,10 @@ def get_flash_dry(
             for SG, Tb in zip(pseudo_SGs, pseudo_Tbs)
         ]
         pseudo_Zcs = [lk.Zc_pseudo(omega) for omega in pseudo_omegas]
-        pseudo_Vcs = [lk.Vc_pseudo(Zc, Tc, Pc) for Zc, Tc, Pc in zip(Zcs, Tcs, Pcs)]
+        pseudo_Vcs = [
+            lk.Vc_pseudo(Zc, Tc, Pc)
+            for Zc, Tc, Pc in zip(pseudo_Zcs, pseudo_Tcs, pseudo_Pcs)
+        ]
         atomic_ratio = [
             lk.HC_atomic_ratio(SG, Tb) for SG, Tb in zip(pseudo_SGs, pseudo_Tbs)
         ]
@@ -548,7 +552,7 @@ def get_flash_dry(
         # Obtain the temperature and pressure dependent objects
         properties = PropertyCorrelationsPackage(constants=constants)
 
-        zs = normalize(pure_comp_molefracs + pseudo_mole_fracs)
+        zs = normalize(pure_comp_molefracs + pseudo_molefracs)
         pseudo_kijs = np.zeros((len(zs), len(zs)))
         n_pure = len(pure_comp_names)
         pseudo_kijs[:n_pure, :n_pure] = np.asarray(kijs)
