@@ -15,7 +15,7 @@ def validate_mandatory_ruleset(input):
     retval : bool
         True for success, False for failure
     """
-
+    max_components = 20
     schema_general = {
         "eos_model": {"required": True, "type": "string", "allowed": ["SRK", "PR"]},
         "liquid_density": {
@@ -27,8 +27,46 @@ def validate_mandatory_ruleset(input):
             "required": True,
             "type": "list",
             "minlength": 1,
-            "maxlength": 20,
+            "maxlength": max_components,
             "schema": {"type": "number", "min": 1e-5, "max": 1},
+        },
+        "component_names": {
+            "required": True,
+            "type": "list",
+            "minlength": 1,
+            "maxlength": max_components,
+            "schema": {"type": "string"},
+        },
+        "pseudo_names": {
+            "required": False,
+            "type": "list",
+            "minlength": 1,
+            "maxlength": max_components,
+            "schema": {"type": "string"},
+        },
+        "pseudo_molefracs": {
+            "required": False,
+            "type": "list",
+            "minlength": 1,
+            "maxlength": max_components,
+            "schema": {"type": "number", "min": 1e-5, "max": 1},
+            "dependencies": ["pseudo_names", "pseudo_SGs", "pseudo_Tbs"],
+        },
+        "pseudo_SGs": {
+            "required": False,
+            "type": "list",
+            "minlength": 1,
+            "maxlength": max_components,
+            "schema": {"type": "number", "min": 1e-5, "max": 1},
+            "dependencies": ["pseudo_names", "pseudo_molefracs", "pseudo_Tbs"],
+        },
+        "pseudo_Tbs": {
+            "required": False,
+            "type": "list",
+            "minlength": 1,
+            "maxlength": max_components,
+            "schema": {"type": "number", "min": 1e-5, "max": 1},
+            "dependencies": ["pseudo_names", "pseudo_SGs", "pseudo_molefracs"],
         },
         "mode": {
             "required": True,

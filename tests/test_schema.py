@@ -33,7 +33,7 @@ def test_validate_mandatory_ruleset():
     input["leak_cd"] = 0.65
     input["leak_type"] = "liquid"
 
-    names = ["methane", "ethane", "propane", "n-butane"]
+    input["component_names"] = ["methane", "ethane", "propane", "n-butane"]
     molefracs = [0.64, 0.06, 0.28, 0.02]
 
     input["molefracs"] = molefracs

@@ -139,22 +139,44 @@ def gas_release_rate(P1, P2, rho, k, CD, area):
 
 class Blowdown:
     def __init__(self, input):
-        flash = input["flash"]
-        del input["flash"]
         _ = validate_mandatory_ruleset(input)
-        input["flash"] = flash
 
+        self._setup_flash(input)
         self._read_input(input)
         if self.mode == "fire":
             self._setup_fire(input)
 
         self._setup_tank()
-        if "flash" in input:
-            self.flash = input["flash"]
-            # self.zi = self.flash.zs
-            self.zi = (np.array(input["molefracs"]) / sum(input["molefracs"])).tolist()
-
         self._adjust_composition()
+
+    def _setup_flash(self, input):
+        if "pseudo_names" not in input:
+            self.flash = get_flash_dry(
+                input["component_names"],
+                input["molefracs"],
+                P=input["operating_pressure"],
+                T=input["operating_temperature"],
+                rho=input["liquid_density"],
+                model=input["eos_model"],
+            )
+            self.zi = (np.array(input["molefracs"]) / sum(input["molefracs"])).tolist()
+        else:
+            self.flash = get_flash_dry(
+                input["component_names"],
+                input["molefracs"],
+                pseudo_names=input["pseudo_names"],
+                pseudo_mole_fracs=["pseudo_molefracs"],
+                pseudo_SGs=input["pseudo_SGs"],
+                pseudo_Tbs=["pseudo_Tbs"],
+                P=input["operating_pressure"],
+                T=input["operating_temperature"],
+                rho=input["liquid_density"],
+                model=input["eos_model"],
+            )
+            self.zi = (
+                np.array(input["molefracs"] + input["pseudo_molefracs"])
+                / sum(input["molefracs"] + input["pseudo_molefracs"])
+            ).tolist()
 
     def _read_input(self, input):
         self.mode = input["mode"]

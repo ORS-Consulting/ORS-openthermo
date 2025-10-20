@@ -50,17 +50,7 @@ names = ["methane", "ethane", "propane", "n-butane"]
 molefracs = [0.64, 0.06, 0.28, 0.02]
 
 input["molefracs"] = molefracs
+input["component_names"] = names
 
-input["flash"] = get_flash_dry(
-    names,
-    molefracs,
-    P=P,
-    T=T,
-    # rho=input["liquid_density"],
-    # model=input["eos_model"],
-)
-import time
-
-time1 = time.time()
 segment = Blowdown(input)
 r = segment.depressurize()  # _euler()
