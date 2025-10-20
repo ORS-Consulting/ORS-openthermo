@@ -151,6 +151,8 @@ def test_blowdown_sbfire_multiphase(plot=False):
         plt.xlabel("Time (s)")
         plt.ylabel("Wall temperature (C)")
         plt.legend(loc="best")
+        plt.savefig(name + "_wall_temperature.png", dpi=300)
+
         plt.show()
 
 
@@ -1244,7 +1246,7 @@ def test_blowdown_sbfire_n2(plot=False):
     r = segment.depressurize()
     import matplotlib.pyplot as plt
 
-    segment.plot(filename="plots\\SB_fire_water_dry")
+    segment.plot(filename="plots\\SB_fire_nitrogen")
 
     if plot:
         plt.figure(1)
@@ -1305,7 +1307,7 @@ def test_blowdown_sbfire_n2(plot=False):
 
 if __name__ == "__main__":
     pass
-    # test_blowdown_sbfire_multiphase(plot=True)
+    test_blowdown_sbfire_multiphase(plot=True)
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
