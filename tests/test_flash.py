@@ -204,6 +204,8 @@ def test_flash_pseudo_COCO():
     )
     res = flash.flash(P=P, T=T, zs=normalize(molefracs + pseudo_molefracs))
     print(res.betas)
+    print(res.gas.MW())
+    print(res.liquid0.MW())
 
 
 def test_thermopack_pseudo():

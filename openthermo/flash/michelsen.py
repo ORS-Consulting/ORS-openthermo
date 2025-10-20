@@ -437,28 +437,11 @@ class FlashVL:
         gas, liq, liq2 = None, None, None
         liquids = []
         w = self.water_mole_fracs
-
-        #################################
-        # Check this, could give problems
-        # Consider not settign to global composition
-        ##################################
-
         w = w
 
-        # gas = CEOSGas(PRMIX, self.eos_kwargs, HeatCapacityGases=self.properties.HeatCapacityGases, T=T, P=P, zs=list(y))
-        # liq = CEOSLiquid(PRMIX, self.eos_kwargs, HeatCapacityGases=self.properties.HeatCapacityGases, T=T, P=P, zs=list(x))
-        # liq2 = CEOSLiquid(PRMIX, self.eos_kwargs, HeatCapacityGases=self.properties.HeatCapacityGases, T=T, P=P, zs=w)
-
-        gas = self.gas.to(
-            T=T, P=P, zs=list(y)
-        )  # CEOSGas(PRMIX, eos_kwargs, HeatCapacityGases=properties.HeatCapacityGases, T=T, P=P, zs=z)
-
-        liq = self.liq.to(
-            T=T, P=P, zs=list(x)
-        )  # CEOSLiquid(PRMIX, eos_kwargs, HeatCapacityGases=properties.HeatCapacityGases, T=T, P=P, zs=z)
-        liq2 = self.liq2.to(
-            T=T, P=P, zs=list(x)
-        )  # CEOSLiquid(PRMIX, eos_kwargs, HeatCapacityGases=properties.HeatCapacityGases, T=T, P=P, zs=z)
+        gas = self.gas.to(T=T, P=P, zs=list(y))
+        liq = self.liq.to(T=T, P=P, zs=list(x))
+        liq2 = self.liq2.to(T=T, P=P, zs=list(x))
 
         return self.dest(
             T,
