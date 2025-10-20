@@ -203,9 +203,9 @@ def test_flash_pseudo_COCO():
         model="PR",
     )
     res = flash.flash(P=P, T=T, zs=normalize(molefracs + pseudo_molefracs))
-    print(res.betas)
-    print(res.gas.MW())
-    print(res.liquid0.MW())
+    assert res.gas.beta == pytest.approx(0.5646, rel=0.02)
+    assert res.gas.MW() == pytest.approx(19.98, rel=0.02)
+    assert res.liquid0.MW() == pytest.approx(165, rel=0.02)
 
 
 def test_thermopack_pseudo():

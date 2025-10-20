@@ -477,6 +477,10 @@ def get_flash_dry(
     pure_constants, properties = ChemicalConstantsPackage.from_IDs(pure_comp_names)
     kijs = ip.get_interaction_parameters(pure_constants.CASs)
 
+    if len(pure_comp_names) != len(pure_comp_molefracs):
+        raise ValueError(
+            "Number of pure components and pure component mole fractions be equal."
+        )
     if pseudo_names is None and pseudo_molefracs is None:
         zs = normalize(
             pure_comp_molefracs
@@ -484,6 +488,17 @@ def get_flash_dry(
         # print(kijs)
         flash = FlashVL(zs, pure_constants, properties, kijs)
     else:
+        try:
+            assert (
+                len(pseudo_molefracs)
+                == len(pseudo_names)
+                == len(pseudo_SGs)
+                == len(pseudo_Tbs)
+            )
+        except:
+            raise ValueError(
+                "Number of pseudo components and/or pseudo component properties are not equal dimension."
+            )
         pseudo_Tcs = [
             lk.Tc_Kesler_Lee_SG_Tb(SG, Tb) for SG, Tb in zip(pseudo_SGs, pseudo_Tbs)
         ]
