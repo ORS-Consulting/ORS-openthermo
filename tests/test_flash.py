@@ -260,5 +260,18 @@ def test_print_thermo():
 
 
 if __name__ == "__main__":
-    test_flash_pseudo_COCO()
-    # pass
+    P = 5.0e6
+    T = 300.0
+    names = ["methane", "ethane", "propane", "n-butane"]
+    molefracs = [0.64, 0.06, 0.28, 0.02]
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        P=P,
+        T=T,
+        rho="eos",
+        model="PR",
+    )
+    res = flash.flash(P=P, T=T, zs=molefracs)
+    # test_flash_pseudo_COCO()
+    pass
