@@ -1211,12 +1211,6 @@ def test_blowdown_sbfire_n2(plot=False):
     exposing the total area of the vessel. No water present.
     COSTALD liquid density is applied.
     """
-    file_name = "sb_test_unisim.csv"
-
-    path = os.path.join(validation_path, file_name)
-
-    data = np.loadtxt(path, skiprows=2, delimiter=",", usecols=(range(17)))
-
     input = {}
     P = 100e5
     T = 298.15
@@ -1250,8 +1244,7 @@ def test_blowdown_sbfire_n2(plot=False):
     r = segment.depressurize()
     import matplotlib.pyplot as plt
 
-    segment.plot()
-    name = "plots\\SB_fire_water_dry"
+    segment.plot(filename="plots\\SB_fire_water_dry")
 
     if plot:
         plt.figure(1)
@@ -1261,7 +1254,6 @@ def test_blowdown_sbfire_n2(plot=False):
             "bo",
             label="openthermo/python",
         )
-        plt.plot(data[:, 0], data[:, 2] + 1.013, "r-", label="HYSYS Depressurisation")
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Pressure (bar)")
@@ -1274,7 +1266,6 @@ def test_blowdown_sbfire_n2(plot=False):
             "bo",
             label="openthermo/python",
         )
-        plt.plot(data[:, 0], data[:, 1], "r-", label="HYSYS Depressurisation")
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel(r"Temperature ($^\circ$C)")
@@ -1287,7 +1278,6 @@ def test_blowdown_sbfire_n2(plot=False):
             "bo",
             label="openthermo/python",
         )
-        plt.plot(data[:, 0], data[:, 3], "r-", label="HYSYS Depressurisation")
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Mass flow (kg/h)")
@@ -1300,14 +1290,12 @@ def test_blowdown_sbfire_n2(plot=False):
             "bo",
             label="openthermo Wetted",
         )
-        plt.plot(data[:, 0], data[:, 9], "b--", label="HYSYS Depressurisation Wetted")
         plt.plot(
             segment.times,
             np.asarray(segment.unwetted_wall_temp) - 273.15,
             "ro",
             label="openthermo Unwetted",
         )
-        plt.plot(data[:, 0], data[:, 8], "r--", label="HYSYS Depressurisation Unwetted")
 
         plt.xlabel("Time (s)")
         plt.ylabel("Wall temperature (C)")
@@ -1317,7 +1305,7 @@ def test_blowdown_sbfire_n2(plot=False):
 
 if __name__ == "__main__":
     pass
-    test_blowdown_sbfire_multiphase(plot=True)
+    # test_blowdown_sbfire_multiphase(plot=True)
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
