@@ -2,6 +2,11 @@ from openthermo.flash.michelsen import get_flash_dry, flash_results
 from thermopack.cubic import PengRobinson
 import pytest
 from chemicals import normalize
+import warnings
+
+warnings.filterwarnings("ignore", category=ResourceWarning)
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 def test_flash_dry():
@@ -148,7 +153,23 @@ def test_flash_PH_COCO():
 
 
 def test_flash_pseudo_COCO():
-    "Testing som basic results from COCO"
+    """
+    Comparison with results from COCO/COFE https://www.cocosimulator.org/down.php?dl=OGSP_Andreasen_2025.fsd
+    based on  HYSYS and DWSIM as presented in the work by A. Andreasen (https://github.com/andr1976/dwsim-paper).
+
+    Paper with results:
+
+    https://github.com/andr1976/dwsim-paper/blob/main/paper/Revised_Paper_ANRA.pdf
+
+    Fluid characterization given in paper:
+
+    https://onlinelibrary.wiley.com/doi/abs/10.1002/apj.159
+
+    Background info:
+
+    https://www.mdpi.com/2305-7084/4/1/11
+    """
+
     P = 33.013e5
     T = 60 + 273.15
     names = [
@@ -260,18 +281,19 @@ def test_print_thermo():
 
 
 if __name__ == "__main__":
-    P = 5.0e6
-    T = 300.0
-    names = ["methane", "ethane", "propane", "n-butane"]
-    molefracs = [0.64, 0.06, 0.28, 0.02]
-    flash = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho="eos",
-        model="PR",
-    )
-    res = flash.flash(P=P, T=T, zs=molefracs)
-    # test_flash_pseudo_COCO()
+    test_flash_dry()
+    # P = 5.0e6
+    # T = 300.0
+    # names = ["methane", "ethane", "propane", "n-butane"]
+    # molefracs = [0.64, 0.06, 0.28, 0.02]
+    # flash = get_flash_dry(
+    #     names,
+    #     molefracs,
+    #     P=P,
+    #     T=T,
+    #     rho="eos",
+    #     model="PR",
+    # )
+    # res = flash.flash(P=P, T=T, zs=molefracs)
+    # # test_flash_pseudo_COCO()
     pass

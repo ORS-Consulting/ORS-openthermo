@@ -5,7 +5,7 @@ from ht import Rohsenow
 from thermo.volume import COSTALD_mixture
 import warnings
 
-warnings.simplefilter("once", RuntimeWarning)
+warnings.simplefilter("once", UserWarning)
 
 
 def COSTALD_rho(phase):
@@ -186,7 +186,7 @@ def h_inside_wetted(L, Tvessel, Tfluid, fluid):
     except:
         warnings.warn(
             "Surface tension evaluation failed, using default 0.0175 N/m. May not be accurate.",
-            RuntimeWarning,
+            UserWarning,
         )
         sigma = 0.0175
 

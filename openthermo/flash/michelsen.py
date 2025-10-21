@@ -19,6 +19,11 @@ from thermo import (
     FlashVL,
 )
 from openthermo.properties.transport import COSTALD_rho, COSTALD_Vm
+import warnings
+
+warnings.filterwarnings("ignore", category=ResourceWarning)
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # name_map = np.loadtxt("name_mapping.csv", dtype=str, delimiter=",", usecols=(0, 1, 2))
 name_map = np.loadtxt(
@@ -272,7 +277,7 @@ class FlashVL:
                         Tguess,
                         method="Nelder-Mead",
                     )
-                    x = res.x
+                    x = res.x[0]
                     if abs((dS(x)) / S) > 1e-5:
                         raise ValueError("PS-flash failed to converge")
             res = self.PT_flash(T=float(x), P=P)
@@ -332,11 +337,11 @@ class FlashVL:
             dU = lambda P2: (self.PT_flash(T=T, P=P2).U() - U)
             if Pguess == None:
                 Pguess = 10e5
-            res = root(dU, Pguess, method="broyden1", options={"ftol": 1e-4})
+            result = root(dU, Pguess, method="broyden1", options={"ftol": 1e-4})
             # print(res)
-            if abs(dU(res.x) / U) > 1e-4:
+            if abs(dU(result.x) / U) > 1e-4:
                 raise ValueError("UT-flash failed to converge")
-            res = self.PT_flash(T=float(T), P=float(res.x))
+            res = self.PT_flash(T=float(T), P=float(result.x))
             return res
         elif U_spec and V_spec:
             if Pguess == None:
@@ -412,16 +417,19 @@ class FlashVL:
             x = flash.x
             gas_beta = flash.betaV
             y = flash.y
+            w = x
         elif flash.betaL == 0:
             gas_beta = 1
             liq_beta = 0
             x = flash.y
             y = flash.y
+            w = y
         elif flash.betaL == 1:
             gas_beta = 1
             liq_beta = 0
             x = flash.x
             y = flash.x
+            w = x
         else:
             gas_beta = 1
             liq_beta = 0
@@ -436,8 +444,7 @@ class FlashVL:
         betas = [gas_beta, liq_beta, wat_beta]
         gas, liq, liq2 = None, None, None
         liquids = []
-        w = self.water_mole_fracs
-        w = w
+        # w = self.water_mole_fracs
 
         gas = self.gas.to(T=T, P=P, zs=list(y))
         liq = self.liq.to(T=T, P=P, zs=list(x))

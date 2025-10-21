@@ -16,6 +16,8 @@ import warnings
 
 warnings.filterwarnings("once")
 warnings.filterwarnings("ignore", category=ResourceWarning)
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 def hem_release_rate():
