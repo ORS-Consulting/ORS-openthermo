@@ -21,49 +21,19 @@ Further, heat is transferred from or to the surroundings via convective heat tra
 ## Citing *openthermo*
 If you use *openthermo* please cite the following reference:
 
-Andreasen, A., Stegelmann, C. (2025). Open source pressure vessel blowdown modelling under partial phase equilibrium. Process Safety Progress (Under review)
+Andreasen, A., Stegelmann, C. (2025). Open source pressure vessel blowdown modelling under partial phase equilibrium. Process Safety Progress (Accepted)
 
     @article{AndreasenStegelmann,
       year = {2025},
-      publisher = {Wiley},
       author = {Anders Andreasen and Carsten Stegelmann},
       title = {Open source pressure vessel blowdown modelling under partial phase equilibrium (Under review)},
-      journal = {Process Safety Progress}
+      journal = {Process Safety Progress},
+      doi     = {10.1002/prs.70035},
+      publisher = {Wiley}, 
     }
 
 A preprint of the paper is available on ChemRxiv: https://doi.org/10.26434/chemrxiv-2025-00xzc-v2. 
 
-## Background
-### Early works
-The foundation of *openthermo* was laid by Carsten Stegelmann, more than a decade ago, who developed code for running blowdown calculations in a spreadsheet relying heavily on VBA and a legacy flash calculation routine (DLL) coded in FORTRAN by late Prof. Michael Michelsen [@michelsen_isothermal_1982;@michelsen_isothermal_1982-1]. This worked surprisingly well and executed very efficiently. The short-comings where lacking heat transfer modelling as well as an *equilibrium* only approach i.e. two-phase fluids were in full equilibrium at all times. 
-
-### Challenges
-The VBA code provided tricky to maintain in a version control system, and in the meantime the availability of high-quality thermodynamic packages for Python increased significantly. However, reimplementing an entire codebase is a time-consuming task, and this proved difficult to manage working full time as engineering consultants, and years went by without being able to fully to the long haul required. 
-
-### Proof of concept
-Having worked together in the same company, Carsten and I split ways 5 years ago. Then the Covid-19 hit and that freed up some spare time for me, staying at home without a lot of activities being possible and that lead to the development of [HydDown](https://github.com/andr1976/HydDown) [@Andreasen2021]. It started as a small spare-time project for calculation of vessel filling and depressurization behaviour. At that time the expectation was that a lot of engineering work was expected in high-pressure storage and filling stations. The work on HydDown served as a proof of concept for an efficient implementation in Python mainly provided by the [Coolprop](http://www.coolprop.org/) back-end [@doi:10.1021/ie4033999]. Eventually HydDown matured and is now in a state where it can model heat transfer in both steel and dual-layer low thermal conductivity composites during depressurisation/pressurisation. However, it cannot manage two-phase (gas/liquid) behaviour due to limitations in the flash calculation. Thus, a change in thermodynamic back-end was inevitable.
-
-### *openthermo* development
-Recently, I joined ORS Consulting with Carsten, and we revived our plans for a rigorous blowdown simulation tool. The remaining challenge was the more complex two-phase (or three-phase) flash problem and the non-equilibrium / partial equilibrium assumption. 
-At all times the big inspiration has been the work done at Empirical College London, University College London and later on also Università Politecnica delle Marche on the codes BLOWDOWN, BLOWSIM and VBsim, respectively. The former was also acquired by AspenTech and made available in HYSYS. Further the motivation has also been to have a tool easily accessible as a supplement to commerical (and expensive) tools. Both to reduce load on license pools, but also to provide more efficient workflows. We wanted to make the tool open source and available to the public, but license limitations on the legacy flash calculation by Prof. Michelsen required an alternative flash calculation. Several tools are now available such as Python [*thermo*](https://github.com/CalebBell/thermo) [@thermo], [NeqSim](https://equinor.github.io/neqsimhome/) [@neqsim] and [*thermopack*](https://thermotools.github.io/thermopack/) . Handling vessel depressurisation, which is effectively an UV-flash problem (Internal Energy - Volume) requires extremely many flash calculations to be performed. Thus, a fast and stable flash calculation is required. In order to provide speed and stability the preliminary choice has been [*thermopack* from SINTEF](https://thermotools.github.io/thermopack/), although it may change in the future in order to provide a three-phase (VLLE) flash.   
-
-## Limitations and implementation details 
-A few choices has been made to keep things simple:
-
-- [*thermopack*](https://thermotools.github.io/thermopack/) [@thermopack] is used as thermodynamic backend
-- Thermodynamic and transport properties (enthalpy, entropy, internal energy, liquid density, thermal conductivity, viscosity) is provided via Python *thermo* / *chemicals*.
-- No temperature stratification inside bulk phases
-- No temperature gradient through vessel wall. 
-- Heat transfer is modelled as constant or simplified using empirical correlations
-- Only single and two-phase (VLE) is handled. Three-phase (VLLE) cannot currently be modelled in the open source version.
-- Currently only the Peng-Robinson (PR) [@peng_new_1976] and Soave-Redlich-Kwong [@SOAVE19721197] cubic equations of state are made available.  
-- *openthermo* and it's legacy code has been built by engineers NOT software developers.  
-
-Ignoring temperature gradients in the vessel wall is an acceptable assumption for (not too thick) steel vessel walls. However, low thermal conductivity materials cannot accurately be modelled. In order to do so a 1-D heat transfer model shall be implemented. 
-
-One limitation of *thermopack* is that including pseudo components is not easy if the internal property calculations shall be used. Further, *thermopack* does not provide transport properties. In order to allow an implementation for pseudo components and transport properties the *thermopack* library is only used for flash calculations and used as a plugin, the rest (and less computationally demanding tasks) is provided by Python *thermo*. 
-
-While *openthermo* has been extensively validated and fidelity has been built, we have not had the work force or man-months/years available like the legacy university projects or the commerical software providers. This means that there likely will be situations where the code fails to provide results, cases that are not covered or simply the code will not work. This is the cost and risk of using open source software.   
 
 ## Getting the software
 The source code can be obtained either from GitHub (via `git` or via the latest tar-ball release) or via **pip** . No packaged releases have currently been planned for **conda**.  
@@ -105,6 +75,7 @@ Installation of latest release via **pip** also installs dependencies automatica
 - [pandas](https://pandas.pydata.org/)
 - [tqdm](https://tqdm.github.io/)
 - [openpyxl](https://openpyxl.readthedocs.io/en/stable/)
+- [tqdm](https://tqdm.github.io/)
 
 The code is running on Windows 10/11 x64, with stock Python installation from Python.org and packages installed using pip.
 It should also run on Linux (it does on an Ubuntu image on GitHub) or in any conda environment as well, but this hasn't been checked.
@@ -174,13 +145,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-# Usage
-## Basic usage
-A minimal example for running *openthermo* is provided below. The example is for an isentropic blowdown i.e. with a rigorous energy and mass balance, taking into accout work done by the discharged fluid, but without any heat transfer. 
+# Background
+## Early works
+The foundation of *openthermo* was laid by Carsten Stegelmann, more than a decade ago, who developed code for running blowdown calculations in a spreadsheet relying heavily on VBA and a legacy flash calculation routine (DLL) coded in FORTRAN by late Prof. Michael Michelsen [@michelsen_isothermal_1982;@michelsen_isothermal_1982-1]. This worked surprisingly well and executed very efficiently. The short-comings where lacking heat transfer modelling as well as an *equilibrium* only approach i.e. two-phase fluids were in full equilibrium at all times. 
 
-```
+## Challenges
+The VBA code provided tricky to maintain in a version control system, and in the meantime the availability of high-quality thermodynamic packages for Python increased significantly. However, reimplementing an entire codebase is a time-consuming task, and this proved difficult to manage working full time as engineering consultants, and years went by without being able to fully to the long haul required. 
+
+## Proof of concept
+Having worked together in the same company, Carsten and I split ways 5 years ago. Then the Covid-19 hit and that freed up some spare time for me, staying at home without a lot of activities being possible and that lead to the development of [HydDown](https://github.com/andr1976/HydDown) [@Andreasen2021]. It started as a small spare-time project for calculation of vessel filling and depressurization behaviour. At that time the expectation was that a lot of engineering work was expected in high-pressure storage and filling stations. The work on HydDown served as a proof of concept for an efficient implementation in Python mainly provided by the [Coolprop](http://www.coolprop.org/) back-end [@doi:10.1021/ie4033999]. Eventually HydDown matured and is now in a state where it can model heat transfer in both steel and dual-layer low thermal conductivity composites during depressurisation/pressurisation. However, it cannot manage two-phase (gas/liquid) behaviour due to limitations in the flash calculation. Thus, a change in thermodynamic back-end was inevitable.
+
+## *openthermo* development
+Recently, I joined ORS Consulting with Carsten, and we revived our plans for a rigorous blowdown simulation tool. The remaining challenge was the more complex two-phase (or three-phase) flash problem and the non-equilibrium / partial equilibrium assumption. 
+At all times the big inspiration has been the work done at Empirical College London, University College London and later on also Università Politecnica delle Marche on the codes BLOWDOWN, BLOWSIM and VBsim, respectively. The former was also acquired by AspenTech and made available in HYSYS. Further the motivation has also been to have a tool easily accessible as a supplement to commerical (and expensive) tools. Both to reduce load on license pools, but also to provide more efficient workflows. We wanted to make the tool open source and available to the public, but license limitations on the legacy flash calculation by Prof. Michelsen required an alternative flash calculation. Several tools are now available such as Python [*thermo*](https://github.com/CalebBell/thermo) [@thermo], [NeqSim](https://equinor.github.io/neqsimhome/) [@neqsim] and [*thermopack*](https://thermotools.github.io/thermopack/) . Handling vessel depressurisation, which is effectively an UV-flash problem (Internal Energy - Volume) requires extremely many flash calculations to be performed. Thus, a fast and stable flash calculation is required. In order to provide speed and stability the preliminary choice has been [*thermopack* from SINTEF](https://thermotools.github.io/thermopack/), although it may change in the future in order to provide a three-phase (VLLE) flash.   
+
+# Limitations and implementation details 
+A few choices has been made to keep things simple:
+
+- [*thermopack*](https://thermotools.github.io/thermopack/) [@thermopack] is used as thermodynamic backend
+- Thermodynamic and transport properties (enthalpy, entropy, internal energy, liquid density, thermal conductivity, viscosity) is provided via Python *thermo* / *chemicals*.
+- No temperature stratification inside bulk phases
+- No temperature gradient through vessel wall. 
+- Heat transfer is modelled as constant or simplified using empirical correlations
+- Only single and two-phase (VLE) is handled. Three-phase (VLLE) cannot currently be modelled in the open source version.
+- Currently only the Peng-Robinson (PR) [@peng_new_1976] and Soave-Redlich-Kwong [@SOAVE19721197] cubic equations of state are made available.  
+- *openthermo* and it's legacy code has been built by engineers NOT software developers.  
+
+Ignoring temperature gradients in the vessel wall is an acceptable assumption for (not too thick) steel vessel walls. However, low thermal conductivity materials cannot accurately be modelled. In order to do so a 1-D heat transfer model shall be implemented. 
+
+One limitation of *thermopack* is that including pseudo components is not easy if the internal property calculations shall be used. Further, *thermopack* does not provide transport properties. In order to allow an implementation for pseudo components and transport properties the *thermopack* library is only used for flash calculations and used as a plugin, the rest (and less computationally demanding tasks) is provided by Python *thermo*. 
+
+While *openthermo* has been extensively validated and fidelity has been built, we have not had the work force or man-months/years available like the legacy university projects or the commerical software providers. This means that there likely will be situations where the code fails to provide results, cases that are not covered or simply the code will not work. This is the cost and risk of using open source software.   
+
+# Usage
+When using *openthermo* a dictionary holding all relevant input in order for the program to do vessel calculations shall be provided when the main Blowdown class is initialized. The depressurisation is run by calling the class method **depressurize()** or **depressurize_euler**. 
+
+## Basic usage
+A minimal example for running *openthermo* is provided below. The example is for an isentropic blowdown i.e. with a rigorous energy and mass balance, taking into account work done by the discharged fluid, but without any heat transfer. The model assumes full equilibrium between gas and liquid (if two-phases exists at any time during the simulation). 
+
+```python
 from openthermo.vessel.blowdown import Blowdown
-from openthermo.flash.michelsen import get_flash_dry
 
 input = {}
 P = 12e5
@@ -201,27 +205,55 @@ input["ambient_temperature"] = 273
 input["back_pressure"] = 1.01e5
 input["bdv_orifice_size"] = 0.03  # m
 input["bdv_orifice_cd"] = 0.84
-
-names = ["methane", "propane", "n-butane", "i-butane", "n-decane"]
-molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
-
-input["molefracs"] = molefracs
-
-input["flash"] = get_flash_dry(
-    names,
-    molefracs,
-    P=P,
-    T=T,
-    rho=input["liquid_density"],
-    model=input["eos_model"],
-)
+input['component_names'] =  ["methane", "propane", "n-butane", "i-butane", "n-decane"]
+input["molefracs"] =  [0.8, 0.05, 0.01, 0.01, 0.10]
 
 segment = Blowdown(input)
 segment.depressurize()
 segment.plot()    
 ```
 
-## Demos
+## More advanced usage
+Below is a more advanced example also taking heat transfer between the vessel wall and the surroundings and from/to the vessel fluid. The model applies the partial / non-equilibrium approach between gas and liquid (if two-phase occur at any time during the blowdown). The below example is for a condensing gas initially at super-critical conditions where significant temperature difference between the gas and condensed liquid occurs during the experiment/simulation. The example is from an experiment reported by Szczepanski [@Szczepanski] and widely applied for demonstration and validation of simulation programs e.g. [@Haque1992b;@WONG;@park_numerical_2018]. 
+
+
+```python
+from openthermo.vessel.blowdown import Blowdown
+
+input = {}
+P = 116*1.013e5
+T = 293.0
+
+input["mode"] = "isentropic"
+input["heat_transfer"] = "rigorous"
+input["wall_thickness"] = 0.059  # m
+input["eos_model"] = "PR"
+input["liquid_density"] = "eos"
+input["max_time"] = 1500
+input["delay"] = 0
+input["time_step"] = 10
+input["length"] = 2.25
+input["diameter"] = 1.13
+input["vessel_type"] = "ASME F&D"
+input["orientation"] = "vertical"
+input["liquid_level"] = 0
+input["water_level"] = 0.0
+input["operating_temperature"] = T
+input["operating_pressure"] = P
+input["ambient_temperature"] = 293.0
+input["back_pressure"] = 1.01e5
+input["bdv_orifice_size"] = 0.01  # m
+input["bdv_orifice_cd"] = 0.8
+
+names = ["methane", "ethane", "propane", "n-butane"]
+molefracs = [0.64, 0.06, 0.28, 0.02]
+
+input["molefracs"] = molefracs
+input["component_names"] = names
+
+segment = Blowdown(input)
+segment.depressurize_euler() 
+```
 
 ## Calculation methods
 The following methods are implemented:
@@ -248,17 +280,61 @@ For rigorous heat transfer additional input are required:
 
 More elaborate description of the required input for the different calculation types are provided in [@Sec:input].
 
-## Input file examples
-When using *openthermo* a dictionary holding all relevant input in order for the program to do vessel calculations shall be provided when the class is initialized. 
-
-An example of a minimal file for an isentropic vessel depressurization (no heat transfer) is shown below. 
-
-
 
 ## Input fields and hierarchy {#sec:input}
-In the following the full hierarchy of input for the different calculation types is summarised.
+In the following the full listing of input for the different calculation types is summarised cf.  [@Tbl:input].
 
-At the top level the following fields are accepted, with the last being optional and the second last dependant on calculation type:
+Input field             | Unit  | Description           | Mandatory? / Depends on    | Options       |
+----                    | ----  | ----                  | ----          | ---           |
+`operating_temperature` | K     | Initial temperature   | Yes           | N/A           |
+`operating_pressure`    | Pa    | Initial pressure      | Yes           | N/A           |
+`mode`                  | N/A   | Calculation mode      | Yes           | `isothermal`  |
+^^                      |       |                       |               | `adiabatic`   |
+^^                      |       |                       |               | `fire`        |
+^^                      |       |                       |               | `rigorous`    |
+`eos_model`             | N/A   | Equation of state     | Yes           | `PR`          |
+^^                      |       |                       |               | `SRK`         |
+`liquid_density`        | N/A   | Liquid density model  | Yes           | `eos`         |
+`max_time`              | s     | Simulation end time   | Yes           | N/A           |
+`delay`                 | s     | Delay before blowdown | No            | N/A           |
+`time_step`             | s     | Required for PPE      | No/Yes        | N/A           |
+`length`                | m     | Vessel length/height  | Yes           | N/A           |
+`diameter`              | m     | Vessel diameter       | Yes           | N/A           |
+`vessel_type`           | N/A   | Vessel end type       | Yes           | `Flat-end`    |
+^^                      |       |                       |               | `ASME F&D`    |
+^^                      |       |                       |               | `DIN`         |
+`orientation`           | N/A   | Vessel orientation    | Yes           | `horizontal`  |  
+^^                      |       |                       |               | `vertical`    |
+`liquid_level`          | m     | Initial liquid level  | Yes           | N/A           |
+`back_pressure`         | Pa    | Blowdown back-pressure| Yes           | N/A           |
+`bdv_orifice_size`      | m     | BDV orifice diameter  | Yes           | N/A           |
+`bdv_orifice_cd`        | N/A   | Orifice discharge coefficient | Yes   | N/A           |
+`heat_transfer`         | N/A   | Heat transfer option  | No            | `rigorous`    |
+^^                      |       |                       |               | `rigorous_sb_fire` |
+`wall_thickness`        | m     | Material thickness    | `heat_transfer`| N/A          |
+`ambient_temperature`   | K     | Ambient temperature   | `heat_transfer`| N/A          |
+`sb_fire_type`          | N/A   | S-B fire type         | `heat_transfer`=`rigorous_sb_fire` | `api_pool` |
+^^                      |       |                       |               | `api_jet`     |
+^^                      |       |                       |               | `scandpower_pool`|
+^^                      |       |                       |               | `scandpower_jet` |
+`molefracs`             | N/A   | List of mole fractions| Yes           |  N/A          |
+`component_names`       | N/A   | Pure component names  | Yes           | N/A           |
+`drain_fire_fighting`   | N/A   | API521 pool fire      | `mode`=`fire` | 0             |
+^^                      |       |                       |               | 1             |
+`pseudo_names`          | N/A   | Pseudo component names | No           | N/A           |
+`pseudo_molefracs`      | N/A   | Pseudo component mole fractions| `pseudo_names`| N/A  |
+`pseudo_Tbs`            | K     | True boiling point of pseudos  | `pseudo_names`| N/A  |
+`pseudo_SG`             | N/A   | Specific gravity of pseudos    | `pseudo_names`| N/A  |
+`leak_active`           | N/A   | Additional outflow via leak at t=0 | No        | 0    |
+^^                      |       |                                    |           | 1    |
+`leak_size`             | m     | Equivalent orifice size of leak    | `leak_active`=1 | N/A |
+`leak_cd`               | N/A   | Leak discharge coefiicient         | `leak_active`=1 | N/A |
+`leak_type`             | N/A   | Fluid released from leak           | `leak_active`=1 | `liquid` |
+^^                      |       |                                    |                 | `gas` |
+^^                      |       |                                    |                 | `two-phase` |
+
+    
+: Input overview {#tbl:input}
 
 
 # Theory
@@ -268,11 +344,11 @@ The following main topics are covered:
 - thermodynamics
 - mass transfer
 - heat transfer
-- Partial equilibrium 
+- partial equilibrium 
 
 ## Thermodynamics
 
-### Equation of state
+### Equation of state 
 Currently only the Peng-Robinson [@peng_new_1976] and Soave-Redlich-Kwong [SOAVE19721197] cubic equations of stare are available despite many being available in both *thermopack* and *thermo*. In the future more cubic equations of state may be made available. 
 
 For more background information and theory regarding the equations of state, please refer to e.g. [*thermo* documentation](https://thermo.readthedocs.io/thermo.eos_mix.html), the [DWSIM user guide](https://github.com/DanWBR/dwsim/blob/windows/PlatformFiles/Common/docs/User_Guide.pdf), a [*thermopack* memo](https://github.com/thermotools/thermopack/blob/main/docs/memo/thermopack/thermopack2013.pdf).
@@ -292,44 +368,53 @@ $$ \Delta \left( \dot{m} \right) _{fs} = \dot{m}_2 - \dot{m}_1 $$
 
 An energy balance for the control volume, with the first law of thermodynamics applied, needs to account for all the energy modes with can cross the control surface. Each stream has a total energy
 
-$$ U + \frac{1}{2}u^2 + zg $$
+$$ u + \frac{1}{2}w^2 + zg $$
 
 where the first term is the specific internal energy, the second term is the kinetic energy and the last term is the potential energy.
 The rate at which each stream transports energy in or out of the control volume is given by
 
-$$ \dot{m} (U + \frac{1}{2}u^2 + zg) $$
+$$ \dot{m} (u + \frac{1}{2}W^2 + zg) $$
 
 and in total
 
-$$  \Delta \left[ \dot{m} (U + \frac{1}{2}u^2 + zg) \right]_{fs}$$
+$$  \Delta \left[ \dot{m} (U + \frac{1}{2}w^2 + zg) \right]_{fs}$$
 
 Furthermore, work (not to be confused with shaft work) is also associated with each stream in order to move the stream into or out from the control volume (one can think of a hypothetical piston pushing the fluid at constant pressure), and the work is equal to $PV$ on the basis of the specific fluid volume.
 The work rate for each stream is
 
-$$ \dot{m}(PV) $$
+$$ \dot{m}(pV) $$
 
 and in total
 
-$$ \Delta\left[ \dot{m}(PV) \right]_{fs} $$
+$$ \Delta\left[ \dot{m}(pV) \right]_{fs} $$
 
 Further, heat may be transferred to (or from) the control volume at a rate $\dot{Q}$ and shaft work may be applied, $\dot{W}_{shaft}$.
 Combining all this with the accumulation term given by the change in total internal energy the following general energy balance can be written:
 
-$$ \frac{d(mU)_{cv}}{dt} + \Delta \left[ \dot{m} (U + \frac{1}{2}u^2 + zg) \right]_{fs} + \Delta \left[ \dot{m}(PV) \right]_{fs} = \dot{Q} +\dot{W}_{shaft}   $$
+$$ \frac{d(mu)_{cv}}{dt} + \Delta \left[ \dot{m} (u + \frac{1}{2}w^2 + zg) \right]_{fs} + \Delta \left[ \dot{m}(pV) \right]_{fs} = \dot{Q} +\dot{W}_{shaft}   $$
 
-Applying the relation $H = U + PV$, setting $\dot{W}_{shaft} = 0$ since no shaft work is applied to or extracted from the vessel, and assuming that kinetic and potential energy changes can be omitted the energy balance simplifies to:
+Applying the relation $h = u + pV$, setting $\dot{W}_{shaft} = 0$ since no shaft work is applied to or extracted from the vessel, and assuming that kinetic and potential energy changes can be omitted the energy balance simplifies to:
 
-$$ \frac{d(mU)_{cv}}{dt} + \Delta \left[ \dot{m} H \right]_{fs} = \dot{Q}  $$
+$$ \frac{d(mu)_{cv}}{dt} + \Delta \left[ \dot{m} h \right]_{fs} = \dot{Q}  $$
 
 The equation can be further simplified if only a single port acting as either inlet or outlet is present:
 
-$$ \frac{d(mU)_{cv}}{dt} + \dot{m} H  = \dot{Q}  $$ {#eq:energybalance}
+$$ \frac{d(mu)_{cv}}{dt} + \dot{m} h  = \dot{Q}  $$ {#eq:energybalance}
 
 where the sign of $\dot{m}$ determines if the control volume is either emptied or filled.
+In this case only dischartge is considered in opposition to HydDown [@andreasen2021].
 The continuity equation [@Eq:continuity] and the energy balance [@Eq:energybalance] combined with the equation of state are the key equations that shall be solved/integrated in order to calculate the change in temperature and pressure as a function of time.
 
+If the fluid inventory is a multi-phase mixture and the discharge is only sourced from one of the phases, a mole balance is also required in addition to the energy balance and mass balnce equations above. in order to account
+for the dynamical change in composition during the blowdown process. For all components, $i$,  the following balance is made where the change in total moles of component $i$ in the fluid
+inventory is given by the rate of discharge of the component, which is related to the mole fraction in the vapour phase
+
+$$ \frac{dN_i}{dt} = \dot{N_i} = \frac{\dot{m}}{M} y_i $$
+
+In order to update the phase equilibrium i.e. account for flashing liquid (typically) or condensing gas, for each calculation step an UV-flash calculation is called with the current global composition. This is under the assumption of full thermal and compositional equilibrium between gas and liquid. In the current state of the code the PT-flash calculation provided by *thermopack* is wrapped in code solving for prescribed specific internal energy and molar volume.  
+
 ## Flow devices {#sec:flow}
-### Restriction Orifice
+### Restriction Orifice (gasseous discharge)
 When a fluid flows through a restriction or opening such as an orifice, the velocity will be affected by conditions upstream and downstream.
 If the upstream pressure is high enough, relative to the downstream pressure, the velocity will reach the speed of sound (Ma = 1) and the flow rate obtained will be the critical flow rate.
 This condition is referred to as choked flow.
@@ -362,6 +447,9 @@ $$ \dot{m}_{flow}= C_d  \cdot A \cdot\sqrt{\left ( \frac{2 k}{k-1}\right )  \cdo
 - $\dot{m}_{flow}$ is the mass flow through the orifice. $[kg/s]$
 - $C_d$ is the discharge coefficient of the orifice opening. $[-]$
 - $A$ is the cross sectional area of the orifice. $[m^2]$
+
+### Leaks
+
 
 ## Heat transfer {#sec:heat}
 
@@ -418,9 +506,31 @@ $$ Pr=\frac{c_p \mu}{k} $$ {#eq:prandtl_gas}
 
 It is important to note that the properties in the above equations shall be evaluated at the fluid film temperature which can be approximated by the average of the the fluid bulk temperature and the vessel wall temperature [@geankoplis].
 
-The mechanism of heat transfer on the outside of the vessel at ambient conditions is similar to the above.
-In HydDown the external heat transfer is not modelled currently.
-A heat transfer coefficient shall be provided.
+The mechanism of heat transfer on the outside of the vessel at ambient conditions is similar to the above, but in the current version in case of ambient heat transfer a fixed coefficient of 8 W/m$^2$ K is applied. 
+
+### Nucleate boiling heat transfer
+For heat transfer between vessel wall and liquid, this is treated as nucleate boiling and estimated via the Rohsenow correlation [@rohsenow_method_1951] as implemented in the *ht* python library [@bell_calebbellht_2024].
+
+$$
+  h = {{\mu }_{L}} \Delta H_{vap} \left[ \frac{g( \rho_L-\rho_v)}
+        {\sigma } \right]^{0.5}\left[\frac{C_{p,L}\Delta T_e^{2/3}}{C_{sf}
+        \Delta H_{vap} Pr_L^n}\right]^3
+$$
+
+
+  - $\rho_L$ is the density of the liquid [kg/m$^3$]
+  - $\rho_v$ is the density of the produced gas [kg/m$^3$]
+  - $\mu_l$ is the viscosity of liquid [Pa s]
+  - $k_l$ is the thermal conductivity of liquid [W/m K]
+  - $C_{p, l}$ is the heat capacity of liquid [J/kg K]
+  - $H_{vap}$ is the heat of vaporization of the fluid [J/kg]
+  - $\sigma$  is the surface tension of liquid [N/m]
+  - $T_e$ is the excess wall temperature, [K]
+  - $C_{sf}$ is Rohsenow coefficient specific to fluid and metal [-]
+  - $n$ constant, 1 for water, 1.7 (default) for other fluids usually [-]
+
+In the present study a value of the Rohsenow coefficient of 0.013 is applied and the exponent $n$ is set to 1.7. See also [@pioro_experimental_1999;@jabardo_evaluation_2004].
+
 
 ### Conduction
 For accurate prediction of the outer and especially the inner wall temperature for correct estimation of internal convective heat transfer and the average material temperature, the general equation of 1-D unsteady heat transfer shall be solved:
@@ -450,7 +560,7 @@ However, for increased wall thickness, and/or for different materials with lower
 
 Especially for vessels with low conductivity materials (or very thick walls) accurate estimation of the vessel wall temperatures requires the 1-D transient heat transfer problem to be solved. 
 
-### Fire heat loads
+### General fire heat loads
 The heat transfer from the flame to the shell is modelled using the recommended approach from Scandpower [@scandpower] and API [@API521].
 The heat transfer from the flame to the vessel shell is divided into radiation, convection, and reradiation as seen in equation [@Eq:flame]:
 
@@ -492,49 +602,57 @@ The heat flux used to calculate the flame temperature is given in table [@tbl:he
 
 : Incident heat fluxes for various fire scenarios given by Scandpower [@scandpower] {#tbl:heatfluxes1}
 
+### API 521 pool-fire heat load
 
 ## Model implementation
-A simple (naive) explicit Euler scheme is implemented to integrate the mass balance over time, with the mass rate being calculated from an orifice/valve equation as described in [@Sec:flow]:
+Two main implementations have been made, which are referred to as *homogeneous equilibrium* or *full equilibrium* and *partial phase equilibrium* (PPE), which will be further elaborated in the following.
 
-$$ m_{cv}(i+1) =  m_{cv}(i) + \dot{m}(i) \Delta t  $$ {#eq:euler_mass}
+### Full equilibrium 
+In the full/homogeneous equilibrium (HE) concept it is assumed that any phase will be in full equilibrium with the other phases and that there is a uniform pressure and temperature throughout all phases. 
+However, in the case of both vapour and liquid being present, different vessel wall temperatures will be solved for. The ordinary differential equations (mass, energy, mole and wall temperatures) are solved using the *dopri5* method [@dormand_family_1980;@dopri_1993], which is an explicit Runge-Kutta method of order (4)5 as provided in *scipy* [@2020SciPy-NMeth].
+In each time step, using the input for component moles and total internal energy an UV-flash is solved in order to estimate the the pressure and temperature as well as phase split and properties for each phase. 
+The UV-flash is obtained by formulating a minimisation problem around the standard PT-flash, iteratively solving for pressure and temperature while minimizing the error in internal energy and molar volume using a Nelder-Mead algorithm [@gao_implementing_2012] as provided by *scipy* [@2020SciPy-NMeth].
+Using the estimated liquid content (if any) the wetted surface area can be estimated and the heat transfer to both liquid and vapour can be estimated. With the vapour properties the mass discharge rate can be calculated.
+Thus, all derivatives can be quantified and passed to the Runge-Kutta solver. In the homogenous equilibrium approach the density of the liquid phase 
+can be estimated both by the equation of state or using the COSTALD method [@hankinson_new_1979] for saturated liquids for a more realistic liquid density.
 
-$$\dot{m}(i) = f(P,T,) $$
+### Partial phase equilibrium
+The concept of partial phase equilibrium (PPE) was first introduced by Speranza and
+Terenzi [@speranza_blowdown_2005] in order to describe the non-equilibrium between
+the phases during the blowdown process and further refined by Ricci *et al.* [@ricci_unsteady_2015]  and Terenzi *et al.* [@dalessandro_modelling_2015]. 
 
-For each step, the mass relief/ left in the vessel is known.
-Since the volume is fixed the mass density is directly given.
+In the PPE approach the fluid in the vessel is divided in two different zones during the blowdown : zone **V** (vapour phase) and zone **L** (liquid phase). See also [@Fig:logo]. In order to account for the mass and energy exchanged
+between the liquid and vapour phases, it is necessary to introduce
+two new phases **v** and **l**. In the following **v** and **l** phases are denoted as
+**child** phases while **V** and **L** will be named **parent phases**.
+The child phase **v** is formed (as bubbles) from the liquid parent (**L**) vaporization while
+the child phase **l** is formed from the parent vapour (**V**) condensation (as droplets).
+It is assumed that the new phase **v** is in phase equilibrium
+with the liquid **L** and likewise that the new phase **l** is in phase
+equilibrium with the gas (bulk) **V**. 
+While the child phases may physically appear as droplets in the gas phase and bubbles in the liquid phase and have
+a significant lifetime during settling/buoyant rising, for the calculation purpose they are assumed to form and immediately drop
+  and homogenize in their corresponding bulk phase (actually within each major time step).  Thus, the droplets will drop immediately into
+the liquid (bulk), while the vapour (bubbles) will immediately rise
+into the gas (bulk) phase.  
 
-For the calculation methods (isentropic, isenthalpic, isenergetic, etc.), CoolProp allows specifying density and either H, S, or U directly - this is very handy and normally only TP, PH, or TS property pairs are implemented and you would need to code a second loop to make it into am UV, VH, or SV calculation.
+Consequently, it is possible to consider the
+whole system as split into two partial sub-system **V+l** and **L+v**,
+constituted of one **parent** (the bulk phase) and one **child** phase.
+The whole idea of the child phases is to enable mass and energy exchange between the parent
+phases and account for thermal non-equilibrium as simple as possible.
 
-In the following, the high-level steps in the solution procedure are outlined for the different calculation types.
-To illustrate calls to the equation of state in CoolProp, the notation $EOS(D,T)$ corresponds to calculation of the state at known density and temperature, for example.
+Following the conceptualisation of the partial phase equilibrium, the mass and energy conservation can be described [@speranza_blowdown_2005;@ricci_unsteady_2015;@dalessandro_modelling_2015;@park_numerical_2018] with separate mass conservation equations for vapour and liquid phase
 
-### Isothermal process
-For an isothermal process, the solution procedure for each calculation step is the following with the mass in the control volume being calculated from [@Eq:euler_mass]:
+The solution strategy for the partial phase equilibrium differs somewhat from the homogeneous equilibrium. Instead of the adaptive step size Runge-Kutta method a very simple explicit Euler method with fixed time step is applied. This is mainly due to the solving of the source terms of vapour condensation and liquid evaporation within each time step. As previously described, it is assumed that the equilibrium between parent and child phase is instantaneous. Thus, the moles transported between each main phase is quantifiable, 
+but in order to estimate the rate of the mass transfer, the time step must be exactly known. For numerical stability a relaxation factor of 0.9 is applied to the condensation / evaporation rates. 
 
-### Isenthalpic process
+Further, a combined UV-flash is solved for each phase at each time step. However, while the total volume is known from the vessel volume, the exact volume of each phase is not known before-hand. Thus, the two UV-flashes are linked by the total volume, given by the volume of the liquid and the volume of gas which must equal the vessel volume.
+Further, they are linked by a common pressure, while the temperature in each phase is allowed to differ. 
 
-### Isentropic process
 
-### Isenergetic process
+# Supplementing examples 
 
-### Energy balance
-The general first law applied to a flow process as outlined in [@Sec:firstlaw] subject to an explicit Euler scheme is:
 
-$$ D(i+1) = \frac{m_{cv}(i+1)}{V} $$
-$$ U_{cv}(i+1) = \frac{m_{cv}(i)U_{cv}(i) - \left( \dot{m}(i) H (i) +  \dot{Q}(i) \right) \Delta t}{m_{cv}(i+1)}  $$ {#eq:firstlaw_euler}
-
-The above assumes that mass flow is positive when leaving the control volume and heat rate is positive when transferred to the control volume.
-$H(i)$ is the specific enthalpy of the fluid in the control volume for a discharging process and it is equal to the energy of the entering stream for a filling process.
-The heat rate is calculated as outlined in [#Sec:heat].
-
-For the vessel wall a simple heat balance is also made:
-
-$$ T_{wall}(i+1) = T_{wall}(i)  + \frac{\dot{Q}_{outer} - \dot{Q}_{inner} } {c_p m_{vessel}} \Delta t $$
-
-where $\dot{Q}_{outer}$ is the convective heat transfer to or from the ambient surroundings from the outer surface of the vessel, with positive values indicating that heat is transferred from the surroundings to the vessel wall.
-This is either a fixed heat transfer coefficient with a specified ambient temperature (outer surface) or a calculated fire heat load.
-$\dot{Q}_{inner}$ is the internal heat transfer, either a fixed number or calculated as natural convection.
-
-The remaining steps are update of temperature and pressure.
 
 
