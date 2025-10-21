@@ -3,6 +3,9 @@ import copy
 from scipy.constants import g
 from ht import Rohsenow
 from thermo.volume import COSTALD_mixture
+import warnings
+
+warnings.simplefilter("once", UserWarning)
 
 
 def COSTALD_rho(phase):
@@ -178,6 +181,15 @@ def h_inside_wetted(L, Tvessel, Tfluid, fluid):
 
     kl = sum([k * w for k, w in zip(fluid.liquid0.ws(), fluid.liquid0.kls())])
 
+    try:
+        sigma = liq.sigma()
+    except:
+        warnings.warn(
+            "Surface tension evaluation failed, using default 0.0175 N/m. May not be accurate.",
+            UserWarning,
+        )
+        sigma = 0.0175
+
     h_boil = Rohsenow(
         rhol=liq.rho_mass(),
         rhog=fluid.gas.rho_mass(),
@@ -185,7 +197,7 @@ def h_inside_wetted(L, Tvessel, Tfluid, fluid):
         kl=kl,
         Cpl=liq.Cp_mass(),
         Hvap=(fluid.gas.H_mass() - liq.H_mass()),
-        sigma=liq.sigma(),
+        sigma=sigma,
         Te=min(max((Tvessel - Tfluid), 0), 30),
         Csf=0.013,
         # n=1.3,

@@ -360,7 +360,7 @@ def test_blowdown_condensable_gas(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Inner wall temperature (K)")
-        plt.savefig("plots\condensable_gas_inner_wal.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_inner_wal.png", dpi=300)
 
         plt.figure(2)
         plt.plot(segment.times, np.asarray(segment.pressure) / 1e5, label="Model")
@@ -368,7 +368,7 @@ def test_blowdown_condensable_gas(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Pressure (bar)")
-        plt.savefig("plots\condensable_gas_pressure.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_pressure.png", dpi=300)
         plt.show()
 
 
@@ -917,7 +917,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel(r"Inner wall temperature (K)")
-        plt.savefig("plots\condensable_gas_inner_wall_rig.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_inner_wall_rig.png", dpi=300)
 
         plt.figure(2)
         plt.plot(segment.times, np.asarray(segment.pressure) / 1e5, label="Model")
@@ -926,7 +926,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Pressure (bar)")
-        plt.savefig("plots\condensable_gas_pressure_rig.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_pressure_rig.png", dpi=300)
 
         plt.figure(3)
         plt.plot(
@@ -945,7 +945,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (sec)")
         plt.ylabel("Temperature (K)")
-        plt.savefig("plots\condensable_gas_bulk_rig.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_bulk_rig.png", dpi=300)
         plt.show()
 
 
@@ -1246,7 +1246,7 @@ def test_blowdown_sbfire_n2(plot=False):
     r = segment.depressurize()
     import matplotlib.pyplot as plt
 
-    segment.plot(filename="plots\\SB_fire_nitrogen")
+    segment.plot()  # filename="plots\\SB_fire_nitrogen"
     name = "plots\\SB_fire_nitrogen"
     if plot:
         plt.figure(1)
@@ -1307,11 +1307,11 @@ def test_blowdown_sbfire_n2(plot=False):
 
 if __name__ == "__main__":
     pass
-    test_blowdown_sbfire_multiphase(plot=True)
+    # test_blowdown_sbfire_multiphase(plot=True)
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
-    # test_blowdown_api_dry_inadequate_costald(plot=True)
+    test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
     # test_isothermal(plot=True)
