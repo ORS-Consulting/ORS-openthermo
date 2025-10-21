@@ -21,3 +21,4 @@ openthermo/flash/__pycache__/michelsen.cpython-311.pyc
 openthermo/__pycache__/validation.cpython-311.pyc
 openthermo/vessel/__pycache__/blowdown.cpython-311.pyc
 openthermo/vessel/__pycache__/blowdown.cpython-311.pyc
+tests/__pycache__/test_misc.cpython-311-pytest-8.3.4.pyc
