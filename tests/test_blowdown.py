@@ -3,24 +3,27 @@ import numpy as np
 import pytest
 from scipy.constants import atm
 from openthermo.vessel.blowdown import Blowdown
-from openthermo.flash.michelsen import get_flash_dry
 
 validation_path = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), "..", "validation"
 )
 
 
-def test_blowdown_sbfire_costald(plot=False):
+def test_blowdown_sbfire_multiphase(plot=False):
     """
     Test against HYSYS Depressurisation utility for S-B pool fire
     exposing the total area of the vessel. No water present.
     COSTALD liquid density is applied.
     """
-    file_name = "sb_test_unisim.csv"
-
+    file_name = "unisim_sb_mass_flow.csv"
     path = os.path.join(validation_path, file_name)
-
-    data = np.loadtxt(path, skiprows=2, delimiter=",", usecols=(range(17)))
+    mass_flow_data = np.loadtxt(path, skiprows=11, delimiter=",", usecols=(range(2)))
+    file_name = "unisim_wall_temperature.csv"
+    path = os.path.join(validation_path, file_name)
+    wall_temp_data = np.loadtxt(path, skiprows=11, delimiter=",", usecols=(range(5)))
+    file_name = "unisim_sb_fire_pressure.csv"
+    path = os.path.join(validation_path, file_name)
+    pressure_data = np.loadtxt(path, skiprows=11, delimiter=",", usecols=(range(2)))
 
     input = {}
     P = 12e5
@@ -32,19 +35,19 @@ def test_blowdown_sbfire_costald(plot=False):
     input["wall_thickness"] = 0.019  # m
     input["eos_model"] = "PR"
     input["liquid_density"] = "eos"
-    input["max_time"] = 600
+    input["max_time"] = 500
     input["delay"] = 0
     input["length"] = 10
     input["diameter"] = 3
     input["vessel_type"] = "Flat-end"
     input["orientation"] = "horizontal"
-    input["liquid_level"] = 1.5
+    input["liquid_level"] = 0.27 * 3
     input["water_level"] = 0.0
     input["operating_temperature"] = T
     input["operating_pressure"] = P
     input["ambient_temperature"] = 298
     input["back_pressure"] = 1.01e5
-    input["bdv_orifice_size"] = 0.03  # m
+    input["bdv_orifice_size"] = 0.04  # m
     input["bdv_orifice_cd"] = 0.84
 
     input["leak_active"] = 0
@@ -53,24 +56,26 @@ def test_blowdown_sbfire_costald(plot=False):
     input["leak_type"] = "liquid"
 
     names = ["methane", "propane", "n-butane", "i-butane", "n-decane"]
-    molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
+    molefracs = [
+        0.291970802919708,
+        1.82481751824818e-2,
+        3.64963503649635e-3,
+        3.64963503649635e-3,
+        0.682481751824818,
+    ]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
+    input["component_names"] = names
     segment = Blowdown(input)
-    r = segment.depressurize()
+    segment.depressurize()
     import matplotlib.pyplot as plt
 
     name = "plots\\SB_fire_water_dry"
 
+    assert segment.pressure[-1] == pytest.approx(pressure_data[-1, 1] * 1000, abs=0.2e5)
+    assert segment.unwetted_wall_temp[-1] == pytest.approx(
+        wall_temp_data[-1, 2] + 273.15, abs=10
+    )
     if plot:
         plt.figure(1)
         plt.plot(
@@ -79,24 +84,16 @@ def test_blowdown_sbfire_costald(plot=False):
             "bo",
             label="openthermo/python",
         )
-        plt.plot(data[:, 0], data[:, 2] + 1.013, "r-", label="HYSYS Depressurisation")
+        plt.plot(
+            pressure_data[:, 0],
+            pressure_data[:, 1] / 100,
+            "r-",
+            label="Unisim EO Blowdown",
+        )
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Pressure (bar)")
         plt.savefig(name + "_pressure.png", dpi=300)
-
-        plt.figure(2)
-        plt.plot(
-            segment.times,
-            np.asarray(segment.temperature) - 273.15,
-            "bo",
-            label="openthermo/python",
-        )
-        plt.plot(data[:, 0], data[:, 1], "r-", label="HYSYS Depressurisation")
-        plt.legend(loc="best")
-        plt.xlabel("Time (s)")
-        plt.ylabel(r"Temperature ($^\circ$C)")
-        plt.savefig(name + "_temperature.png", dpi=300)
 
         plt.figure(3)
         plt.plot(
@@ -105,7 +102,9 @@ def test_blowdown_sbfire_costald(plot=False):
             "bo",
             label="openthermo/python",
         )
-        plt.plot(data[:, 0], data[:, 3], "r-", label="HYSYS Depressurisation")
+        plt.plot(
+            mass_flow_data[:, 0], mass_flow_data[:, 1], "r-", label="Unisim EO Blowdown"
+        )
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Mass flow (kg/h)")
@@ -116,20 +115,44 @@ def test_blowdown_sbfire_costald(plot=False):
             segment.times,
             np.asarray(segment.wetted_wall_temp) - 273.15,
             "bo",
-            label="openthermo Wetted",
+            label="openthermo wetted",
         )
-        plt.plot(data[:, 0], data[:, 9], "b--", label="HYSYS Depressurisation Wetted")
+        plt.plot(
+            wall_temp_data[:, 0],
+            wall_temp_data[:, 3],
+            "b-.",
+            label="Unisim EO Blowdown wetted inside",
+        )
+        plt.plot(
+            wall_temp_data[:, 0],
+            wall_temp_data[:, 4],
+            "b--",
+            label="Unisim EO Blowdown wetted outside",
+        )
+
         plt.plot(
             segment.times,
             np.asarray(segment.unwetted_wall_temp) - 273.15,
             "ro",
-            label="openthermo Unwetted",
+            label="openthermo unwetted",
         )
-        plt.plot(data[:, 0], data[:, 8], "r--", label="HYSYS Depressurisation Unwetted")
-
+        plt.plot(
+            wall_temp_data[:, 0],
+            wall_temp_data[:, 1],
+            "r-.",
+            label="Unisim EO Blowdown unwetted inside",
+        )
+        plt.plot(
+            wall_temp_data[:, 0],
+            wall_temp_data[:, 2],
+            "r--",
+            label="Unisim EO Blowdown unwetted outside",
+        )
         plt.xlabel("Time (s)")
         plt.ylabel("Wall temperature (C)")
         plt.legend(loc="best")
+        plt.savefig(name + "_wall_temperature.png", dpi=300)
+
         plt.show()
 
 
@@ -178,16 +201,7 @@ def test_blowdown_api_dry_inadequate_costald(plot=False):
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
-
+    input["component_names"] = names
     segment = Blowdown(input)
     r = segment.depressurize()
     assert segment.pressure[-1] == pytest.approx(data[:, 2][-1] * 1e5 + atm, rel=0.05)
@@ -324,16 +338,7 @@ def test_blowdown_condensable_gas(plot=False):
     molefracs = [0.64, 0.06, 0.28, 0.02]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
-
+    input["component_names"] = names
     segment = Blowdown(input)
     r = segment.depressurize()
 
@@ -355,7 +360,7 @@ def test_blowdown_condensable_gas(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Inner wall temperature (K)")
-        plt.savefig("plots\condensable_gas_inner_wal.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_inner_wal.png", dpi=300)
 
         plt.figure(2)
         plt.plot(segment.times, np.asarray(segment.pressure) / 1e5, label="Model")
@@ -363,7 +368,7 @@ def test_blowdown_condensable_gas(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Pressure (bar)")
-        plt.savefig("plots\condensable_gas_pressure.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_pressure.png", dpi=300)
         plt.show()
 
 
@@ -404,16 +409,7 @@ def test_blowdown_nitrogen(plot=False):
     molefracs = [1.0]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
-
+    input["component_names"] = names
     segment = Blowdown(input)
     r = segment.depressurize()
     # segment.plot()
@@ -562,16 +558,7 @@ def test_blowdown_nitrogen_co2(plot=False):
     molefracs = [0.70, 0.30]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        # rho=input["liquid_density"],
-        # model=input["eos_model"],
-    )
-
+    input["component_names"] = names
     segment = Blowdown(input)
     r = segment.depressurize_euler()
     # segment.plot()
@@ -743,15 +730,8 @@ def test_blowdown_non_condensable(plot=False):
     molefracs = [0.91, 0.09]
 
     input["molefracs"] = molefracs
+    input["component_names"] = names
 
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        # rho=input["liquid_density"],
-        # model=input["eos_model"],
-    )
     input["time_step"] = 10
     segment = Blowdown(input)
     r = segment.depressurize()
@@ -898,15 +878,8 @@ def test_blowdown_condensable_gas_rig(plot=False):
     molefracs = [0.64, 0.06, 0.28, 0.02]
 
     input["molefracs"] = molefracs
+    input["component_names"] = names
 
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        # rho=input["liquid_density"],
-        # model=input["eos_model"],
-    )
     import time
 
     time1 = time.time()
@@ -944,7 +917,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel(r"Inner wall temperature (K)")
-        plt.savefig("plots\condensable_gas_inner_wall_rig.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_inner_wall_rig.png", dpi=300)
 
         plt.figure(2)
         plt.plot(segment.times, np.asarray(segment.pressure) / 1e5, label="Model")
@@ -953,7 +926,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Pressure (bar)")
-        plt.savefig("plots\condensable_gas_pressure_rig.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_pressure_rig.png", dpi=300)
 
         plt.figure(3)
         plt.plot(
@@ -972,7 +945,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
         plt.legend(loc="best")
         plt.xlabel("Time (sec)")
         plt.ylabel("Temperature (K)")
-        plt.savefig("plots\condensable_gas_bulk_rig.png", dpi=300)
+        plt.savefig("plots\\condensable_gas_bulk_rig.png", dpi=300)
         plt.show()
 
 
@@ -1012,15 +985,7 @@ def test_isothermal(plot=False):
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
+    input["component_names"] = names
 
     segment = Blowdown(input)
     r = segment.depressurize()
@@ -1106,15 +1071,7 @@ def test_adiabatic(plot=False):
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
+    input["component_names"] = names
 
     segment = Blowdown(input)
     r = segment.depressurize()
@@ -1179,7 +1136,6 @@ def test_isentropic(plot=False):
     input["eos_model"] = "PR"
     input["liquid_density"] = "eos"
     input["max_time"] = 900
-    input["delay"] = 0
     input["length"] = 10
     input["diameter"] = 3
     input["vessel_type"] = "Flat-end"
@@ -1193,33 +1149,22 @@ def test_isentropic(plot=False):
     input["bdv_orifice_size"] = 0.03  # m
     input["bdv_orifice_cd"] = 0.84
 
-    input["leak_active"] = 0
-    input["leak_size"] = 0.01  # m
-    input["leak_cd"] = 0.65
-    input["leak_type"] = "liquid"
-
     names = ["methane", "propane", "n-butane", "i-butane", "n-decane"]
     molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
 
     input["molefracs"] = molefracs
-
-    input["flash"] = get_flash_dry(
-        names,
-        molefracs,
-        P=P,
-        T=T,
-        rho=input["liquid_density"],
-        model=input["eos_model"],
-    )
+    input["component_names"] = names
 
     segment = Blowdown(input)
     r = segment.depressurize()
+    segment.plot("dummy")
     import matplotlib.pyplot as plt
 
-    name = "plots\\adiabatic_multiphase"
+    name = "plots\\isentropic_multiphase"
     assert segment.pressure[-1] == pytest.approx((0.989978) * 1e5 + atm, abs=0.2e5)
     assert segment.temperature[-1] == pytest.approx(22.3469 + 273.15, abs=0.3)
     if plot:
+        plt.clf()
         plt.figure(1)
         plt.plot(
             segment.times,
@@ -1262,14 +1207,114 @@ def test_isentropic(plot=False):
         plt.show()
 
 
+def test_blowdown_sbfire_n2(plot=False):
+    """
+    Test against HYSYS Depressurisation utility for S-B pool fire
+    exposing the total area of the vessel. No water present.
+    COSTALD liquid density is applied.
+    """
+    input = {}
+    P = 100e5
+    T = 298.15
+
+    input["mode"] = "isentropic"
+    input["heat_transfer"] = "rigorous_sb_fire"
+    input["sb_fire_type"] = "api_jet"
+    input["wall_thickness"] = 0.01  # m
+    input["eos_model"] = "PR"
+    input["liquid_density"] = "eos"
+    input["max_time"] = 1500
+    input["delay"] = 0
+    input["length"] = 10
+    input["diameter"] = 3
+    input["vessel_type"] = "Flat-end"
+    input["orientation"] = "horizontal"
+    input["liquid_level"] = 0.0
+    input["operating_temperature"] = T
+    input["operating_pressure"] = P
+    input["ambient_temperature"] = 298
+    input["back_pressure"] = 1.01e5
+    input["bdv_orifice_size"] = 0.02  # m
+    input["bdv_orifice_cd"] = 0.975
+
+    names = ["nitrogen"]
+    molefracs = [1.0]
+
+    input["molefracs"] = molefracs
+    input["component_names"] = names
+    segment = Blowdown(input)
+    r = segment.depressurize()
+    import matplotlib.pyplot as plt
+
+    segment.plot()  # filename="plots\\SB_fire_nitrogen"
+    name = "plots\\SB_fire_nitrogen"
+    if plot:
+        plt.figure(1)
+        plt.plot(
+            segment.times,
+            np.asarray(segment.pressure) / 1e5,
+            "bo",
+            label="openthermo/python",
+        )
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Pressure (bar)")
+        plt.savefig(name + "_pressure.png", dpi=300)
+
+        plt.figure(2)
+        plt.plot(
+            segment.times,
+            np.asarray(segment.temperature) - 273.15,
+            "bo",
+            label="openthermo/python",
+        )
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel(r"Temperature ($^\circ$C)")
+        plt.savefig(name + "_temperature.png", dpi=300)
+
+        plt.figure(3)
+        plt.plot(
+            segment.times,
+            np.asarray(segment.mdot) * -3600,
+            "bo",
+            label="openthermo/python",
+        )
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Mass flow (kg/h)")
+        plt.savefig(name + "_mdot.png", dpi=300)
+
+        plt.figure(4)
+        plt.plot(
+            segment.times,
+            np.asarray(segment.wetted_wall_temp) - 273.15,
+            "bo",
+            label="openthermo Wetted",
+        )
+        plt.plot(
+            segment.times,
+            np.asarray(segment.unwetted_wall_temp) - 273.15,
+            "ro",
+            label="openthermo Unwetted",
+        )
+
+        plt.xlabel("Time (s)")
+        plt.ylabel("Wall temperature (C)")
+        plt.legend(loc="best")
+        plt.show()
+
+
 if __name__ == "__main__":
     pass
+    # test_blowdown_sbfire_multiphase(plot=True)
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
-    test_blowdown_non_condensable(plot=True)
-    # test_blowdown_api_dry_inadequate_costald(plot=True)
+    # test_blowdown_non_condensable(plot=True)
+    test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
     # test_isothermal(plot=True)
     # test_adiabatic(plot=True)
     # test_isentropic(plot=True)
+    # test_blowdown_sbfire_n2(plot=False)
