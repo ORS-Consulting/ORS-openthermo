@@ -346,8 +346,8 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 ^^                      |       |                                    |                 | `gas` |
 ^^                      |       |                                    |                 | `two-phase` |
     
-: Input overview {#tbl:input}
 \elandscape
+: Input overview {#tbl:input}
 
 # Theory and methods
 In this chapter the basic theory and governing equations for the model implementation in *openthermo* is presented.
@@ -415,7 +415,7 @@ The equation can be further simplified if only a single port acting as either in
 $$ \frac{d(mu)_{cv}}{dt} + \dot{m} h  = \dot{Q}  $$ {#eq:energybalance}
 
 where the sign of $\dot{m}$ determines if the control volume is either emptied or filled.
-In this case only dischartge is considered in opposition to HydDown [@andreasen2021].
+In this case only dischartge is considered in opposition to HydDown [@Andreasen2021].
 The continuity equation [@Eq:continuity] and the energy balance [@Eq:energybalance] combined with the equation of state are the key equations that shall be solved/integrated in order to calculate the change in temperature and pressure as a function of time.
 
 If the fluid inventory is a multi-phase mixture and the discharge is only sourced from one of the phases, a mole balance is also required in addition to the energy balance and mass balnce equations above. in order to account
