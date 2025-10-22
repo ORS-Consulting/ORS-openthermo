@@ -854,7 +854,7 @@ The HC atomic ratio is estimated according to [@riazi1986prediction;riazi2005cha
 
 The CH weight ratio (Carbon-to-hydrogen ratio) is calculated from:
 
-$$CH = 8.7743\cdot10^{-10} \right[ \exp{7.176 \cdot 10^{-3}T_b + 30.06242 SG -7.35\cdot 10^{-3} Tb SG} \left] Tb^{-0.98445}SG^{-18.2753}$$
+$$CH = 8.7743\cdot10^{-10} \left[ \exp{7.176 \cdot 10^{-3}T_b + 30.06242 SG -7.35\cdot 10^{-3} Tb SG} \right] Tb^{-0.98445}SG^{-18.2753}$$
 
 The Hydrogen-to-Carbon ratio is calculated from:
 
