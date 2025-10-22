@@ -365,7 +365,7 @@ The following main topics are covered:
 ## Thermodynamics and property estimation
 
 ### Equation of state 
-Currently only the Peng-Robinson [@peng_new_1976] and Soave-Redlich-Kwong [SOAVE19721197] cubic equations of stare are available despite many being available in both *thermopack* and *thermo*. In the future more cubic equations of state may be made available. 
+Currently only the Peng-Robinson [@peng_new_1976] and Soave-Redlich-Kwong [@SOAVE19721197] cubic equations of stare are available despite many being available in both *thermopack* and *thermo*. In the future more cubic equations of state may be made available. 
 
 For more background information and theory regarding the equations of state (especially for mixtures), please refer to e.g. [*thermo* documentation](https://thermo.readthedocs.io/thermo.eos_mix.html), the [DWSIM user guide](https://github.com/DanWBR/dwsim/blob/windows/PlatformFiles/Common/docs/User_Guide.pdf), a [*thermopack* memo](https://github.com/thermotools/thermopack/blob/main/docs/memo/thermopack/thermopack2013.pdf) or textbooks such as e.g. [@sva;@Reid1987].
 
