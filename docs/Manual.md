@@ -8,6 +8,8 @@ book: true
 reference-section-title: References
 bibliography: references.bib
 listings: True
+header-includes:  
+- \usepackage{lscape}
 ---
 
 # Introduction
@@ -284,6 +286,7 @@ More elaborate description of the required input for the different calculation t
 ## Input fields and hierarchy {#sec:input}
 In the following the full listing of input for the different calculation types is summarised cf.  [@Tbl:input].
 
+::::::::{.landscape data-latex=""}
 Input field             | Unit  | Description           | Mandatory? / Depends on    | Options       |
 ----                    | ----  | ----                  | ----          | ---           |
 `operating_temperature` | K     | Initial temperature   | Yes           | N/A           |
@@ -337,10 +340,9 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 `leak_type`             | N/A   | Fluid released from leak           | `leak_active`=1 | `liquid` |
 ^^                      |       |                                    |                 | `gas` |
 ^^                      |       |                                    |                 | `two-phase` |
-
     
 : Input overview {#tbl:input}
-
+::::::::
 
 # Theory and methods
 In this chapter the basic theory and governing equations for the model implementation in *openthermo* is presented.
