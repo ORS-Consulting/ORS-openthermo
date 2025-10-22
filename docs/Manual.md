@@ -848,4 +848,9 @@ input["component_names"] = names
 
 ![Simulation of pressure as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim](tests/plots/SB_fire_water_pressure.png){#fig:SB_pres}
 
-![Simulation of fluid temperature as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim](tests/plots/_water_dry_temperature.png){#fig:API521_temp}
+![Simulation of fluid temperature as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim](tests/plots/_water_dry_temperature.png){#fig:SB_temp}
+
+The heat flux for the Stefan-Boltzmann case for both wetted and unwetted wall is displayed in [@Fig:SB_heat_flux]. As seen the heat flux decreases as the wall temperature increses (lower convective heat transfer and more back-radiation). This is more pronounced for the unwetted wall, since it increases more in temperature due to lower heat tranfer rate internally. It is also noted that as the wetted wall increases in temperature the heat transfer rate also increases significantly, which is due to the nucleate boiling heat transfer type. This signigficant increase in heat transfer is responsible for the more moderate temeprature increase of the wetted vessel wall temperature. Eventually the nucleate boiling heat transfer becomes comparable to the external heat transfer rate. 
+
+
+![Simulation of external and internal heat flux as a function of time for vessel subject to Scandpower jet fire heat load for both the wetted and unwetted part of the vessel.](tests/plots/_water_dry_temperature.png){#fig:SB_heat_flux}
