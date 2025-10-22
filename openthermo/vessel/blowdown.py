@@ -330,6 +330,28 @@ class Blowdown:
                 sideB_k=0.1,
                 horizontal=horizontal,
             )
+        elif self.vessel_type == "2:1 Semi-elliptical":
+            self.vessel = TANK(
+                D=self.diameter,
+                L=self.length,
+                sideA="torispherical",
+                sideB="torispherical",
+                sideA_f=0.9,
+                sideA_k=0.17,
+                sideB_f=0.9,
+                sideB_k=0.17,
+                horizontal=horizontal,
+            )
+        elif self.vessel_type == "Hemisperical":
+            self.vessel = TANK(
+                D=self.diameter,
+                L=self.length,
+                sideA="spherical",
+                sideB="spherical",
+                sideA_a=0.5 * self.diameter,
+                sideB_a=0.5 * self.diameter,
+                horizontal=horizontal,
+            )
 
     def _get_heat_load_W(self):
         if self.fire_type == "API521":

@@ -32,7 +32,7 @@ Andreasen, A., Stegelmann, C. (2025). Open source pressure vessel blowdown model
       publisher = {Wiley}, 
     }
 
-A preprint of the paper is available on ChemRxiv: https://doi.org/10.26434/chemrxiv-2025-00xzc-v2. 
+A preprint of the paper is available on ChemRxiv: https://doi.org/10.26434/chemrxiv-2025-00xzc-v2. This is also recommended reading for a more elaborate detailing of the equations solved. 
 
 
 ## Getting the software
@@ -319,8 +319,13 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 ^^                      |       |                       |               | `scandpower_jet` |
 `molefracs`             | N/A   | List of mole fractions| Yes           |  N/A          |
 `component_names`       | N/A   | Pure component names  | Yes           | N/A           |
-`drain_fire_fighting`   | N/A   | API521 pool fire      | `mode`=`fire` | 0             |
-^^                      |       |                       |               | 1             |
+`fire_type`             | N/A   | API 521 fire type     | Yes, `mode`=`fire` | `API521` (default)|
+^^                      |       |                       |               | `API521_CONFINED`|
+`drain_fire_fighting`   | N/A   | API521 pool fire input| No, `mode`=`fire` and `fire_type`=`API521` | `Inadequate` (default) |
+^^                      |       |                       |                | `Adequate`    |
+`exposed_area`          |       | API 521 exposed area  | No, `mode`=`fire` | `Wetted` (default) |
+^^                      |       |                       |                | `Total`    |
+^^                      |       |                       |                | `Manual`    |
 `pseudo_names`          | N/A   | Pseudo component names | No           | N/A           |
 `pseudo_molefracs`      | N/A   | Pseudo component mole fractions| `pseudo_names`| N/A  |
 `pseudo_Tbs`            | K     | True boiling point of pseudos  | `pseudo_names`| N/A  |
@@ -337,7 +342,7 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 : Input overview {#tbl:input}
 
 
-# Theory
+# Theory and methods
 In this chapter the basic theory and governing equations for the model implementation in *openthermo* is presented.
 The following main topics are covered:
 
@@ -345,6 +350,7 @@ The following main topics are covered:
 - mass transfer
 - heat transfer
 - partial equilibrium 
+- Vessel geometry
 
 ## Thermodynamics
 
@@ -449,6 +455,14 @@ $$ \dot{m}_{flow}= C_d  \cdot A \cdot\sqrt{\left ( \frac{2 k}{k-1}\right )  \cdo
 - $A$ is the cross sectional area of the orifice. $[m^2]$
 
 ### Leaks
+In addition to the vapour outflow through a Blowdown valve/orifice it is also possible to include leaks. Three leak types are possible: 
+
+- Gas/vapour
+- Liquid 
+- Two-phase
+
+For gasseous leaks the methodology presented in the previous section is applied. For liquid leaks a simple Bernouilli equation is used [@yellowbook] and for two-phase a simple Fauske expression is used [@yellowbook;@worldbank]. For liquid release the assumption is that static head due to liquid level is added to the internal vessel pressure upstream the leak. 
+
 
 
 ## Heat transfer {#sec:heat}
@@ -603,6 +617,83 @@ The heat flux used to calculate the flame temperature is given in table [@tbl:he
 : Incident heat fluxes for various fire scenarios given by Scandpower [@scandpower] {#tbl:heatfluxes1}
 
 ### API 521 pool-fire heat load
+The amount of heat absorbed by a vessel exposed to an open fire is markedly affected by the type of fuel feeding the fire, the degree to which the vessel is enveloped by the flames (a function of vessel size and shape), the environment factor, firefighting, and drainage. [@Eq:API521] is used to evaluate these conditions if there are prompt firefighting efforts and drainage of flammable materials away from the vessels.
+
+
+$$Q = C_1 F A_{ws}^{0.82}$$ {#eq:API521}
+
+
+Where:
+
+- $Q$ is the  total heat absorption (input) to the wetted surface, expressed in W 
+- $C_1$ is a constant = 43,200 in SI units
+- $F$ is an environment factor (see [@Tbl:envornmental_factors])
+- $A_{ws}$ is the total wetted surface, expressed in m² 
+
+> **Note 1:** See API 521 for guidance.  
+> **Note 2:** The expression $A_{ws}^{0.82}$ is the area exposure factor or ratio. This ratio recognises that large vessels are less likely than small ones to be completely exposed to the flame of an open fire.
+
+
+| Type of Equipment | Environment Factor $F$ |
+|-------------------|---------------------------|
+| Bare vessel | 1.0 |
+| Insulated vessel with insulation conductance values<sup>a</sup> | |
+| 22.71  | 0.3 |
+| 11.36  | 0.15 |
+| 5.68  | 0.075 |
+| 3.80  | 0.05 |
+| 2.84  | 0.0376 |
+| 2.27  | 0.03 |
+| 1.87  | 0.026 |
+| Water application facilities, on bare vessel<sup>b</sup> | 1.0 |
+| Depressurizing and emptying facilities<sup>b</sup> | 1.0 |
+| Earth-covered storage | 0.03 |
+| Below-grade storage | 0.00 |
+
+: Environmental factors suggested by API521 [@API521]. <sup>a</sup>  Insulation thermal conductivity divided by thickness for fire exposure conditions in W/m²·K The environment factor, $F$, in [@Eq:API521] and [@eq:API521_inad] does not apply to uninsulated vessels. The environment factor should be replaced by 1.0 when calculating heat input to uninsulated vessels. <sup>b</sup> See API521 for additional notes. {#tbl:envornmental_factors}
+
+Where adequate drainage and firefighting equipment do not exist, [@eq:API521_inad] should be used:
+
+
+$$ Q = C_2 \cdot F \cdot A_{ws}^{0.82} $$  {#eq:API521_inad}
+
+Where:
+
+- $C_2$ is a constant = 70,900 in SI units
+
+If the ratio between fire volume and confined volume becomes large, then the use of the open pool fire equations  could underestimate the heat input to exposed equipment. In these cases, the Stefan-Boltzman methodology descibed in the previous section should be used with an increased fire temperature to account for effects of preheating and reradiation. Partial confinement can also result in higher heat fluxes and enhanced exposure of the wetted surfaces to the pool 
+fire. An example is where a vessel is partially confined by adjacent embankments or walls with a height comparable to 
+the vessel's height. For confined areas the conservative approach would be to apply [@eq:API521_inad]  but with the wetted area term (AWS) raised to the 1.0 
+power instead of the 0.82 power and $C=108,900 W/m^2$. 
+
+$$ Q = C_3 \cdot F \cdot A_{ws} $$  {#eq:API521_confined}
+
+Where:
+- $C_3$ is a constant = 108,900 in SI units
+
+## Vessel geometry
+
+All vessels modelled are assumed of cylindrical shape. The following shapes are available in *openthermo* all provided by the Python *fluids* library [@fluids]. 
+
+- Flat-end vessel
+- ASME F&D
+- DIN (28011)
+- 2:1 Semi-elliptical
+- Hemisperical
+
+Both ASME F&D, DIN and 2:1 semielliptical are variants of a torispherical vessel. See also the document [Calculating Tank Volume](http://www.webcalc.com.br/blog/Tank_Volume.PDF). The hemisperical ends are half-speres extending one radius out. 
+
+
+
+| Vessel geometry      | f   | k     |
+| ----                 |---- | ----  |
+|  2:1 semi-elliptical | 0.9 | 0.17  |
+|  ASME F&D            | 1   | 0.06  |
+|  DIN 28011           | 1   | 0.1   |
+
+: Vessel geometry details. For torispherical tank heads, the following *f* and *k* parameters are used in standards [@fluids]. *f* is the dish-radius parameter for tanks with torispherical heads or bottoms, *k* is the knuckle-radius parameter for tanks with torispherical heads or bottoms {#tbl:vessel_geometry}
+
+Using the *fluids* library partial volumes, surface area (full and partial) and liquid level (from partial volume) can be calculated and used internally in *openthermo*.
 
 ## Model implementation
 Two main implementations have been made, which are referred to as *homogeneous equilibrium* or *full equilibrium* and *partial phase equilibrium* (PPE), which will be further elaborated in the following.
@@ -642,7 +733,8 @@ constituted of one **parent** (the bulk phase) and one **child** phase.
 The whole idea of the child phases is to enable mass and energy exchange between the parent
 phases and account for thermal non-equilibrium as simple as possible.
 
-Following the conceptualisation of the partial phase equilibrium, the mass and energy conservation can be described [@speranza_blowdown_2005;@ricci_unsteady_2015;@dalessandro_modelling_2015;@park_numerical_2018] with separate mass conservation equations for vapour and liquid phase
+Following the conceptualisation of the partial phase equilibrium, the mass and energy conservation can be described [@speranza_blowdown_2005;@ricci_unsteady_2015;@dalessandro_modelling_2015;@park_numerical_2018] with separate mass conservation equations for vapour and liquid phase. See also [@AndreasenStegelmann] for a write-up of the differential energy and continuity equations 
+to be integrated. 
 
 The solution strategy for the partial phase equilibrium differs somewhat from the homogeneous equilibrium. Instead of the adaptive step size Runge-Kutta method a very simple explicit Euler method with fixed time step is applied. This is mainly due to the solving of the source terms of vapour condensation and liquid evaporation within each time step. As previously described, it is assumed that the equilibrium between parent and child phase is instantaneous. Thus, the moles transported between each main phase is quantifiable, 
 but in order to estimate the rate of the mass transfer, the time step must be exactly known. For numerical stability a relaxation factor of 0.9 is applied to the condensation / evaporation rates. 
@@ -652,6 +744,12 @@ Further, they are linked by a common pressure, while the temperature in each pha
 
 
 # Supplementing examples 
+In general for validation against experiments the paper [@AndreasenStegelmann] which can also be accessed in the [preprint](https://doi.org/10.26434/chemrxiv-2025-00xzc-v2) is referred. The code for running the simulations matching the experiments are all included in the *test* folder in the [GitHUb repo](https://github.com/ORS-Consulting/ORS-openthermo/tree/main/tests) in the file *test-blowdown.py*. A few additional examples and validation cases supplementing these are presented in the following. 
+
+## API 521 pool fire 
+
+
+## Stefan-Boltzmann fire heat load
 
 
 
