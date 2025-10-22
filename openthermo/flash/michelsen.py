@@ -19,6 +19,11 @@ from thermo import (
     FlashVL,
 )
 from openthermo.properties.transport import COSTALD_rho, COSTALD_Vm
+import warnings
+
+warnings.filterwarnings("ignore", category=ResourceWarning)
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 # name_map = np.loadtxt("name_mapping.csv", dtype=str, delimiter=",", usecols=(0, 1, 2))
 name_map = np.loadtxt(
@@ -31,23 +36,39 @@ name_map = np.loadtxt(
 
 class FlashVL:
     def __init__(self, zs, constants, properties, kijs, model="PR", rho=None):
-        names = []
-        for CAS in constants.CASs:
-            if CAS not in name_map[:, 1]:
-                raise ValueError("CAS %s not in name mapping" % CAS)
-            else:
-                names.append(name_map[np.where(name_map[:, 1] == CAS)[0][0], 2])
+        # names = []
+        # for CAS in constants.CASs:
+        #    if CAS not in name_map[:, 1]:
+        #        raise ValueError("CAS %s not in name mapping" % CAS)
+        #    else:
+        #        names.append(name_map[np.where(name_map[:, 1] == CAS)[0][0], 2])
+        #        print(names[-1])
 
         self.vectorized = False
         self.constants = constants
         self.properties = properties
         # self.zs = normalize(zs)
         self.model = 1
+
         if model == 2 or model == "SRK":
             self.model = 2
-            self.eos = SoaveRedlichKwong(",".join(names))
+            # self.eos = SoaveRedlichKwong(",".join(names))
+            self.eos = SoaveRedlichKwong(",".join(len(constants.names) * ["PSEUDO"]))
         else:
-            self.eos = PengRobinson(",".join(names))
+            # self.eos = PengRobinson(",".join(names))
+            self.eos = PengRobinson(",".join(len(constants.names) * ["PSEUDO"]))
+        cindices = range(1, self.eos.nc + 1)
+        self.eos.init_pseudo(
+            comps=",".join(constants.names),
+            Tclist=constants.Tcs,
+            Pclist=constants.Pcs,
+            acflist=constants.omegas,
+            Mwlist=constants.MWs,
+        )
+        _ = [
+            [self.eos.set_kij(i, j, kijs[i - 1][j - 1]) for i in cindices]
+            for j in cindices
+        ]
 
         self.kijs = kijs
         self.zs = list(np.asarray(zs) / sum(zs))
@@ -256,7 +277,7 @@ class FlashVL:
                         Tguess,
                         method="Nelder-Mead",
                     )
-                    x = res.x
+                    x = res.x[0]
                     if abs((dS(x)) / S) > 1e-5:
                         raise ValueError("PS-flash failed to converge")
             res = self.PT_flash(T=float(x), P=P)
@@ -316,11 +337,11 @@ class FlashVL:
             dU = lambda P2: (self.PT_flash(T=T, P=P2).U() - U)
             if Pguess == None:
                 Pguess = 10e5
-            res = root(dU, Pguess, method="broyden1", options={"ftol": 1e-4})
+            result = root(dU, Pguess, method="broyden1", options={"ftol": 1e-4})
             # print(res)
-            if abs(dU(res.x) / U) > 1e-4:
+            if abs(dU(result.x) / U) > 1e-4:
                 raise ValueError("UT-flash failed to converge")
-            res = self.PT_flash(T=float(T), P=float(res.x))
+            res = self.PT_flash(T=float(T), P=float(result.x))
             return res
         elif U_spec and V_spec:
             if Pguess == None:
@@ -361,7 +382,6 @@ class FlashVL:
                 else:
                     err = abs((self.PT_flash(T=res.x[0], P=res.x[1]).U() - U) / U)
                     +abs((self.PT_flash(T=res.x[0], P=res.x[1]).V() - V) / V)
-
                 if err > 1e-6:
                     raise ValueError("UV-flash failed to converge")
 
@@ -397,16 +417,19 @@ class FlashVL:
             x = flash.x
             gas_beta = flash.betaV
             y = flash.y
+            w = x
         elif flash.betaL == 0:
             gas_beta = 1
             liq_beta = 0
             x = flash.y
             y = flash.y
+            w = y
         elif flash.betaL == 1:
             gas_beta = 1
             liq_beta = 0
             x = flash.x
             y = flash.x
+            w = x
         else:
             gas_beta = 1
             liq_beta = 0
@@ -421,29 +444,11 @@ class FlashVL:
         betas = [gas_beta, liq_beta, wat_beta]
         gas, liq, liq2 = None, None, None
         liquids = []
-        w = self.water_mole_fracs
+        # w = self.water_mole_fracs
 
-        #################################
-        # Check this, could give problems
-        # Consider not settign to global composition
-        ##################################
-
-        w = w
-
-        # gas = CEOSGas(PRMIX, self.eos_kwargs, HeatCapacityGases=self.properties.HeatCapacityGases, T=T, P=P, zs=list(y))
-        # liq = CEOSLiquid(PRMIX, self.eos_kwargs, HeatCapacityGases=self.properties.HeatCapacityGases, T=T, P=P, zs=list(x))
-        # liq2 = CEOSLiquid(PRMIX, self.eos_kwargs, HeatCapacityGases=self.properties.HeatCapacityGases, T=T, P=P, zs=w)
-
-        gas = self.gas.to(
-            T=T, P=P, zs=list(y)
-        )  # CEOSGas(PRMIX, eos_kwargs, HeatCapacityGases=properties.HeatCapacityGases, T=T, P=P, zs=z)
-
-        liq = self.liq.to(
-            T=T, P=P, zs=list(x)
-        )  # CEOSLiquid(PRMIX, eos_kwargs, HeatCapacityGases=properties.HeatCapacityGases, T=T, P=P, zs=z)
-        liq2 = self.liq2.to(
-            T=T, P=P, zs=list(x)
-        )  # CEOSLiquid(PRMIX, eos_kwargs, HeatCapacityGases=properties.HeatCapacityGases, T=T, P=P, zs=z)
+        gas = self.gas.to(T=T, P=P, zs=list(y))
+        liq = self.liq.to(T=T, P=P, zs=list(x))
+        liq2 = self.liq2.to(T=T, P=P, zs=list(x))
 
         return self.dest(
             T,
@@ -464,7 +469,7 @@ def get_flash_dry(
     pure_comp_names,
     pure_comp_molefracs,
     pseudo_names=None,
-    pseudo_mole_fracs=None,
+    pseudo_molefracs=None,
     pseudo_SGs=None,
     pseudo_Tbs=None,
     P=None,
@@ -479,13 +484,28 @@ def get_flash_dry(
     pure_constants, properties = ChemicalConstantsPackage.from_IDs(pure_comp_names)
     kijs = ip.get_interaction_parameters(pure_constants.CASs)
 
-    if pseudo_names is None and pseudo_mole_fracs is None:
+    if len(pure_comp_names) != len(pure_comp_molefracs):
+        raise ValueError(
+            "Number of pure components and pure component mole fractions be equal."
+        )
+    if pseudo_names is None and pseudo_molefracs is None:
         zs = normalize(
             pure_comp_molefracs
         )  # pure_comp_molefracs/sum(pure_comp_molefracs)
         # print(kijs)
         flash = FlashVL(zs, pure_constants, properties, kijs)
     else:
+        try:
+            assert (
+                len(pseudo_molefracs)
+                == len(pseudo_names)
+                == len(pseudo_SGs)
+                == len(pseudo_Tbs)
+            )
+        except:
+            raise ValueError(
+                "Number of pseudo components and/or pseudo component properties are not equal dimension."
+            )
         pseudo_Tcs = [
             lk.Tc_Kesler_Lee_SG_Tb(SG, Tb) for SG, Tb in zip(pseudo_SGs, pseudo_Tbs)
         ]
@@ -500,7 +520,10 @@ def get_flash_dry(
             for SG, Tb in zip(pseudo_SGs, pseudo_Tbs)
         ]
         pseudo_Zcs = [lk.Zc_pseudo(omega) for omega in pseudo_omegas]
-        pseudo_Vcs = [lk.Vc_pseudo(Zc, Tc, Pc) for Zc, Tc, Pc in zip(Zcs, Tcs, Pcs)]
+        pseudo_Vcs = [
+            lk.Vc_pseudo(Zc, Tc, Pc)
+            for Zc, Tc, Pc in zip(pseudo_Zcs, pseudo_Tcs, pseudo_Pcs)
+        ]
         atomic_ratio = [
             lk.HC_atomic_ratio(SG, Tb) for SG, Tb in zip(pseudo_SGs, pseudo_Tbs)
         ]
@@ -534,7 +557,7 @@ def get_flash_dry(
         # Obtain the temperature and pressure dependent objects
         properties = PropertyCorrelationsPackage(constants=constants)
 
-        zs = normalize(pure_comp_molefracs + pseudo_mole_fracs)
+        zs = normalize(pure_comp_molefracs + pseudo_molefracs)
         pseudo_kijs = np.zeros((len(zs), len(zs)))
         n_pure = len(pure_comp_names)
         pseudo_kijs[:n_pure, :n_pure] = np.asarray(kijs)

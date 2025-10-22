@@ -1,0 +1,22 @@
+name: Documentation build
+
+on: push
+
+jobs:
+  convert_via_pandoc:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Goto doc dir
+        run: cd docs
+      - name: Make output dir
+        run: mkdir output  # create output dir
+      - uses: docker://rstropek/pandoc-latex #docker://pandoc/latex:3.5
+        with:
+          #args: --output=output/result.pdf ${{ steps.files_list.outputs.files }}
+          args: --toc --filter pandoc-crossref --citeproc --bibliography=docs/references.bib --top-level-division=chapter  --number-sections --listings  --template  https://raw.githubusercontent.com/Wandmalfarbe/pandoc-latex-template/v2.4.0/eisvogel.tex --output=output/Manual.pdf  docs/Manual.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: output
+          path: output
