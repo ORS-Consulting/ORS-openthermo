@@ -21,7 +21,7 @@ header-includes:
 *openthermo* is an open source Python3 tool for calculation of vessel depressurization / blowdown. The main phenomena modelled are visualized in [@Fig:logo].
 The thermodynamic state inside the vessel changes over time as seen from immediately observable variables temperature (T) and pressure (P).
 This is caused by change in fluid inventory (density) due to flow of gas and/or liquid out of the vessel.
-Further, heat is transferred from or to the surroundings via convective heat transfer on the in- and outside of the vessel with heat being conducted through the vessel wall. Due to differences in thermal resistance the vessel wall will obtain a temperature different from the fluid. Depending on the assumptions regarding the description of the fluid inside the vessel, the gas and liquid may have the same temperature (equilibrium assumption) or the two-phases may have different temperature (partial equilibrium assumption).
+Further, heat is transferred from or to the surroundings via convective heat transfer on the in- and outside of the vessel with heat being conducted through the vessel wall. Due to differences in thermal resistance the vessel wall will obtain a temperature different from the fluid. Depending on the assumptions regarding the description of the fluid inside the vessel, the gas and liquid may have the same temperature (equilibrium assumption) or the two-phases may have different temperature (partial equilibrium assumption aka PPE).
 
 ![openthermo main sketch](docs/img/vessel_sketch.png){#fig:logo}
 
@@ -39,7 +39,7 @@ Andreasen, A., Stegelmann, C. (2025). Open source pressure vessel blowdown model
       publisher = {Wiley}, 
     }
 
-A preprint of the paper is available on ChemRxiv: https://doi.org/10.26434/chemrxiv-2025-00xzc-v2. This is also recommended reading for a more elaborate detailing of the equations solved. 
+A pre-print of the paper is available on ChemRxiv: https://doi.org/10.26434/chemrxiv-2025-00xzc-v2. This is also recommended reading for a more elaborate detailing of the equations solved. 
 
 
 ## Getting the software
@@ -84,7 +84,7 @@ Installation of latest release via **pip** also installs dependencies automatica
 - [openpyxl](https://openpyxl.readthedocs.io/en/stable/)
 - [tqdm](https://tqdm.github.io/)
 
-The code is running on Windows 10/11 x64, with stock Python installation from Python.org and packages installed using pip.
+The code is running on Windows 10/11 x64, with stock Python 3.11 installation from Python.org and packages installed using pip.
 It should also run on Linux (it does on an Ubuntu image on GitHub) or in any conda environment as well, but this hasn't been checked.
 
 ## Testing
@@ -164,7 +164,7 @@ Having worked together in the same company, Carsten and I split ways 5 years ago
 
 ## *openthermo* development
 Recently, I joined ORS Consulting with Carsten, and we revived our plans for a rigorous blowdown simulation tool. The remaining challenge was the more complex two-phase (or three-phase) flash problem and the non-equilibrium / partial equilibrium assumption. 
-At all times the big inspiration has been the work done at Empirical College London, University College London on the codes BLOWDOWN  [@haque_rapid_1990;@haque_blowdown_1992] and BLOWSIM [@WONG;mahgerefteh_numerical_1999], respectively,  and later VBsim [@dalessandro_modelling_2015]. BLOWDOWN was acquired by AspenTech and made available in HYSYS. Further the motivation has also been to have a tool easily accessible as a supplement to commerical (and expensive) tools. Both to reduce load on license pools, but also to provide more efficient workflows. We wanted to make the tool open source and available to the public, but license limitations on the legacy flash calculation by Prof. Michelsen required an alternative flash calculation. Several tools are now available such as Python [*thermo*](https://github.com/CalebBell/thermo) [@thermo], [NeqSim](https://equinor.github.io/neqsimhome/) [@neqsim] and [*thermopack*](https://thermotools.github.io/thermopack/) . Handling vessel depressurisation, which is effectively an UV-flash problem (Internal Energy - Volume) requires extremely many flash calculations to be performed. Thus, a fast and stable flash calculation is required. In order to provide speed and stability the preliminary choice has been [*thermopack* from SINTEF](https://thermotools.github.io/thermopack/), although it may change in the future in order to provide a three-phase (VLLE) flash.   
+At all times the big inspiration has been the work done at Empirical College London, University College London on the codes BLOWDOWN  [@haque_rapid_1990;@haque_blowdown_1992] and BLOWSIM [@WONG;@mahgerefteh_numerical_1999], respectively,  and later VBsim [@dalessandro_modelling_2015]. BLOWDOWN was acquired by AspenTech and made available in HYSYS. Further the motivation has also been to have a tool easily accessible as a supplement to commerical (and expensive) tools. Both to reduce load on license pools, but also to provide more efficient workflows. We wanted to make the tool open source and available to the public, but license limitations on the legacy flash calculation by Prof. Michelsen required an alternative flash calculation. Several tools are now available such as Python [*thermo*](https://github.com/CalebBell/thermo) [@thermo], [NeqSim](https://equinor.github.io/neqsimhome/) [@neqsim] and [*thermopack*](https://thermotools.github.io/thermopack/) . Handling vessel depressurisation, which is effectively an UV-flash problem (Internal Energy - Volume) requires extremely many flash calculations to be performed. Thus, a fast and stable flash calculation is required. In order to provide speed and stability the preliminary choice has been [*thermopack* from SINTEF](https://thermotools.github.io/thermopack/), although it may change in the future in order to provide a three-phase (VLLE) flash.   
 
 # Limitations and implementation details 
 A few choices has been made to keep things simple:
@@ -872,7 +872,7 @@ $$HC_{atomic_ratio} = 11.9147 / CH$$
 In general for validation against experiments the paper [@AndreasenStegelmann] which can also be accessed in the [preprint](https://doi.org/10.26434/chemrxiv-2025-00xzc-v2) is referred. The code for running the simulations matching the experiments are all included in the *test* folder in the [GitHUb repo](https://github.com/ORS-Consulting/ORS-openthermo/tree/main/tests) in the file *test-blowdown.py*. A few additional examples and validation cases supplementing these are presented in the following. 
 
 ## API 521 pool fire 
-A fictive example is made for an API 521 pool fire scenario for a horizontal vessel (ID 3 m/TT 10 m) half full of liquid. The input details are provided below. The simulation results are compared to simulations performed with the legacy depressuring utility in HYSYS. The results are shown in [@Fig:API521_mdot], [@Fig:API521_pres] and [@Fig:API521_temp]. As seen the match between the two programs is excellent. When applying the API 521 pool fire the heat load is added directly to the vessel inventory and vessel wall material temperature is not solved for. In the below example the heat load is applied to the wetted surface area (default setting).
+A fictive example is made for an API 521 pool fire scenario for a horizontal vessel (ID 3 m/TT 10 m) half full of liquid. The input details are provided below. The simulation results are compared to simulations performed with the legacy depressuring utility in AspenTech HYSYS &#174;. The results are shown in [@Fig:API521_mdot], [@Fig:API521_pres] and [@Fig:API521_temp]. As seen the match between the two programs is excellent. When applying the API 521 pool fire the heat load is added directly to the vessel inventory and vessel wall material temperature is not solved for. In the below example the heat load is applied to the wetted surface area (default setting).
 
 ```python
 from openthermo.vessel.blowdown import Blowdown
@@ -916,7 +916,7 @@ segment.depressurize()
 ## Stefan-Boltzmann fire heat load
 The example as investigated in the previous section is modified and subject to a Stefan-Boltzmann fire heat load, in this case a jet fire backgorund heat load according to the Scandpower guideline [@scandpower]. 
 The full input is listed below. As seen the composition of the fluid is different from above.  
-The simulation results are compared to simulations performed with the EO Blowodwn utility in Unisim Design. The results are shown in [@Fig:SB_mdot], [@Fig:SB_pres] and [@Fig:SB_temp]. As seen the agreement is generally very good. 
+The simulation results are compared to simulations performed with the EO Blowodwn utility in Honeywell Unisim Design &#174;. The results are shown in [@Fig:SB_mdot], [@Fig:SB_pres] and [@Fig:SB_temp]. As seen the agreement is generally very good. 
 The difference between the two codes is mainly interms of the wall heat transfer modelling and the phase equilibrium. In the EO blowdown tool heat conduction thorugh the wall is modelled and there is a differece between the innner and outer wall temperature. This illustrates when the assumption of a uniform wall temperature works well and when it works less well. For the wall in contact with vapour the assumption applied in *openthermo* works very well, since the gradient thorugh the wall is small. For the wall in contact with liquid some discrepancy is observed especially for the outside temperature, although in this case it is of less importance compared to the much higher wall temperature (and more pronounced thermal weakening) for the part in contact with vapour. The EO Blowdown tool also applies a Non-equilibrium/partial equilibrium approch as *openthermo*. However, in *openthermo* the partial equilibirum approach is not yet combinable with the Stefan-Boltzmann fire heat load method. Despite this difference in equilibrium modelling the results are indeed comparable. 
 
 
