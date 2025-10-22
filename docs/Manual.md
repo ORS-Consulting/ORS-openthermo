@@ -776,7 +776,7 @@ The critical pressure $P_c$ is estimated the Kesler-Lee correlation [@kesler1976
   $$\ln(P_c) &= 8.3634 - \frac{0.0566}{SG} - \left[0.24244 + \frac{2.2898}
         {SG} + \frac{0.11857}{SG^2}\right]10^{-3}T_b\\
    & + \left[1.4685 + \frac{3.648}{SG} + \frac{0.47227}{SG^2}\right]
-        10^{-7}T_b^2-\left[0.42019 + \frac{1.6977}{SG^2}\right]10^{-10}T_b^3$$
+        10^{-7}T_b^2-\left[0.42019 + \frac{1.6977}{SG^2}\right]10^{-10}T_b^3
 \end{align}
  
 
