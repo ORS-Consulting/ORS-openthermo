@@ -355,18 +355,23 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 In this chapter the basic theory and governing equations for the model implementation in *openthermo* is presented.
 The following main topics are covered:
 
-- thermodynamics
-- mass transfer
-- heat transfer
-- partial equilibrium 
+- Thermodynamics
+- Mass transfer
+- Heat transfer
+- Equilibrium modelling
 - Vessel geometry
+- Handling pseudo components
 
-## Thermodynamics
+## Thermodynamics and property estimation
 
 ### Equation of state 
 Currently only the Peng-Robinson [@peng_new_1976] and Soave-Redlich-Kwong [SOAVE19721197] cubic equations of stare are available despite many being available in both *thermopack* and *thermo*. In the future more cubic equations of state may be made available. 
 
 For more background information and theory regarding the equations of state, please refer to e.g. [*thermo* documentation](https://thermo.readthedocs.io/thermo.eos_mix.html), the [DWSIM user guide](https://github.com/DanWBR/dwsim/blob/windows/PlatformFiles/Common/docs/User_Guide.pdf), a [*thermopack* memo](https://github.com/thermotools/thermopack/blob/main/docs/memo/thermopack/thermopack2013.pdf).
+
+### Property estimation 
+
+Property estimation is provided by the Python *thermo* package [@thermo], this includes thermodynamic properties such as enthalpy, entropy and internal energy as well as tranport properties such as thermal conductivity, viscosity and surafec tension. In general all components that are available with *thermo* can be used. Although *thermopack* comes with a smaller set of predefined components this is not limiting since *thermopack* is called with minimal input for the EOS/flash TP calculation i.e. mole fractions, critical pressure, critical temperature and accentric factor (and binary interaction parameters). Any property estimation is managed by *thermo*. 
 
 ### First law for flow process {#sec:firstlaw}
 The control volume sketched in [@Fig:firstlaw], separated from the surrounding by a control surface, is used as a basis for the analysis of an open thermodynamic system with flowing streams (fs) in and out, according to [@sva]
@@ -587,13 +592,14 @@ Especially for vessels with low conductivity materials (or very thick walls) acc
 The heat transfer from the flame to the shell is modelled using the recommended approach from Scandpower [@scandpower] and API [@API521].
 The heat transfer from the flame to the vessel shell is divided into radiation, convection, and reradiation as seen in equation [@Eq:flame]:
 
-$$ q_f=\underbrace{{\alpha}_s \cdot {\varepsilon}_f \cdot \sigma \cdot T_f^4}_\text{Radiation}+\underbrace{h_f \cdot (T_f-T_s(t))}_\text{Convection}-\underbrace{{\varepsilon}_s \cdot \sigma \cdot T_s(t)^4 }_\text{Reradiation} $$ {#eq:flame}
+$$ q_f=\underbrace{{\alpha}_s \cdot {\varepsilon}_f \cdot \sigma \cdot T_{rf}^4}_\text{Radiation}+\underbrace{h_f \cdot (T_f-T_s(t))}_\text{Convection}-\underbrace{{\varepsilon}_s \cdot \sigma \cdot T_s(t)^4 }_\text{Reradiation} $$ {#eq:flame}
 
 - $q_f$ is the flame heat flux. [W/m$^2$]
 - ${\alpha}_s$ is the vessel surface absorptivity. [-]
 - ${\varepsilon}_f$ is the flame emissivity. [-]
 - $\sigma$ is the Stefan-Boltzmann constant, $\sigma$ = $5.67 \cdot 10 ^ {-8}$  [W/m$^2 \cdot$ K$^4$]
-- $T_f$ is the flame temperature. [K]
+- $T_{rf}$ is the radiative flame temperature. Used for radiative heat transfer. [K]
+- $T_f$ is the flame temperature engulfing the vessel. Used for convective heat transfer. [K]
 - $h_f$ is the convection heat transfer coefficient between the flame and the surface. [W/m$^2 \cdot$ K]
 - $T_s(t)$ is the time dependent surface temperature. [K]
 - ${\varepsilon}_s$ is the surface emissivity. [-]
@@ -611,12 +617,12 @@ The convective heat transfer coefficients for a jet fire and a pool fire, and re
 The flame temperature is found by solving equation [@Eq:flame2] for the incident heat flux in relation to the ambient conditions.
 The flame temperature is kept constant throughout the simulation:
 
-$$ q_{total}=\sigma \cdot T_f^4 + h_f \cdot (T_f-T_{amb})$$ {#eq:flame2}
+$$ q_{total}=\sigma \cdot T_{rf}^4 + h_f \cdot (T_f-T_{amb})$$ {#eq:flame2}
 
 - $q_{total}$ is the incident flame heat flux as given in table [@Tbl:heatfluxes1]. [W/m$^2$]
 - $T_{amb}$ is the ambient temperature $\approx$ 293 K (20$^\circ$ C)
 
-The heat flux used to calculate the flame temperature is given in table [@tbl:heatfluxes1].
+The heat flux used to calculate the flame temperature is given in table [@tbl:heatfluxes1]. Different coefficient are proposed by API 521 [@API521] and this source is referenced for more information. 
 
 |                        | Small jet fire  [kW/m$^2$]  |  Large jet fire  [kW/m$^2$] |  Pool fire  [kW/m$^2$]
 | ----                   |  ----           |  ----           | ----
@@ -751,6 +757,113 @@ but in order to estimate the rate of the mass transfer, the time step must be ex
 Further, a combined UV-flash is solved for each phase at each time step. However, while the total volume is known from the vessel volume, the exact volume of each phase is not known before-hand. Thus, the two UV-flashes are linked by the total volume, given by the volume of the liquid and the volume of gas which must equal the vessel volume.
 Further, they are linked by a common pressure, while the temperature in each phase is allowed to differ. 
 
+## Handling pseudo components
+Oil fractions above C7+ are typically lumped into a limited number of pseudo components in order to reduce complexity. This is typically done based on boiling point ranges. In *openthermo* pseudo components can be defined based on *True boiling point* and *Specific gravity*. With these two properties the following properties are estimated internally: 
+
+- Critical pressure
+- Critical temperature
+- Critical compressibility 
+- Critical molar volume
+- Acentric factor
+- Molecular weight 
+- HC-ratio 
+
+### Critical pressure 
+The critical pressure $P_c$ is estimated the Kesler-Lee correlation [@kesler1976improve;@ahmed2007equations].
+
+$$\ln(P_c) = 8.3634 - \frac{0.0566}{SG} - \left[0.24244 + \frac{2.2898}
+        {SG} + \frac{0.11857}{SG^2}\right]10^{-3}T_b
+        + \left[1.4685 + \frac{3.648}{SG} + \frac{0.47227}{SG^2}\right]
+        10^{-7}T_b^2-\left[0.42019 + \frac{1.6977}{SG^2}\right]10^{-10}T_b^3$$
+
+Where
+- SG is the Specific gravity of the fluid at 60 degrees Farenheight [-]
+- Tb is the Boiling point the fluid [K]
+- Pc is the critical pressure [Pa]
+
+### Critical temperature
+The critical temperature is estimated the Kesler-Lee correlation [@kesler1976improve;@ahmed2007equations].
+
+$$T_c = 341.7 + 811.1SG + [0.4244 + 0.1174SG]T_b
+        + \frac{[0.4669 - 3.26238SG]10^5}{T_b}$$
+
+Where
+- SG is the Specific gravity of the fluid at 60 degrees Farenheight [-]
+- Tb is the Boiling point the fluid [K]
+- Tc is the crtical temperature [K]
+
+### Acentric factor
+The accentric factor is estimated the Kesler-Lee correlation [@kesler1976improve;@ahmed2007equations].
+
+For Tbr > 0.8:
+
+$$\omega = -7.904 + 0.1352K - 0.007465K^2 + 8.359T_{br}
+        + ([1.408-0.01063K]/T_{br})$$
+
+Otherwise:
+$$\omega = \frac{-\ln\frac{P_c}{14.7} - 5.92714 + \frac{6.09648}{T_{br}}
+        + 1.28862\ln T_{br} - 0.169347T_{br}^6}{15.2518 - \frac{15.6875}{T_{br}}
+         - 13.4721\ln T_{br} + 0.43577T_{br}^6}$$
+
+$$K = \frac{T_b^{1/3}}{SG}$$
+
+$$T_{br} = \frac{T_b}{T_c}$$
+
+where 
+
+- SG is the Specific gravity of the fluid at 60 degrees Farenheight [-]
+- Tb is the Boiling point the fluid [K]
+- Tc is the Estimated critical temperature [K]
+- Pc is the Estimated critical pressure [Pa]
+
+### Critical compressibility 
+The function calculating critical compresibility [-] for pseudo components is  based on [@lee1975generalized].
+
+$$Z_c = 0.2905 - 0.085 * \omega$$
+
+Where: 
+- $\omeha$ is accentric factor
+- $Z_c$ is the critical compressibility 
+
+### Critical molar volume
+The function calculates critical volume for pseudo components based on definition of compresibility.
+
+ $$Vc = \frac{Z_c T_c * 8.314}{P_c}$$
+
+ Where:
+ - Tc is the Estimated critical temperature [K]
+ - Pc is the Estimated critical pressure [Pa]
+ - Zc is the Estimated critical compressibility
+ - Vc is the Estimated critical molar volume [m3/mol]
+
+
+### Molecular weight 
+The molecular weight is estimated the Kesler-Lee correlation [@kesler1976improve;@ahmed2007equations].
+
+$$MW = -12272.6 + 9486.4SG + [4.6523 - 3.3287SG]T_b + [1-0.77084SG
+        - 0.02058SG^2]\left[1.3437 - \frac{720.79}{T_b}\right]\frac{10^7}{T_b}
+        + [1-0.80882SG + 0.02226SG^2][1.8828 - \frac{181.98}{T_b}]
+        \frac{10^{12}}{T_b^3}$$
+
+Where
+- SG is the Specific gravity of the fluid at 60 degrees Farenheight [-]
+- Tb is the Boiling point the fluid [K]
+
+### HC-ratio 
+The HC atomic ratio is estimated according to [@riazi1986prediction;riazi2005characterization].
+
+The CH weight ratio (Carbon-to-hydrogen ratio) is calculated from:
+
+$$CH = 8.7743\cdot10^{-10} \right[ \exp{7.176 \cdot 10^{-3}T_b + 30.06242 SG -7.35\cdot 10^{-3} Tb SG} \left] Tb^{-0.98445}SG^{-18.2753}$$
+
+The Hydrogen-to-Carbon ratio is calculated from:
+
+$$HC_atomic_ratio = 11.9147 / CH$$
+
+Where: 
+- SG is the Specific gravity of the fluid at 60 degrees Farenheight [-]
+- Tb is the Boiling point the fluid [K]
+
 
 # Supplementing examples 
 In general for validation against experiments the paper [@AndreasenStegelmann] which can also be accessed in the [preprint](https://doi.org/10.26434/chemrxiv-2025-00xzc-v2) is referred. The code for running the simulations matching the experiments are all included in the *test* folder in the [GitHUb repo](https://github.com/ORS-Consulting/ORS-openthermo/tree/main/tests) in the file *test-blowdown.py*. A few additional examples and validation cases supplementing these are presented in the following. 
@@ -843,14 +956,14 @@ input["component_names"] = names
 ```
 
 
-![Simulation of mass flow as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim](tests/plots/SB_fire_water_dry_mdot.png){#fig:SB_mdot}
+![Simulation of mass flow as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim.](tests/plots/SB_fire_water_dry_mdot.png){#fig:SB_mdot}
 
 
-![Simulation of pressure as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim](tests/plots/SB_fire_water_pressure.png){#fig:SB_pres}
+![Simulation of pressure as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim.](tests/plots/SB_fire_water_dry_pressure.png){#fig:SB_pres}
 
-![Simulation of fluid temperature as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim](tests/plots/_water_dry_temperature.png){#fig:SB_temp}
+![Simulation of fluid temperature as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim.](tests/plots/SB_fire_water_dry_wall_temperature.png){#fig:SB_temp}
 
 The heat flux for the Stefan-Boltzmann case for both wetted and unwetted wall is displayed in [@Fig:SB_heat_flux]. As seen the heat flux decreases as the wall temperature increses (lower convective heat transfer and more back-radiation). This is more pronounced for the unwetted wall, since it increases more in temperature due to lower heat tranfer rate internally. It is also noted that as the wetted wall increases in temperature the heat transfer rate also increases significantly, which is due to the nucleate boiling heat transfer type. This signigficant increase in heat transfer is responsible for the more moderate temeprature increase of the wetted vessel wall temperature. Eventually the nucleate boiling heat transfer becomes comparable to the external heat transfer rate. 
 
 
-![Simulation of external and internal heat flux as a function of time for vessel subject to Scandpower jet fire heat load for both the wetted and unwetted part of the vessel.](tests/plots/_water_dry_temperature.png){#fig:SB_heat_flux}
+![Simulation of external and internal heat flux as a function of time for vessel subject to Scandpower jet fire heat load for both the wetted and unwetted part of the vessel.](tests/plots/SB_fire_water_dry_heat_flux.png){#fig:SB_heat_flux}
