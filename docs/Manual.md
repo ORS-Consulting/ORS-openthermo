@@ -822,7 +822,7 @@ The function calculating critical compresibility [-] for pseudo components is  b
 $$Z_c = 0.2905 - 0.085 * \omega$$
 
 Where: 
-- $\omeha$ is accentric factor
+- $\omega$ is accentric factor
 - $Z_c$ is the critical compressibility 
 
 ### Critical molar volume
