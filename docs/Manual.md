@@ -772,11 +772,13 @@ Oil fractions above C7+ are typically lumped into a limited number of pseudo com
 ### Critical pressure 
 The critical pressure $P_c$ is estimated the Kesler-Lee correlation [@kesler1976improve;@ahmed2007equations].
 
-$$\ln(P_c) = 8.3634 - \frac{0.0566}{SG} - \left[0.24244 + \frac{2.2898}
-        {SG} + \frac{0.11857}{SG^2}\right]10^{-3}T_b \\*
-        + \left[1.4685 + \frac{3.648}{SG} + \frac{0.47227}{SG^2}\right]
+\begin{align}
+  $$\ln(P_c) &= 8.3634 - \frac{0.0566}{SG} - \left[0.24244 + \frac{2.2898}
+        {SG} + \frac{0.11857}{SG^2}\right]10^{-3}T_b\\
+   & + \left[1.4685 + \frac{3.648}{SG} + \frac{0.47227}{SG^2}\right]
         10^{-7}T_b^2-\left[0.42019 + \frac{1.6977}{SG^2}\right]10^{-10}T_b^3$$
-
+\end{align}
+ 
 
 - SG is the Specific gravity of the fluid at 60 degrees Farenheight [-]
 - Tb is the Boiling point the fluid [K]
@@ -839,11 +841,13 @@ $$Vc = \frac{Z_c T_c * 8.314}{P_c}$$
 ### Molecular weight 
 The molecular weight is estimated the Kesler-Lee correlation [@kesler1976improve;@ahmed2007equations].
 
-$$MW = -12272.6 + 9486.4SG + [4.6523 - 3.3287SG]T_b + [1-0.77084SG
-        - 0.02058SG^2] \\*
-        \left[1.3437 - \frac{720.79}{T_b}\right]\frac{10^7}{T_b}
+\begin{align}
+MW &= -12272.6 + 9486.4SG + [4.6523 - 3.3287SG]T_b + [1-0.77084SG
+        - 0.02058SG^2]  \\
+    &\left[1.3437 - \frac{720.79}{T_b}\right]\frac{10^7}{T_b}
         + [1-0.80882SG + 0.02226SG^2][1.8828 - \frac{181.98}{T_b}]
-        \frac{10^{12}}{T_b^3}$$
+        \frac{10^{12}}{T_b^3}
+\end{align}
 
 
 - SG is the Specific gravity of the fluid at 60 degrees Farenheight [-]
