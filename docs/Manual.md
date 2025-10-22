@@ -8,8 +8,13 @@ book: true
 reference-section-title: References
 bibliography: references.bib
 listings: True
-header-includes:  
-- \usepackage{lscape}
+header-includes:
+- |
+  ```{=latex}
+  \usepackage{pdflscape}
+  \newcommand{\blandscape}{\begin{landscape}}
+  \newcommand{\elandscape}{\end{landscape}}
+    ```
 ---
 
 # Introduction
@@ -286,7 +291,7 @@ More elaborate description of the required input for the different calculation t
 ## Input fields and hierarchy {#sec:input}
 In the following the full listing of input for the different calculation types is summarised cf.  [@Tbl:input].
 
-::::::::{.landscape data-latex=""}
+\blandscape
 Input field             | Unit  | Description           | Mandatory? / Depends on    | Options       |
 ----                    | ----  | ----                  | ----          | ---           |
 `operating_temperature` | K     | Initial temperature   | Yes           | N/A           |
@@ -342,7 +347,7 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 ^^                      |       |                                    |                 | `two-phase` |
     
 : Input overview {#tbl:input}
-::::::::
+\elandscape
 
 # Theory and methods
 In this chapter the basic theory and governing equations for the model implementation in *openthermo* is presented.
