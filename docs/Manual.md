@@ -347,7 +347,7 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 ^^                      |       |                                    |                 | `two-phase` |
 
 : Input overview {#tbl:input}
-    
+
 \elandscape
 
 
@@ -756,10 +756,96 @@ Further, they are linked by a common pressure, while the temperature in each pha
 In general for validation against experiments the paper [@AndreasenStegelmann] which can also be accessed in the [preprint](https://doi.org/10.26434/chemrxiv-2025-00xzc-v2) is referred. The code for running the simulations matching the experiments are all included in the *test* folder in the [GitHUb repo](https://github.com/ORS-Consulting/ORS-openthermo/tree/main/tests) in the file *test-blowdown.py*. A few additional examples and validation cases supplementing these are presented in the following. 
 
 ## API 521 pool fire 
+A fictive example is made for an API 521 pool fire scenario for a horizontal vessel (ID 3 m/TT 10 m) half full of liquid. The input details are provided below. The simulation results are compared to simulations performed with the legacy depressuring utility in HYSYS. The results are shown in [@Fig:API521_mdot], [@Fig:API521_pres] and [@Fig:API521_temp]. As seen the match between the two programs is excellent. When applying the API 521 pool fire the heat load is added directly to the vessel inventory and vessel wall material temperature is not solved for. In the below example the heat load is applied to the wetted surface area (default setting).
+
+```python
+from openthermo.vessel.blowdown import Blowdown
+
+input = {}
+P = 12e5
+T = 298.15
+
+input["mode"] = "fire"
+input["drain_fire_fighting"] = "Inadequate"
+input["eos_model"] = "PR"
+input["liquid_density"] = "costald"
+input["max_time"] = 900
+input["length"] = 10
+input["diameter"] = 3
+input["vessel_type"] = "Flat-end"
+input["orientation"] = "horizontal"
+input["liquid_level"] = 1.5
+input["operating_temperature"] = T
+input["operating_pressure"] = P
+input["ambient_temperature"] = 273
+input["back_pressure"] = 1.01e5
+input["bdv_orifice_size"] = 0.03  # m
+input["bdv_orifice_cd"] = 0.84
+input['component_names'] =  ["methane", "propane", "n-butane", "i-butane", "n-decane"]
+input["molefracs"] =  [0.8, 0.05, 0.01, 0.01, 0.10]
+
+segment = Blowdown(input)
+segment.depressurize()
+
+```
+
+![Simulation of mass flow as a function of time for vessel subject to API 521 pool fire heat load. Comparison with HYSYS](tests/plots/API521_inadequate_costald_water_dry_mdot.png){#fig:API521_mdot}
+
+
+![Simulation of pressure as a function of time for vessel subject to API 521 pool fire heat load. Comparison with HYSYS](tests/plots/API521_inadequate_costald_water_dry_pressure.png){#fig:API521_pres}
+
+![Simulation of fluid temperature as a function of time for vessel subject to API 521 pool fire heat load. Comparison with HYSYS](tests/plots/API521_inadequate_costald_water_dry_temperature.png){#fig:API521_temp}
 
 
 ## Stefan-Boltzmann fire heat load
+The example as investigated in the previous section is modified and subject to a Stefan-Boltzmann fire heat load, in this case a jet fire backgorund heat load according to the Scandpower guideline [@Scandpower]. 
+The full input is listed below. As seen the composition of the fluid is different from above.  
+The simulation results are compared to simulations performed with the EO Blowodwn utility in Unisim Design. The results are shown in [@Fig:SB_mdot], [@Fig:SB_pres] and [@Fig:SB_temp]. As seen the agreement is generally very good. 
+The difference between the two codes is mainly interms of the wall heat transfer modelling and the phase equilibrium. In the EO blowdown tool heat conduction thorugh the wall is modelled and there is a differece between the innner and outer wall temperature. This illustrates when the assumption of a uniform wall temperature works well and when it works less well. For the wall in contact with vapour the assumption applied in *openthermo* works very well, since the gradient thorugh the wall is small. For the wall in contact with liquid some discrepancy is observed especially for the outside temperature, although in this case it is of less importance compared to the much higher wall temperature (and more pronounced thermal weakening) for the part in contact with vapour. The EO Blowdown tool also applies a Non-equilibrium/partial equilibrium approch as *openthermo*. However, in *openthermo* the partial equilibirum approach is not yet combinable with the Stefan-Boltzmann fire heat load method. Despite this difference in equilibrium modelling the results are indeed comparable. 
 
 
+```python
+from openthermo.vessel.blowdown import Blowdown
+
+input["mode"] = "isentropic"
+input["heat_transfer"] = "rigorous_sb_fire"
+input["sb_fire_type"] = "scandpower_jet"
+input["wall_thickness"] = 0.019  # m
+input["eos_model"] = "PR"
+input["liquid_density"] = "eos"
+input["max_time"] = 500
+input["delay"] = 0
+input["length"] = 10
+input["diameter"] = 3
+input["vessel_type"] = "Flat-end"
+input["orientation"] = "horizontal"
+input["liquid_level"] = 0.27 * 3
+input["water_level"] = 0.0
+input["operating_temperature"] = T
+input["operating_pressure"] = P
+input["ambient_temperature"] = 298
+input["back_pressure"] = 1.01e5
+input["bdv_orifice_size"] = 0.04  # m
+input["bdv_orifice_cd"] = 0.84
+
+names = ["methane", "propane", "n-butane", "i-butane", "n-decane"]
+molefracs = [
+    0.291970802919708,
+    1.82481751824818e-2,
+    3.64963503649635e-3,
+    3.64963503649635e-3,
+    0.682481751824818,
+]
+
+input["molefracs"] = molefracs
+input["component_names"] = names
+
+```
 
 
+![Simulation of mass flow as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim](tests/plots/SB_fire_water_dry_mdot.png){#fig:SB_mdot}
+
+
+![Simulation of pressure as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim](tests/plots/SB_fire_water_pressure.png){#fig:SB_pres}
+
+![Simulation of fluid temperature as a function of time for vessel subject to Scandpower jet fire heat load. Comparison with Unisim](tests/plots/_water_dry_temperature.png){#fig:API521_temp}
