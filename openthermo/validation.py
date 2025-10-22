@@ -73,11 +73,22 @@ def validate_mandatory_ruleset(input):
             "type": "string",
             "allowed": ["isothermal", "adiabatic", "isentropic", "fire"],
         },
+        "fire_type": {
+            "required": False,
+            "type": "string",
+            "allowed": ["API521", "API521_CONFINED"],
+            "dependencies": {"mode": "fire"},
+        },
         "drain_fire_fighting": {
             "required": False,
             "type": "string",
             "allowed": ["Inadequate", "Adequate"],
-            "dependencies": {"mode": "fire"},
+        },
+        "environment_factor": {
+            "required": False,
+            "type": "number",
+            "min": 0.01,
+            "max": 1.0,
         },
         "leak_type": {
             "required": False,
@@ -103,7 +114,13 @@ def validate_mandatory_ruleset(input):
         "vessel_type": {
             "required": True,
             "type": "string",
-            "allowed": ["Flat-end", "ASME F&D", "DIN"],
+            "allowed": [
+                "Flat-end",
+                "ASME F&D",
+                "DIN",
+                "2:1 Semi-elliptical",
+                "Hemisperical",
+            ],
         },
         "leak_active": {
             "required": False,
@@ -119,6 +136,8 @@ def validate_mandatory_ruleset(input):
         "leak_cd": {
             "required": False,
             "type": "number",
+            "min": 0.01,
+            "max": 1.0,
             "dependencies": ["leak_active", "leak_size", "leak_type"],
         },
         "liquid_level": {
@@ -160,12 +179,9 @@ def validate_mandatory_ruleset(input):
         "operating_temperature": {
             "required": True,
             "type": "number",
-            "min": 100,
+            "min": 10,
         },
-        "max_time": {
-            "required": True,
-            "type": "number",
-        },
+        "max_time": {"required": True, "type": "number", "min": 1},
         "time_step": {
             "required": False,
             "type": "number",
