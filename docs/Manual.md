@@ -367,7 +367,7 @@ The following main topics are covered:
 ### Equation of state 
 Currently only the Peng-Robinson [@peng_new_1976] and Soave-Redlich-Kwong [SOAVE19721197] cubic equations of stare are available despite many being available in both *thermopack* and *thermo*. In the future more cubic equations of state may be made available. 
 
-For more background information and theory regarding the equations of state, please refer to e.g. [*thermo* documentation](https://thermo.readthedocs.io/thermo.eos_mix.html), the [DWSIM user guide](https://github.com/DanWBR/dwsim/blob/windows/PlatformFiles/Common/docs/User_Guide.pdf), a [*thermopack* memo](https://github.com/thermotools/thermopack/blob/main/docs/memo/thermopack/thermopack2013.pdf).
+For more background information and theory regarding the equations of state (especially for mixtures), please refer to e.g. [*thermo* documentation](https://thermo.readthedocs.io/thermo.eos_mix.html), the [DWSIM user guide](https://github.com/DanWBR/dwsim/blob/windows/PlatformFiles/Common/docs/User_Guide.pdf), a [*thermopack* memo](https://github.com/thermotools/thermopack/blob/main/docs/memo/thermopack/thermopack2013.pdf) or textbooks such as e.g. [@sva;@Reid1987].
 
 ### Property estimation 
 
@@ -911,7 +911,7 @@ segment.depressurize()
 
 
 ## Stefan-Boltzmann fire heat load
-The example as investigated in the previous section is modified and subject to a Stefan-Boltzmann fire heat load, in this case a jet fire backgorund heat load according to the Scandpower guideline [@Scandpower]. 
+The example as investigated in the previous section is modified and subject to a Stefan-Boltzmann fire heat load, in this case a jet fire backgorund heat load according to the Scandpower guideline [@scandpower]. 
 The full input is listed below. As seen the composition of the fluid is different from above.  
 The simulation results are compared to simulations performed with the EO Blowodwn utility in Unisim Design. The results are shown in [@Fig:SB_mdot], [@Fig:SB_pres] and [@Fig:SB_temp]. As seen the agreement is generally very good. 
 The difference between the two codes is mainly interms of the wall heat transfer modelling and the phase equilibrium. In the EO blowdown tool heat conduction thorugh the wall is modelled and there is a differece between the innner and outer wall temperature. This illustrates when the assumption of a uniform wall temperature works well and when it works less well. For the wall in contact with vapour the assumption applied in *openthermo* works very well, since the gradient thorugh the wall is small. For the wall in contact with liquid some discrepancy is observed especially for the outside temperature, although in this case it is of less importance compared to the much higher wall temperature (and more pronounced thermal weakening) for the part in contact with vapour. The EO Blowdown tool also applies a Non-equilibrium/partial equilibrium approch as *openthermo*. However, in *openthermo* the partial equilibirum approach is not yet combinable with the Stefan-Boltzmann fire heat load method. Despite this difference in equilibrium modelling the results are indeed comparable. 
