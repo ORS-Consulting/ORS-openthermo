@@ -345,9 +345,11 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 `leak_type`             | N/A   | Fluid released from leak           | `leak_active`=1 | `liquid` |
 ^^                      |       |                                    |                 | `gas` |
 ^^                      |       |                                    |                 | `two-phase` |
+
+: Input overview {#tbl:input}
     
 \elandscape
-: Input overview {#tbl:input}
+
 
 # Theory and methods
 In this chapter the basic theory and governing equations for the model implementation in *openthermo* is presented.
