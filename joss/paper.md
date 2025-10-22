@@ -26,7 +26,7 @@ A typical system modelled using the partial equilibrium approach is shown in \au
 
 ![Partial phase equilibrium visualised. \label{fig:sketch}](../joss/vessel_sketch.png){ width=100% }
 
-In its essence, the code solves the mass and energy balances with gas thermodynamics calculated using a combination of [thermopack](https://github.com/thermotools/thermopack) [@thermopack] and [thermo](https://github.com/CalebBell/thermo) [@thermo] where the former are used for cubic equation of state flash calculations and the latter for thermodynamic and transport properties (enthalpy, entropy, internal energy, density, viscosity, thermal conductivity). Either the Peng-Robinson or the Soave-Redlich-Kwong cubic equation of state can be applied. The energy balance is the first law of thermodynamics for an open system exchanging both heat and mass with the surroundings [@sva]. Heat transfer between gas inventory and vessel wall is accounted for using either natural convection (wall in contact with gas) or nucleate boiling heat transfer (wall in contact with liquid) [@geankoplis]. The mass balance is closed using an applicable flow equation [@yellowbook]. The partial equilibrium approach implemented is heavily inspired by that implemented in VBsim [@speranza_blowdown_2005;@ricci_unsteady_2015;@DALESSANDRO2015719]. 
+In its essence, the code solves the mass and energy balances with gas thermodynamics calculated using a combination of [thermopack](https://github.com/thermotools/thermopack) [@thermopack] and [thermo](https://github.com/CalebBell/thermo) [@thermo] where the former are used for cubic equation of state flash calculations and the latter for thermodynamic and transport properties (enthalpy, entropy, internal energy, density, viscosity, thermal conductivity). Either the Peng-Robinson or the Soave-Redlich-Kwong cubic equation of state can be applied. The energy balance is the first law of thermodynamics for an open system exchanging both heat and mass with the surroundings [@sva]. Heat transfer between gas inventory and vessel wall is accounted for using either natural convection (wall in contact with gas) or nucleate boiling heat transfer (wall in contact with liquid) [@geankoplis]. The mass balance is closed using an applicable flow equation [@yellowbook]. The partial equilibrium approach implemented is heavily inspired by that implemented in VBsim [@speranza_blowdown_2005;@ricci_unsteady_2015;@DALESSANDRO2015719]. The model framework and validation against experiments of *openthermo* is further detailed in [@AndreasenStegelmann].
 
 
 In the PPE approach, the fluid in the vessel is
@@ -48,15 +48,20 @@ A few choices have been made to keep things simple:
 
 - Only gas, liquid or two-phase gas/liquid is modelled. Three phase (Vapour-Liquid-Liquid/VLLE) is not possible.
 - No temperature stratification in vessel inventory
-- No temperature gradient through vessel wall (applicable for high heat conductivity / thin-walled vessels)
+- No temperature gradient through vessel wall (applicable for high thermal conductivity / thin-walled vessels)
 
 Still the code can manage a number of different assumption: isothermal depressurisation (very fast), isentropic (1. law) depressurisation with and without heat transfer, rigorous partial equilibrium depressurisation. In order to model oil fractions, in addition to pure chemical components, it is also possible to include *pseudo*-components mimicking the complex hydrocarbon composition with a limited number of chemical components.  
 
-Typical calculation output is shown in \autoref{fig:pres} and \autoref{fig:wall} with experimental data included for comparison [@Szczepanski;@WONG].
+Typical calculation output is shown in \autoref{fig:pres} and \autoref{fig:wall} with experimental data included for comparison [@Szczepanski;@WONG]. See also [@AndreasenStegelmann] for more details.
 
 ![Calculated pressure compared with experimental pressure. Blowdown of condensing/two-phase hydrocarbon mixture conducted at Spadeadam. \label{fig:pres}](../joss/condensable_gas_pressure_rig.png)
 
 ![Calculated vessel wall temperatures in contact with gas and liquid compared with experimental data.  \label{fig:wall}](../joss/condensable_gas_inner_wall_rig.png)
+
+Calculations for a vessel containing a two-phase hydrocarbon subject to a large jet fire heat load as modelled by the Stefan-Boltzmann equation is shown in \autoref{fig:SB}. The calculations are compared to calculations performed using the EO Blowdown utility in the commercial tool Honeywell Unisim Design &#174;. 
+
+![Calculated vessel temperture in contact with liquid (wetted) and gas (unwetted), respectivly. Comparison is made against equivalent commercial software. \label{fig:SB}](../joss/SB_fire_water_dry_wall_temperature.png)
+
 
 # Statement of need
 The rapid depressurisation (blowdown) of pressure vessels containing hazardous, either toxic or flammable,  substances in a chemical process plant, is an essential part of the plant process safety measures. 
