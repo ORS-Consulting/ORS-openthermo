@@ -36,7 +36,7 @@ Uncomment the case in the main function to be analysed.
 ## High-level description
 The code considers a vessel filled with a fluid at time equals zero. Fluid is discharged through an orifice. As mass is discharged the pressure and temperature drops over time, where heat can be exchanged through the vessel wall with the surroundings. Since both mass and heat can be exchanged with the surroundings it constitutes an open thermodynamic system hence the name of the code: *openthermo*.
 
-<img src="vessel_sketch.png" alt="Partial equilibirum conceptual model" width="600">
+<img src="docs/img/vessel_sketch.png" alt="Partial equilibirum conceptual model" width="600">
 
 The code uses a multi-component real-gas equation of state (either Peng-Robinson or Soave-Redlich-Kwong) to describe the system. Two phases can be handled by the code, occuring at any time during the depressurisation process. 
 
