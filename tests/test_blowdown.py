@@ -203,7 +203,7 @@ def test_blowdown_api_dry_inadequate_costald(plot=False):
     input["molefracs"] = molefracs
     input["component_names"] = names
     segment = Blowdown(input)
-    r = segment.depressurize()
+    segment.depressurize()
     assert segment.pressure[-1] == pytest.approx(data[:, 2][-1] * 1e5 + atm, rel=0.05)
     assert segment.temperature[-1] == pytest.approx(data[:, 1][-1] + 273.15, rel=0.01)
     assert segment.mdot[-1] == pytest.approx(data[:, 3][-1] / -3600, rel=0.05)
@@ -340,7 +340,7 @@ def test_blowdown_condensable_gas(plot=False):
     input["molefracs"] = molefracs
     input["component_names"] = names
     segment = Blowdown(input)
-    r = segment.depressurize()
+    segment.depressurize()
 
     assert segment.pressure[-1] == pytest.approx(pres[:, 1][-1] * 1.013e5, abs=0.9e5)
     assert segment.unwetted_wall_temp[-1] == pytest.approx(iwl[-1], abs=5)
@@ -411,12 +411,12 @@ def test_blowdown_nitrogen(plot=False):
     input["molefracs"] = molefracs
     input["component_names"] = names
     segment = Blowdown(input)
-    r = segment.depressurize()
+    segment.depressurize()
     # segment.plot()
     file_name = "N2_I1.yml"
     input_file = os.path.join(validation_path, file_name)
 
-    with open(input_file) as infile:
+    with open(input_file, mode="r") as infile:
         input = yaml.load(infile, Loader=yaml.FullLoader)
 
     assert segment.pressure[-1] == pytest.approx(
@@ -560,7 +560,7 @@ def test_blowdown_nitrogen_co2(plot=False):
     input["molefracs"] = molefracs
     input["component_names"] = names
     segment = Blowdown(input)
-    r = segment.depressurize_euler()
+    segment.depressurize_euler()
     # segment.plot()
 
     if plot:
@@ -734,7 +734,7 @@ def test_blowdown_non_condensable(plot=False):
 
     input["time_step"] = 10
     segment = Blowdown(input)
-    r = segment.depressurize()
+    segment.depressurize()
     if plot:
         from matplotlib import pyplot as plt
         import scienceplots
@@ -884,7 +884,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
 
     time1 = time.time()
     segment = Blowdown(input)
-    r = segment.depressurize_euler()  # _euler()
+    segment.depressurize_euler()  # _euler()
     time2 = time.time()
     print(f"Elapsed time {time2-time1} sec.")
     assert segment.pressure[-1] == pytest.approx(pres[:, 1][-1] * 1.013e5, abs=0.7e5)
@@ -988,7 +988,7 @@ def test_isothermal(plot=False):
     input["component_names"] = names
 
     segment = Blowdown(input)
-    r = segment.depressurize()
+    segment.depressurize()
     import matplotlib.pyplot as plt
 
     assert segment.temperature[-1] == pytest.approx(
@@ -1074,7 +1074,7 @@ def test_adiabatic(plot=False):
     input["component_names"] = names
 
     segment = Blowdown(input)
-    r = segment.depressurize()
+    segment.depressurize()
     import matplotlib.pyplot as plt
 
     name = "plots\\adiabatic_multiphase"
@@ -1156,7 +1156,7 @@ def test_isentropic(plot=False):
     input["component_names"] = names
 
     segment = Blowdown(input)
-    r = segment.depressurize()
+    segment.depressurize()
     segment.plot("dummy")
     import matplotlib.pyplot as plt
 
@@ -1243,7 +1243,7 @@ def test_blowdown_sbfire_n2(plot=False):
     input["molefracs"] = molefracs
     input["component_names"] = names
     segment = Blowdown(input)
-    r = segment.depressurize()
+    segment.depressurize()
     import matplotlib.pyplot as plt
 
     segment.plot()  # filename="plots\\SB_fire_nitrogen"

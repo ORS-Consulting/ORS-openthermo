@@ -147,6 +147,8 @@ class Blowdown:
         self._setup_flash(input)
         self._read_input(input)
         if self.mode == "fire":
+            self.C = 0
+            self.n = 0
             self._setup_fire(input)
 
         self._setup_tank()
@@ -168,9 +170,9 @@ class Blowdown:
                 input["component_names"],
                 input["molefracs"],
                 pseudo_names=input["pseudo_names"],
-                pseudo_mole_fracs=["pseudo_molefracs"],
+                pseudo_mole_fracs=input["pseudo_molefracs"],
                 pseudo_SGs=input["pseudo_SGs"],
-                pseudo_Tbs=["pseudo_Tbs"],
+                pseudo_Tbs=input["pseudo_Tbs"],
                 P=input["operating_pressure"],
                 T=input["operating_temperature"],
                 rho=input["liquid_density"],
@@ -938,10 +940,10 @@ class Blowdown:
                 (self.liquid_temperature[-1] - 20, self.liquid_temperature[-1] + 20),
                 (max(self.pressure[-1] - 10e5, 1.013e5), self.pressure[-1] + 10e5),
             )
-            cons = (
-                {"type": "eq", "fun": energy_cons_gas},
-                {"type": "eq", "fun": energy_cons_liq},
-            )
+            # cons = (
+            #    {"type": "eq", "fun": energy_cons_gas},
+            #    {"type": "eq", "fun": energy_cons_liq},
+            # )
 
             try:
                 ret = minimize(
