@@ -1,6 +1,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/ORS-Consulting/ORS-openthermo/graph/badge.svg?token=4TBNKIGO3F)](https://codecov.io/gh/ORS-Consulting/ORS-openthermo)
 [![Python application](https://github.com/ORS-Consulting/ORS-openthermo/actions/workflows/python-app.yml/badge.svg)](https://github.com/ORS-Consulting/ORS-openthermo/actions/workflows/python-app.yml)
+[![DOI](https://zenodo.org/badge/1068103129.svg)](https://doi.org/10.5281/zenodo.17422202)
 
 # ORS - openthermo
 ```
