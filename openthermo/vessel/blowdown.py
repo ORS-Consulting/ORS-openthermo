@@ -8,6 +8,7 @@ import math
 from scipy.constants import g
 from openthermo.properties.transport import COSTALD_rho, COSTALD_Vm
 from openthermo.properties.transport import h_inside, h_inside_wetted
+from openthermo.properties.materials import steel_Cp, ATS, von_mises
 from openthermo.validation import validate_mandatory_ruleset
 from openthermo import errors
 from openthermo.flash.michelsen import get_flash_dry
@@ -442,12 +443,23 @@ class Blowdown:
         ##############################################################################
         if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
             h_amb = 8
-            h_inner_uw, h_inner_w = h_inside(
-                self.length, Tuw, res.T, res.gas
-            ), h_inside_wetted(self.length, Tw, res.T, res)
             Auw = self.vessel.A - self.wetted_area()
-
             Aw = self.wetted_area()
+
+            if Auw == 0:
+                h_inner_uw = 0
+            else:
+                h_inner_uw = h_inside_wetted(self.length, Tw, res.T, res)
+
+            if Aw == 0:
+                h_inner_w = 0
+            else:
+                h_inner_w = h_inside_wetted(self.length, Tuw, res.T, res)
+
+            # h_inner_uw, h_inner_w = h_inside(
+            #    self.length, Tuw, res.T, res.gas
+            # ), h_inside_wetted(self.length, Tw, res.T, res)
+
             if self.heat_transfer == "rigorous":
                 Quw = Auw * (
                     h_amb * (self.ambient_temperature - Tuw)
@@ -587,8 +599,76 @@ class Blowdown:
         )
         return res.x[0]
 
-    def analyze_rupture():
-        pass
+    def analyze_rupture(self):
+        material = "CS_360LT"
+        pres = lambda x: np.interp(x, self.times, self.pressure)
+        q_unwetted = lambda x: np.interp(x, self.times, self.heatflux_inside_gas)
+        q_wetted = lambda x: np.interp(x, self.times, self.heatflux_inside_liquid)
+
+        T0_unwetted = self.operating_temperature
+        T0_wetted = self.operating_temperature
+
+        thk = self.wall_thickness
+        rho = self.wall_density
+        inner_diameter = self.diameter
+
+        dt = 10
+        max_time = self.max_time
+        tsteps = int(max_time / dt)
+
+        T_wetted_wall = np.zeros(tsteps + 1)
+        T_unwetted_wall = np.zeros(tsteps + 1)
+        T_wetted_wall[0] = T0_wetted
+        T_unwetted_wall[0] = T0_unwetted
+        peak_times = np.zeros(tsteps + 1)
+        peak_times[0] = 0
+
+        for i in range(tsteps):
+            peak_times[i + 1] = peak_times[i] + dt
+            q_fire_wetted = sb_fire(T_wetted_wall[i], "scandpower_jet_peak_large")
+            q_fire_unwetted = sb_fire(T_unwetted_wall[i], "scandpower_jet_peak_large")
+            T_wetted_wall[i + 1] = T_wetted_wall[i] + (
+                q_fire_wetted - q_wetted(peak_times[i])
+            ) * dt / (thk * rho * steel_Cp(T_wetted_wall[i], material))
+            T_unwetted_wall[i + 1] = T_unwetted_wall[i] + (
+                q_fire_unwetted - q_unwetted(peak_times[i])
+            ) * dt / (thk * rho * steel_Cp(T_unwetted_wall[i], material))
+
+        ATS_wetted = np.array([ATS(T, material) for T in T_wetted_wall])
+        ATS_unwetted = np.array([ATS(T, material) for T in T_unwetted_wall])
+        von_mises_wetted = von_mises_unwetted = np.array(
+            [von_mises(pres(time), inner_diameter, thk) for time in peak_times]
+        )
+
+        from matplotlib import pyplot as plt
+
+        plt.figure(1)
+        plt.plot(peak_times, von_mises_wetted / 1e6, label="von Mises stress")
+        plt.plot(peak_times, ATS_wetted / 1e6, label="ATS wetted wall")
+        plt.plot(peak_times, ATS_unwetted / 1e6, label="ATS unwetted wall")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Allowable Tensile Strengt / von Mises Stress (MPa)")
+        plt.legend(loc="best")
+
+        plt.figure(2)
+        plt.plot(peak_times, T_wetted_wall - 273.15, label="T wetted wall")
+        plt.plot(peak_times, T_unwetted_wall - 273.15, label="T unwetted wall")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Wall temperature (C)")
+        plt.legend(loc="best")
+
+        plt.figure(3)
+
+        plt.plot(
+            peak_times,
+            np.array([pres(time) for time in peak_times]) / 1e5,
+            label="Pressure",
+        )
+        plt.xlabel("Time (s)")
+        plt.ylabel("Pressure (bar)")
+        plt.legend(loc="best")
+
+        plt.show()
 
     def depressurize(self):
         # find vessel mass
