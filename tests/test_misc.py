@@ -5,7 +5,7 @@ from openthermo.properties.transport import h_inside, h_inside_liquid
 import openthermo.properties.transport as tp
 from openthermo.flash.michelsen import get_flash_dry
 from openthermo.vessel import fire
-from openthermo.vessel.blowdown import (
+from openthermo.vessel.flowdevices import (
     liquid_release_bernouilli,
     two_phase_release_fauske,
     gas_release_rate,
