@@ -706,6 +706,9 @@ class Blowdown:
         )
         return res.x[0]
 
+    def analyze_rupture():
+        pass
+
     def depressurize(self):
         # find vessel mass
         # and start mole
