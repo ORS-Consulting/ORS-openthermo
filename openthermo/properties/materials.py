@@ -2,10 +2,15 @@ import math
 import numpy as np
 
 # Propeties from Scandpower guideline
-T_Cp = np.array([20, 100, 200, 300, 400, 500, 600, 700, 750, 800, 900, 1000, 1100])
-SS316_Cp = np.array((472, 487, 503, 512, 520, 530, 541, 551, 555.559, 565, 571, 577))
-Duplex_Cp = np.array((480, 500, 530, 560, 600, 635, 670, 710, 730, 750, 790, 840, 890))
-
+T_Cp = (
+    np.array([20, 100, 200, 300, 400, 500, 600, 700, 750, 800, 900, 1000, 1100])
+    + 273.15
+)
+SS316_Cp = np.array((472, 487, 503, 512, 520, 530, 541, 551, 555, 559, 565, 571, 577))
+# Missing points added manually
+Duplex_Cp = np.array([480, 500, 530, 560, 600, 635, 670, 710, 730, 750, 790, 840, 840])
+SMo_Cp = np.array([500, 520, 540, 555, 570, 580, 590, 600, 610, 610, 610, 610, 610])
+CS_LT_Cp = np.array([450, 480, 510, 550, 600, 660, 750, 900, 1450, 820, 540, 540, 540])
 
 # Material UTS data from Scandpower guideline
 T = (
@@ -200,7 +205,8 @@ def von_mises(p, d, wt, sigma_a=30e6):
 
     Returns
     ----------
-    sigma_e : von Mises stress (Pa)
+    sigma_e : float
+        von Mises stress (Pa)
 
     """
 
@@ -232,7 +238,8 @@ def ATS(temperature, material, k_s=0.85, k_y=1):
 
     Returns
     ----------
-    ATS : Allowable Tensile Strength (Pa)
+    ATS : float
+        Allowable Tensile Strength (Pa)
 
     """
 
@@ -258,7 +265,8 @@ def UTS(temperature, material):
 
     Return
     ----------
-    UTS : Ultimate Tensile Strength (Pa)
+    UTS : float
+        Ultimate Tensile Strength (Pa)
 
     """
 
@@ -274,9 +282,54 @@ def UTS(temperature, material):
         return np.interp(temperature, T, SMo_UTS)
 
 
+def steel_Cp(temperature, material):
+    """
+    Tabulation look-up / interpolation to retrieve the heat capacity
+    as a function of temperature for various typical materials according to:
+
+    Hekkelstrand, B.; Skulstad, P. Guidelines for the Protection of Pressurised
+    Systems Exposed to Fire; Scandpower Risk Management AS: Kjeller, Norway, 2004.
+
+
+    Parameters
+    ----------
+    temperature : float
+        Temperature (K)
+    material : string
+        Material type: 235LT, 360LT (ASTM A-333/A-671), Duplex (2205, SA-790/ASTM A-790),
+        316 (ASTM A-320, ASME A-358), 6Mo (ASTM B-677)
+
+    Return
+    ----------
+    Cp : float
+        Ultimate Tensile Strength (Pa)
+
+    """
+    if material == "CS_235LT":
+        return np.interp(temperature, T_Cp, CS_LT_Cp)
+    elif material == "CS_360LT":
+        return np.interp(temperature, T, CS_LT_Cp)
+    elif material == "SS316":
+        return np.interp(temperature, T, SS316_Cp)
+    elif material == "Duplex":
+        return np.interp(temperature, T, Duplex_Cp)
+    elif material == "6Mo":
+        return np.interp(temperature, T, SMo_Cp)
+
+
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
 
+    plt.figure(1)
+    plt.plot(T_Cp, Duplex_Cp, "--", label="22Cr Duplex")
+    plt.plot(T_Cp, SS316_Cp, "-.", label="SS316")
+    plt.plot(T_Cp, SMo_Cp, "-", label="6Mo")
+    plt.plot(T_Cp, CS_LT_Cp, "k--", label="CS")
+    plt.xlabel("Temperature (K)")
+    plt.ylabel("Steel heat capacity (J/kg K)")
+    plt.legend(loc="best")
+
+    plt.figure(2)
     plt.plot(T, Duplex_UTS, "--", label="22Cr Duplex")
     plt.plot(T, SS_UTS, "-.", label="SS316")
     plt.plot(T, SMo_UTS, "-", label="6Mo")
