@@ -61,4 +61,11 @@ def test_ATS():
 
 
 def test_von_mises():
-    assert materials.von_mises(10e5, 1, 0.01) == 100
+    """
+    Test using manual readings of figure C.2 in:
+    Hekkelstrand, B.; Skulstad, P. Guidelines for the Protection of Pressurised
+    Systems Exposed to Fire; Scandpower Risk Management AS: Kjeller, Norway, 2004.
+    """
+
+    assert materials.von_mises(100e5, 1.0, 0.125) == pytest.approx(49e6, rel=0.02)
+    assert materials.von_mises(100e5, 1.0 * 2.5, 0.1) == pytest.approx(121e6, rel=0.02)
