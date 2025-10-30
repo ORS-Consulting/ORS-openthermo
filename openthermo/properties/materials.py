@@ -1,6 +1,11 @@
 import math
 import numpy as np
 
+# Propeties from Scandpower guideline
+T_Cp = np.array([20, 100, 200, 300, 400, 500, 600, 700, 750, 800, 900, 1000, 1100])
+SS316_Cp = np.array((472, 487, 503, 512, 520, 530, 541, 551, 555.559, 565, 571, 577))
+Duplex_Cp = np.array((480, 500, 530, 560, 600, 635, 670, 710, 730, 750, 790, 840, 890))
+
 
 # Material UTS data from Scandpower guideline
 T = (
@@ -175,6 +180,11 @@ def von_mises(p, d, wt, sigma_a=30e6):
     Hekkelstrand, B.; Skulstad, P. Guidelines for the Protection of Pressurised
     Systems Exposed to Fire; Scandpower Risk Management AS: Kjeller, Norway, 2004.
 
+    As also applied in:
+    Andreasen, A.; Borroni, F.; Zan Nieto, M.; Stegelmann, C.; P. Nielsen, R.
+    On the Adequacy of API 521 Relief-Valve Sizing Method for Gas-Filled Pressure Vessels
+    Exposed to Fire. Safety 2018, 4, 11. https://doi.org/10.3390/safety4010011
+
     Parameters
     ----------
     p : float
@@ -253,20 +263,15 @@ def UTS(temperature, material):
     """
 
     if material == "CS_235LT":
-        UTS = np.interp(temperature, T, CS_235LT_UTS)
-        return UTS
+        return np.interp(temperature, T, CS_235LT_UTS)
     elif material == "CS_360LT":
-        UTS = np.interp(temperature, T, CS_360LT_UTS)
-        return UTS
+        return np.interp(temperature, T, CS_360LT_UTS)
     elif material == "SS316":
-        UTS = np.interp(temperature, T, SS_UTS)
-        return UTS
+        return np.interp(temperature, T, SS_UTS)
     elif material == "Duplex":
-        UTS = np.interp(temperature, T, Duplex_UTS)
-        return UTS
+        return np.interp(temperature, T, Duplex_UTS)
     elif material == "6Mo":
-        UTS = np.interp(temperature, T, SMo_UTS)
-        return UTS
+        return np.interp(temperature, T, SMo_UTS)
 
 
 if __name__ == "__main__":
