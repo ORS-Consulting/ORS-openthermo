@@ -308,13 +308,13 @@ def steel_Cp(temperature, material):
     if material == "CS_235LT":
         return np.interp(temperature, T_Cp, CS_LT_Cp)
     elif material == "CS_360LT":
-        return np.interp(temperature, T, CS_LT_Cp)
+        return np.interp(temperature, T_Cp, CS_LT_Cp)
     elif material == "SS316":
-        return np.interp(temperature, T, SS316_Cp)
+        return np.interp(temperature, T_Cp, SS316_Cp)
     elif material == "Duplex":
-        return np.interp(temperature, T, Duplex_Cp)
+        return np.interp(temperature, T_Cp, Duplex_Cp)
     elif material == "6Mo":
-        return np.interp(temperature, T, SMo_Cp)
+        return np.interp(temperature, T_Cp, SMo_Cp)
 
 
 if __name__ == "__main__":
