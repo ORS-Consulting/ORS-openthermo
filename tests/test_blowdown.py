@@ -1305,9 +1305,52 @@ def test_blowdown_sbfire_n2(plot=False):
         plt.show()
 
 
+def test_blowdown_sbfire_n2_rupture(plot=False):
+    """
+    Test against HYSYS Depressurisation utility for S-B pool fire
+    exposing the total area of the vessel. No water present.
+    COSTALD liquid density is applied.
+    """
+    input = {}
+    P = 100e5
+    T = 298.15
+
+    input["mode"] = "isentropic"
+    input["heat_transfer"] = "rigorous_sb_fire"
+    input["sb_fire_type"] = "api_jet"
+    input["wall_thickness"] = 0.1363  # m
+    input["eos_model"] = "PR"
+    input["liquid_density"] = "eos"
+    input["max_time"] = 3600
+    input["delay"] = 0
+    input["length"] = 9
+    input["diameter"] = 3
+    input["vessel_type"] = "Flat-end"
+    input["orientation"] = "horizontal"
+    input["liquid_level"] = 0.0
+    input["operating_temperature"] = T
+    input["operating_pressure"] = P
+    input["ambient_temperature"] = 298
+    input["back_pressure"] = 1.01e5
+    input["bdv_orifice_size"] = 0.008  # m
+    input["bdv_orifice_cd"] = 0.975
+
+    input["sb_peak_fire_type"] = "scandpower_pool_peak"
+    input["vessel_material"] = "CS_235LT"
+
+    names = ["nitrogen"]
+    molefracs = [1.0]
+
+    input["molefracs"] = molefracs
+    input["component_names"] = names
+    segment = Blowdown(input)
+    segment.depressurize()
+    segment.analyze_rupture()
+
+
 if __name__ == "__main__":
     pass
-    test_blowdown_sbfire_multiphase(plot=True)
+    # test_blowdown_sbfire_multiphase(plot=True)
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
@@ -1318,3 +1361,4 @@ if __name__ == "__main__":
     # test_adiabatic(plot=True)
     # test_isentropic(plot=True)
     # test_blowdown_sbfire_n2(plot=False)
+    test_blowdown_sbfire_n2_rupture(plot=False)

@@ -8,136 +8,18 @@ import math
 from scipy.constants import g
 from openthermo.properties.transport import COSTALD_rho, COSTALD_Vm
 from openthermo.properties.transport import h_inside, h_inside_wetted
+from openthermo.properties.materials import steel_Cp, ATS, von_mises
 from openthermo.validation import validate_mandatory_ruleset
 from openthermo import errors
 from openthermo.flash.michelsen import get_flash_dry
 from openthermo.vessel.fire import sb_fire
+from openthermo.vessel.flowdevices import *
 import warnings
 
 warnings.filterwarnings("once")
 warnings.filterwarnings("ignore", category=ResourceWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-
-def hem_release_rate():
-    pass
-
-
-def liquid_release_bernouilli(P1, P2, rho, CD, area, H):
-    """
-    Liquid mass flow (kg/s) trough a hole or orifice.
-    flow conditions. The formula is based on Yellow Book equation 2.194.
-
-    Methods for the calculation of physical effects, CPR 14E, van den Bosch and Weterings (Eds.), 1996
-
-    Parameters
-    ----------
-    P1 : float
-        Upstream pressure
-    P2 : float
-        Downstream pressure
-    rho : float
-        Fluid density
-    CD : float
-        Coefficient of discharge
-    area : float
-        Orifice area
-    H : float
-        Liquid static height
-
-    Returns
-    ----------
-        : float
-        liquid  release rate / mass flow of discharge
-    """
-    P1 = P1 + H * rho * g
-    if H > 0 and P1 > P2:
-        return CD * area * math.sqrt(2 * (P1 - P2) * rho)
-    else:
-        return 0
-
-
-def two_phase_release_fauske(P1, Pc, rho, CD, area):
-    """
-    Two-phase mass flow (kg/s) trough a hole or orifice,.
-    flow conditions. The formula is based on Yellow Book equation 2.91.
-
-    Methods for the calculation of physical effects, CPR 14E, van den Bosch and Weterings (Eds.), 1996
-    World Bank Technical Paper Number 55, Techniques for Assessing Industrial Hazards, 2nd print, 1990
-
-    Parameters
-    ----------
-    P1 : float
-        Upstream pressure
-    Pc : float
-        Critical pressure or ambient which ever is the highest. Pc = 0.55 P1
-    rho : float
-        Fluid density
-    CD : float
-        Coefficient of discharge
-    are : float
-        Orifice area
-
-    Returns
-    ----------
-        : float
-        Two-phase   release rate / mass flow of discharge
-    """
-
-    return max(CD * area * math.sqrt(2 * (P1 - Pc) * rho), 0)
-
-
-def gas_release_rate(P1, P2, rho, k, CD, area):
-    """
-    Gas massflow (kg/s) trough a hole at critical (sonic) or subcritical
-    flow conditions. The formula is based on Yellow Book equation 2.22.
-
-    Methods for the calculation of physical effects, CPR 14E,
-    van den Bosch and Weterings (Eds.), 1996
-
-    Parameters
-    ----------
-    P1 : float
-        Upstream pressure
-    P2 : float
-        Downstream pressure
-    rho : float
-        Fluid density
-    k : float
-        Ideal gas k (Cp/Cv)
-    CD : float
-        Coefficient of discharge
-    are : float
-        Orifice area
-
-    Returns
-    ----------
-        : float
-        Gas release rate / mass flow of discharge
-    """
-    if P1 > P2:
-        if P1 / P2 > ((k + 1) / 2) ** ((k) / (k - 1)):
-            flow_coef = 1
-        else:
-            flow_coef = (
-                2
-                / (k - 1)
-                * (((k + 1) / 2) ** ((k + 1) / (k - 1)))
-                * ((P2 / P1) ** (2 / k))
-                * (1 - (P2 / P1) ** ((k - 1) / k))
-            )
-
-        retval = (
-            math.sqrt(flow_coef)
-            * CD
-            * area
-            * math.sqrt(rho * P1 * k * (2 / (k + 1)) ** ((k + 1) / (k - 1)))
-        )
-    else:
-        retval = 0
-
-    return retval
 
 
 class Blowdown:
@@ -199,6 +81,16 @@ class Blowdown:
                 self.wall_density = 7800
             if input["heat_transfer"] == "rigorous_sb_fire":
                 self.sb_fire_type = input["sb_fire_type"]
+            if "sb_peak_fire_type" in input:
+                self.sb_peak_fire_type = input["sb_peak_fire_type"]
+                self.material = input["vessel_material"]
+            if "external_heat_transfer_coefficient" in input:
+                self.external_heat_transfer_coefficient = input[
+                    "external_heat_transfer_coefficient"
+                ]
+            else:
+                self.external_heat_transfer_coefficient = 8
+
         else:
             self.heat_transfer = None
         if "water_level" in input:
@@ -560,13 +452,24 @@ class Blowdown:
         # Wall temperature balances
         ##############################################################################
         if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
-            h_amb = 8
-            h_inner_uw, h_inner_w = h_inside(
-                self.length, Tuw, res.T, res.gas
-            ), h_inside_wetted(self.length, Tw, res.T, res)
+            h_amb = self.external_heat_transfer_coefficient
             Auw = self.vessel.A - self.wetted_area()
-
             Aw = self.wetted_area()
+
+            if Auw == 0:
+                h_inner_uw = h_inside_wetted(self.length, Tw, res.T, res)
+            else:
+                h_inner_uw = h_inside(self.length, Tuw, res.T, res.gas)
+
+            if Aw == 0:
+                h_inner_w = h_inside(self.length, Tuw, res.T, res.gas)
+            else:
+                h_inner_w = h_inside_wetted(self.length, Tw, res.T, res)
+
+            # h_inner_uw, h_inner_w = h_inside(
+            #     self.length, Tuw, res.T, res.gas
+            # ), h_inside_wetted(self.length, Tw, res.T, res)
+
             if self.heat_transfer == "rigorous":
                 Quw = Auw * (
                     h_amb * (self.ambient_temperature - Tuw)
@@ -705,6 +608,91 @@ class Blowdown:
             bounds=[(self.N0 * 0.9, self.N0 * 1.1)],
         )
         return res.x[0]
+
+    def analyze_rupture(self, filename=None):
+        # Add material as input dict
+        # add peak heat load type
+        # call the rupture analysys from the depressurise method
+        # select peak_heat_load based on fire type
+
+        pres = lambda x: np.interp(x, self.times, self.pressure)
+        q_unwetted = lambda x: np.interp(x, self.times, self.heatflux_inside_gas)
+        q_wetted = lambda x: np.interp(x, self.times, self.heatflux_inside_liquid)
+
+        T0_unwetted = self.operating_temperature
+        T0_wetted = self.operating_temperature
+
+        thk = self.wall_thickness
+        rho = self.wall_density
+        inner_diameter = self.diameter
+
+        dt = 10
+        max_time = self.max_time
+        tsteps = int(max_time / dt)
+
+        T_wetted_wall = np.zeros(tsteps + 1)
+        T_unwetted_wall = np.zeros(tsteps + 1)
+        T_wetted_wall[0] = T0_wetted
+        T_unwetted_wall[0] = T0_unwetted
+        peak_times = np.zeros(tsteps + 1)
+        peak_times[0] = 0
+
+        for i in range(tsteps):
+            peak_times[i + 1] = peak_times[i] + dt
+            q_fire_wetted = sb_fire(T_wetted_wall[i], self.sb_peak_fire_type)
+            q_fire_unwetted = sb_fire(T_unwetted_wall[i], self.sb_peak_fire_type)
+            T_wetted_wall[i + 1] = T_wetted_wall[i] + (
+                q_fire_wetted - q_wetted(peak_times[i])
+            ) * dt / (thk * rho * steel_Cp(T_wetted_wall[i], self.material))
+            T_unwetted_wall[i + 1] = T_unwetted_wall[i] + (
+                q_fire_unwetted - q_unwetted(peak_times[i])
+            ) * dt / (thk * rho * steel_Cp(T_unwetted_wall[i], self.material))
+
+        ATS_wetted = np.array([ATS(T, self.material) for T in T_wetted_wall])
+        ATS_unwetted = np.array([ATS(T, self.material) for T in T_unwetted_wall])
+        von_mises_wetted = von_mises_unwetted = np.array(
+            [von_mises(pres(time), inner_diameter, thk) for time in peak_times]
+        )
+
+        from matplotlib import pyplot as plt
+
+        plt.figure(1)
+        plt.plot(peak_times, von_mises_wetted / 1e6, label="von Mises stress")
+
+        plt.plot(peak_times, ATS_wetted / 1e6, label="ATS wetted wall")
+        if sum(self.liquid_dyn_level) > 0:
+            plt.plot(peak_times, ATS_unwetted / 1e6, label="ATS unwetted wall")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Allowable Tensile Strengt / von Mises Stress (MPa)")
+        plt.legend(loc="best")
+        if filename is not None:
+            plt.savefig(
+                filename + "_ATS_vonmises.png",
+            )
+        plt.figure(2)
+        if sum(self.liquid_dyn_level) > 0:
+            plt.plot(peak_times, T_wetted_wall - 273.15, label="T wetted wall")
+        plt.plot(peak_times, T_unwetted_wall - 273.15, label="T unwetted wall")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Wall temperature (C)")
+        plt.legend(loc="best")
+        if filename is not None:
+            plt.savefig(
+                filename + "_peak_wall_temp.png",
+            )
+
+        plt.figure(3)
+        plt.plot(
+            peak_times,
+            np.array([pres(time) for time in peak_times]) / 1e5,
+            label="Pressure",
+        )
+        plt.xlabel("Time (s)")
+        plt.ylabel("Pressure (bar)")
+        plt.legend(loc="best")
+
+        if filename is None:
+            plt.show()
 
     def depressurize(self):
         # find vessel mass
@@ -1007,7 +995,7 @@ class Blowdown:
         ##############################################################################
 
         if self.heat_transfer == "rigorous":
-            h_amb = 8
+            h_amb = self.external_heat_transfer_coefficient
 
             if self.vessel_orientation == "vertical":
                 L = self.length - self.liquid_level
