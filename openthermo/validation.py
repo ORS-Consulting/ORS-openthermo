@@ -100,6 +100,12 @@ def validate_mandatory_ruleset(input):
             "type": "string",
             "allowed": ["rigorous", "rigorous_sb_fire"],
         },
+        "external_heat_transfer_coefficient": {
+            "required": False,
+            "type": "number",
+            "min": 0.0,
+            "max": 1000,
+        },
         "sb_fire_type": {
             "required": False,
             "type": "string",

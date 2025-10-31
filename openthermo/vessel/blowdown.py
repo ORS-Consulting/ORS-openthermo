@@ -84,6 +84,12 @@ class Blowdown:
             if "sb_peak_fire_type" in input:
                 self.sb_peak_fire_type = input["sb_peak_fire_type"]
                 self.material = input["vessel_material"]
+            if "external_heat_transfer_coefficient" in input:
+                self.external_heat_transfer_coefficient = input[
+                    "external_heat_transfer_coefficient"
+                ]
+            else:
+                self.external_heat_transfer_coefficient = 8
 
         else:
             self.heat_transfer = None
@@ -446,22 +452,22 @@ class Blowdown:
         # Wall temperature balances
         ##############################################################################
         if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
-            h_amb = 8
+            h_amb = self.external_heat_transfer_coefficient
             Auw = self.vessel.A - self.wetted_area()
             Aw = self.wetted_area()
 
             if Auw == 0:
-                h_inner_uw = 0
-            else:
                 h_inner_uw = h_inside_wetted(self.length, Tw, res.T, res)
+            else:
+                h_inner_uw = h_inside(self.length, Tuw, res.T, res.gas)
 
             if Aw == 0:
-                h_inner_w = 0
+                h_inner_w = h_inside(self.length, Tuw, res.T, res.gas)
             else:
-                h_inner_w = h_inside_wetted(self.length, Tuw, res.T, res)
+                h_inner_w = h_inside_wetted(self.length, Tw, res.T, res)
 
             # h_inner_uw, h_inner_w = h_inside(
-            #    self.length, Tuw, res.T, res.gas
+            #     self.length, Tuw, res.T, res.gas
             # ), h_inside_wetted(self.length, Tw, res.T, res)
 
             if self.heat_transfer == "rigorous":
@@ -603,7 +609,7 @@ class Blowdown:
         )
         return res.x[0]
 
-    def analyze_rupture(self):
+    def analyze_rupture(self, filename=None):
         # Add material as input dict
         # add peak heat load type
         # call the rupture analysys from the depressurise method
@@ -652,21 +658,30 @@ class Blowdown:
 
         plt.figure(1)
         plt.plot(peak_times, von_mises_wetted / 1e6, label="von Mises stress")
+
         plt.plot(peak_times, ATS_wetted / 1e6, label="ATS wetted wall")
-        plt.plot(peak_times, ATS_unwetted / 1e6, label="ATS unwetted wall")
+        if sum(self.liquid_dyn_level) > 0:
+            plt.plot(peak_times, ATS_unwetted / 1e6, label="ATS unwetted wall")
         plt.xlabel("Time (s)")
         plt.ylabel("Allowable Tensile Strengt / von Mises Stress (MPa)")
         plt.legend(loc="best")
-
+        if filename is not None:
+            plt.savefig(
+                filename + "_ATS_vonmises.png",
+            )
         plt.figure(2)
-        plt.plot(peak_times, T_wetted_wall - 273.15, label="T wetted wall")
+        if sum(self.liquid_dyn_level) > 0:
+            plt.plot(peak_times, T_wetted_wall - 273.15, label="T wetted wall")
         plt.plot(peak_times, T_unwetted_wall - 273.15, label="T unwetted wall")
         plt.xlabel("Time (s)")
         plt.ylabel("Wall temperature (C)")
         plt.legend(loc="best")
+        if filename is not None:
+            plt.savefig(
+                filename + "_peak_wall_temp.png",
+            )
 
         plt.figure(3)
-
         plt.plot(
             peak_times,
             np.array([pres(time) for time in peak_times]) / 1e5,
@@ -676,7 +691,8 @@ class Blowdown:
         plt.ylabel("Pressure (bar)")
         plt.legend(loc="best")
 
-        plt.show()
+        if filename is None:
+            plt.show()
 
     def depressurize(self):
         # find vessel mass
@@ -979,7 +995,7 @@ class Blowdown:
         ##############################################################################
 
         if self.heat_transfer == "rigorous":
-            h_amb = 8
+            h_amb = self.external_heat_transfer_coefficient
 
             if self.vessel_orientation == "vertical":
                 L = self.length - self.liquid_level
