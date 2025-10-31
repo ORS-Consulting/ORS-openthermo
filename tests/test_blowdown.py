@@ -1335,6 +1335,9 @@ def test_blowdown_sbfire_n2_rupture(plot=False):
     input["bdv_orifice_size"] = 0.008  # m
     input["bdv_orifice_cd"] = 0.975
 
+    input["sb_peak_fire_type"] = "scandpower_pool_peak"
+    input["vessel_material"] = "CS_235LT"
+
     names = ["nitrogen"]
     molefracs = [1.0]
 

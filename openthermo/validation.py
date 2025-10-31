@@ -106,6 +106,22 @@ def validate_mandatory_ruleset(input):
             "allowed": ["scandpower_pool", "scandpower_jet", "api_pool", "api_jet"],
             "dependencies": {"heat_transfer": "rigorous_sb_fire"},
         },
+        "sb_peak_fire_type": {
+            "required": False,
+            "type": "string",
+            "allowed": [
+                "scandpower_jet_peak_large",
+                "scandpower_jet_peak_small",
+                "scandpower_pool_peak",
+            ],
+            "dependencies": {"heat_transfer": ["rigorous", "rigorous_sb_fire"]},
+        },
+        "vessel_material": {
+            "required": False,
+            "type": "string",
+            "allowed": ["CS_235LT", "CS_360LT", "SS316", "Duplex", "6Mo"],
+            "dependencies": ["sb_peak_fire_type"],
+        },
         "orientation": {
             "required": True,
             "type": "string",

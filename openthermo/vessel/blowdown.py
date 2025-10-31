@@ -81,6 +81,10 @@ class Blowdown:
                 self.wall_density = 7800
             if input["heat_transfer"] == "rigorous_sb_fire":
                 self.sb_fire_type = input["sb_fire_type"]
+            if "sb_peak_fire_type" in input:
+                self.sb_peak_fire_type = input["sb_peak_fire_type"]
+                self.material = input["vessel_material"]
+
         else:
             self.heat_transfer = None
         if "water_level" in input:
@@ -600,7 +604,11 @@ class Blowdown:
         return res.x[0]
 
     def analyze_rupture(self):
-        material = "CS_360LT"
+        # Add material as input dict
+        # add peak heat load type
+        # call the rupture analysys from the depressurise method
+        # select peak_heat_load based on fire type
+
         pres = lambda x: np.interp(x, self.times, self.pressure)
         q_unwetted = lambda x: np.interp(x, self.times, self.heatflux_inside_gas)
         q_wetted = lambda x: np.interp(x, self.times, self.heatflux_inside_liquid)
@@ -625,17 +633,17 @@ class Blowdown:
 
         for i in range(tsteps):
             peak_times[i + 1] = peak_times[i] + dt
-            q_fire_wetted = sb_fire(T_wetted_wall[i], "scandpower_jet_peak_large")
-            q_fire_unwetted = sb_fire(T_unwetted_wall[i], "scandpower_jet_peak_large")
+            q_fire_wetted = sb_fire(T_wetted_wall[i], self.sb_peak_fire_type)
+            q_fire_unwetted = sb_fire(T_unwetted_wall[i], self.sb_peak_fire_type)
             T_wetted_wall[i + 1] = T_wetted_wall[i] + (
                 q_fire_wetted - q_wetted(peak_times[i])
-            ) * dt / (thk * rho * steel_Cp(T_wetted_wall[i], material))
+            ) * dt / (thk * rho * steel_Cp(T_wetted_wall[i], self.material))
             T_unwetted_wall[i + 1] = T_unwetted_wall[i] + (
                 q_fire_unwetted - q_unwetted(peak_times[i])
-            ) * dt / (thk * rho * steel_Cp(T_unwetted_wall[i], material))
+            ) * dt / (thk * rho * steel_Cp(T_unwetted_wall[i], self.material))
 
-        ATS_wetted = np.array([ATS(T, material) for T in T_wetted_wall])
-        ATS_unwetted = np.array([ATS(T, material) for T in T_unwetted_wall])
+        ATS_wetted = np.array([ATS(T, self.material) for T in T_wetted_wall])
+        ATS_unwetted = np.array([ATS(T, self.material) for T in T_unwetted_wall])
         von_mises_wetted = von_mises_unwetted = np.array(
             [von_mises(pres(time), inner_diameter, thk) for time in peak_times]
         )
