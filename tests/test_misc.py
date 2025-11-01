@@ -5,7 +5,7 @@ from openthermo.properties.transport import h_inside, h_inside_liquid
 import openthermo.properties.transport as tp
 from openthermo.flash.michelsen import get_flash_dry
 from openthermo.vessel import fire
-from openthermo.vessel.blowdown import (
+from openthermo.vessel.flowdevices import (
     liquid_release_bernouilli,
     two_phase_release_fauske,
     gas_release_rate,
@@ -286,11 +286,37 @@ def test_pool_fire_scandpower():
     assert fire.pool_fire_scandpower(273 + 20) == pytest.approx(88.5e3, abs=500)
 
 
+def test_peak_large_fire_scandpower():
+    assert fire.jet_fire_peak_large_scandpower(273 + 25) == pytest.approx(
+        313.6e3, abs=500
+    )
+
+
+def test_peak_small_fire_scandpower():
+    assert fire.jet_fire_peak_small_scandpower(273 + 25) == pytest.approx(
+        226.7e3, abs=500
+    )
+
+
+def test_peak_pool_scandpower():
+    assert fire.pool_fire_peak_scandpower(273 + 25) == pytest.approx(131.2e3, abs=500)
+
+
 def test_sb():
     assert fire.sb_fire(273 + 50, "api_jet") == pytest.approx(83.5e3, abs=500)
     assert fire.sb_fire(273 + 50, "api_pool") == pytest.approx(45.5e3, abs=100)
     assert fire.sb_fire(273 + 20, "scandpower_pool") == pytest.approx(88.5e3, abs=500)
     assert fire.sb_fire(273 + 20, "scandpower_jet") == pytest.approx(94.5e3, abs=1000)
+    assert fire.sb_fire(273 + 25, "scandpower_jet_peak_large") == pytest.approx(
+        313.6e3, abs=1000
+    )
+    assert fire.sb_fire(273 + 25, "scandpower_jet_peak_small") == pytest.approx(
+        226.7e3, abs=1000
+    )
+    assert fire.sb_fire(273 + 25, "scandpower_pool_peak") == pytest.approx(
+        131.2e3, abs=1000
+    )
+
     try:
         Q = fire.sb_fire(273 + 20, "scand_jet") == pytest.approx(94.5e3, abs=1000)
     except ValueError:
