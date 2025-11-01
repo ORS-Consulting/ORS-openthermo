@@ -180,7 +180,7 @@ A few choices has been made to keep things simple:
 
 Ignoring temperature gradients in the vessel wall is an acceptable assumption for (not too thick) steel vessel walls. However, low thermal conductivity materials cannot accurately be modelled. In order to do so, a 1-D heat transfer model shall be implemented. 
 
-One limitation of *thermopack* is that including pseudo components is not easy if the internal property calculations shall be used. Further, *thermopack* does not provide transport properties. In order to allow an implementation for pseudo components and transport properties the *thermopack* library is only used for flash calculations and used as a plugin, the rest (and less computationally demanding tasks) is provided by Python *thermo*. 
+One limitation of *thermopack* is that including pseudo components is not easy if the internal property calculations shall be used. Further, *thermopack* does not provide transport properties. In order to allow an implementation for pseudo components and transport properties the *thermopack* library is only used for flash calculations and used as a plugin, the rest (and less computationally demanding tasks) is provided by Python *thermo*. Some tweaking has been applied flash routines such as TV, PH, UV flash routines which are built around *thermopack*. 
 
 While *openthermo* has been extensively validated and fidelity has been built, we have not had the workforce or man-months/years available as the legacy university projects or the commerical software providers. This means that there will likely be situations where the code fails to provide results, cases that are not covered or simply the code will not work. This is the cost and risk of using open source software.   
 
@@ -326,6 +326,14 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 ^^                      |       |                       |               | `api_jet`     |
 ^^                      |       |                       |               | `scandpower_pool`|
 ^^                      |       |                       |               | `scandpower_jet` |
+`peak_heat_load`        | N/A   | Peak heat load for rupture calculation | `heat_transfer`= `rigorous`or `rigorous_sb_fire` |  `scandpower_jet_peak_large` |
+^^                      |       |                       |               | `scandpower_jet_peak_small` |             
+^^                      |       |                       |               | `scandpower_pool_peak` |
+`vessel_material`       |       | Material type for rupture calculation | `peak_heat_load` | `CS_235LT` |
+^^                      |       |                       |               | `CS_360LT` |
+^^                      |       |                       |               | `SS316` |
+^^                      |       |                       |               | `Duplex` |
+^^                      |       |                       |               | `6Mo` |
 `molefracs`             | N/A   | List of mole fractions| Yes           |  N/A          |
 `component_names`       | N/A   | Pure component names  | Yes           | N/A           |
 `fire_type`             | N/A   | API 521 fire type     | Yes, `mode`=`fire` | `API521` (default)|
@@ -615,15 +623,14 @@ The convective heat transfer coefficients for a jet fire and a pool fire, and re
 - ${\varepsilon}_s$ = 0.85
 - ${\varepsilon}_f$ = 1.0 (optical thick flames, thickness > 1 m)
 
-The flame temperature is found by solving equation [@Eq:flame2] for the incident heat flux in relation to the ambient conditions.
-The flame temperature is kept constant throughout the simulation:
+The flame temperature is found by solving equation [@Eq:flame2] for the incident heat flux in relation to the ambient conditions:
 
 $$ q_{total}=\sigma \cdot T_{rf}^4 + h_f \cdot (T_f-T_{amb})$$ {#eq:flame2}
 
 - $q_{total}$ is the incident flame heat flux as given in table [@Tbl:heatfluxes1]. [W/m$^2$]
 - $T_{amb}$ is the ambient temperature $\approx$ 293 K (20$^\circ$ C)
 
-The heat flux used to calculate the flame temperature is given in table [@tbl:heatfluxes1]. Different coefficient are proposed by API 521 [@API521] and this source is referenced for more information. 
+The heat flux used to calculate the flame temperature is given in table [@tbl:heatfluxes1]. Different coefficients are proposed by API 521 [@API521] and this source is referenced for more information. 
 
 |                        | Small jet fire  [kW/m$^2$]  |  Large jet fire  [kW/m$^2$] |  Pool fire  [kW/m$^2$]
 | ----                   |  ----           |  ----           | ----
@@ -711,6 +718,64 @@ Both ASME F&D, DIN and 2:1 semielliptical are variants of a torispherical vessel
 : Vessel geometry details. For torispherical tank heads, the following *f* and *k* parameters are used in standards [@fluids]. *f* is the dish-radius parameter for tanks with torispherical heads or bottoms, *k* is the knuckle-radius parameter for tanks with torispherical heads or bottoms {#tbl:vessel_geometry}
 
 Using the *fluids* library partial volumes, surface area (full and partial) and liquid level (from partial volume) can be calculated and used internally in *openthermo*.
+
+## Rupture evaluation 
+It is assumed that when the von Mises stress, $\sigma_e$ (MPa), exceeds the allowable tensile strength of the material, (ATS) (MPa), rupture will occur, i.e., when $\sigma_e$ > ATS.
+
+The ATS is calculated as [@scandpower]:
+
+$$ ATS = UTS  k_s k_y $$
+
+Where
+
+- $UTS$ is the material Ultimate Tensike Strength
+- $k_s$ is a general safety factor for a specific material with known material data. If typical material specific data is applied a factor of 0.85 is recommended.
+- $k_y$ is an additional factor used for material with missing or uncertain data. Normally this factor is 1.0.
+
+The von Mises stress is calculated by:
+
+$$ \sigma_e = \sqrt{3 \left(\frac{p D^2}{D^2 - d^2} \right)^2 +\sigma_a^2}
+
+Where 
+
+- $p$ is the pressure (MPa)
+- $D$ is the vessel/pipe external diameter
+- $d$ is the vessel/pipe internal diameter
+- $\sigma_a$ is the longitudinal stress due to the external force. Assumed to be 30 MPa [@scandpower]
+
+The evaluation of vessel rupture is performed as a post-calculation step following the actual depressurisation calculation. The depressurisation calculation is performed with the applicable back-ground heat load to generate the time dependent pressure profile of the vessel inventory. The background heat load is depending on the fire type as also summarised in [@Tbl:heatfluxes1]. During the depressurisation calaculation the internal heat flux is calculated. In the post-calculation step an energy balance is made for the vessel material, with the external heat is generated by the applicable peak heat load Stefan-Boltzmann formulation as also provided in [@Tbl:heatfluxes1], with the internal heat flux calculated using the back-gorund heat load. The heat balance for the vessel wall is used to solve for the vessel wall temperature as a function of time
+
+$$ \frac{dT}{dt} = \frac{q_{external}-q_{internal}}{C_p \rho dx}$$
+
+Where:
+
+- $T$ is the vessel wall temperature (K)
+- $q_{external}$ is time dependent peak fire heat flux (W/m$^2$ K)
+- $q_{internal}$ is the internal convective heat flux (W/m$^2$ K)
+- $C_p$ is the material temeprature dependent heat capacity (J/kg K)
+- $\rho$ is the materal density (assumed constant) (kg/m$^3$)
+- $dx$ is the vessel wall material thickness (m)
+
+This oridinary differential equation is solved using a simple explicit Euler scheme. 
+
+The temperature dependent material properties has been sourced from the Scandpower guideline [@scandpower] and visualised in [@Fig:heat_capacity] and [@Fig:UTS] for heat capacity and Ultimate Tensile Strength, respectively. The materials implemented in *openthermo* are summarised in [@Tbl:materials].  
+
+![Steel heat capacities as a finction of temperature for the materials implemented in *openthermo*. The values have been sourced from [@scandpower] and missing values extrapolated to cover the same temperature range.](docs/img/heat_capacity.png){#fig:heat_capacity}
+
+
+![Steel Ultimate Tensile Strengt as a finction of temperature for the materials implemented in *openthermo*. The values have been sourced from [@scandpower] and missing values extrapolated to cover the same temperature range.](docs/img/UTS.png){#fig:UTS}
+
+
+| Steel type   | Type / alloy | ASME | DIN | ASTM |
+|--------------|--------------|------|-----|------|
+| Carbon steel | 235LT        |      |     | A-333 / A-671 |  
+|              | 360LT        |      |     |      |
+| Duplex (SS)  | 2205         | SA-770 | 1.4462 | A-790 |
+| Austenitic (SS) | 316       | A-358 316 | 1.4401 | A-320 |
+| Super austenitic (SS) | 6Mo |      | 1.4529 | B-677 |
+
+: Steel materials implemented in *openthermo*. {#tbl:materials}
+
 
 ## Model implementation
 Two main implementations have been made, which are referred to as *homogeneous equilibrium* or *full equilibrium* and *partial phase equilibrium* (PPE), which will be further elaborated in the following.

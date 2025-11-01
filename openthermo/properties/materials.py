@@ -327,6 +327,7 @@ if __name__ == "__main__":
     plt.plot(T_Cp, CS_LT_Cp, "k--", label="CS")
     plt.xlabel("Temperature (K)")
     plt.ylabel("Steel heat capacity (J/kg K)")
+    plt.savefig("heat_capacity.png", dpi=600)
     plt.legend(loc="best")
 
     plt.figure(2)
@@ -338,4 +339,5 @@ if __name__ == "__main__":
     plt.xlabel("Temperature (K)")
     plt.ylabel("Ultimate Tensile Strength (Pa)")
     plt.legend(loc="best")
+    plt.savefig("UTS.png", dpi=600)
     plt.show()
