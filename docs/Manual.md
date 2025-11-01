@@ -295,65 +295,42 @@ In the following the full listing of input for the different calculation types i
 \blandscape
 Input field             | Unit  | Description           | Mandatory? / Depends on    | Options       |
 ----                    | ----  | ----                  | ----          | ---           |
-`operating_temperature` | K     | Initial temperature   | Yes           | N/A           |
-`operating_pressure`    | Pa    | Initial pressure      | Yes           | N/A           |
-`mode`                  | N/A   | Calculation mode      | Yes           | `isothermal`  |
-^^                      |       |                       |               | `adiabatic`   |
-^^                      |       |                       |               | `fire`        |
-^^                      |       |                       |               | `rigorous`    |
-`eos_model`             | N/A   | Equation of state     | Yes           | `PR`          |
-^^                      |       |                       |               | `SRK`         |
-`liquid_density`        | N/A   | Liquid density model  | Yes           | `eos`         |
-`max_time`              | s     | Simulation end time   | Yes           | N/A           |
-`delay`                 | s     | Delay before blowdown | No            | N/A           |
-`time_step`             | s     | Required for PPE      | No/Yes        | N/A           |
-`length`                | m     | Vessel length/height  | Yes           | N/A           |
-`diameter`              | m     | Vessel diameter       | Yes           | N/A           |
-`vessel_type`           | N/A   | Vessel end type       | Yes           | `Flat-end`    |
-^^                      |       |                       |               | `ASME F&D`    |
-^^                      |       |                       |               | `DIN`         |
-`orientation`           | N/A   | Vessel orientation    | Yes           | `horizontal`  |  
-^^                      |       |                       |               | `vertical`    |
-`liquid_level`          | m     | Initial liquid level  | Yes           | N/A           |
-`back_pressure`         | Pa    | Blowdown back-pressure| Yes           | N/A           |
-`bdv_orifice_size`      | m     | BDV orifice diameter  | Yes           | N/A           |
-`bdv_orifice_cd`        | N/A   | Orifice discharge coefficient | Yes   | N/A           |
-`heat_transfer`         | N/A   | Heat transfer option  | No            | `rigorous`    |
-^^                      |       |                       |               | `rigorous_sb_fire` |
-`wall_thickness`        | m     | Material thickness    | `heat_transfer`| N/A          |
-`ambient_temperature`   | K     | Ambient temperature   | `heat_transfer`| N/A          |
-`sb_fire_type`          | N/A   | S-B fire type         | `heat_transfer`=`rigorous_sb_fire` | `api_pool` |
-^^                      |       |                       |               | `api_jet`     |
-^^                      |       |                       |               | `scandpower_pool`|
-^^                      |       |                       |               | `scandpower_jet` |
-`peak_heat_load`        | N/A   | Peak heat load for rupture calculation | `heat_transfer`= `rigorous`or `rigorous_sb_fire` |  `scandpower_jet_peak_large` |
-^^                      |       |                       |               | `scandpower_jet_peak_small` |             
-^^                      |       |                       |               | `scandpower_pool_peak` |
-`vessel_material`       |       | Material type for rupture calculation | `peak_heat_load` | `CS_235LT` |
-^^                      |       |                       |               | `CS_360LT` |
-^^                      |       |                       |               | `SS316` |
-^^                      |       |                       |               | `Duplex` |
-^^                      |       |                       |               | `6Mo` |
-`molefracs`             | N/A   | List of mole fractions| Yes           |  N/A          |
-`component_names`       | N/A   | Pure component names  | Yes           | N/A           |
-`fire_type`             | N/A   | API 521 fire type     | Yes, `mode`=`fire` | `API521` (default)|
-^^                      |       |                       |               | `API521_CONFINED`|
-`drain_fire_fighting`   | N/A   | API521 pool fire input| No, `mode`=`fire` and `fire_type`=`API521` | `Inadequate` (default) |
-^^                      |       |                       |                | `Adequate`    |
-`exposed_area`          |       | API 521 exposed area  | No, `mode`=`fire` | `Wetted` (default) |
-^^                      |       |                       |                | `Total`    |
-^^                      |       |                       |                | `Manual`    |
-`pseudo_names`          | N/A   | Pseudo component names | No           | N/A           |
-`pseudo_molefracs`      | N/A   | Pseudo component mole fractions| `pseudo_names`| N/A  |
-`pseudo_Tbs`            | K     | True boiling point of pseudos  | `pseudo_names`| N/A  |
-`pseudo_SG`             | N/A   | Specific gravity of pseudos    | `pseudo_names`| N/A  |
-`leak_active`           | N/A   | Additional outflow via leak at t=0 | No        | 0    |
-^^                      |       |                                    |           | 1    |
-`leak_size`             | m     | Equivalent orifice size of leak    | `leak_active`=1 | N/A |
-`leak_cd`               | N/A   | Leak discharge coefiicient         | `leak_active`=1 | N/A |
-`leak_type`             | N/A   | Fluid released from leak           | `leak_active`=1 | `liquid` |
-^^                      |       |                                    |                 | `gas` |
-^^                      |       |                                    |                 | `two-phase` |
+*operating_temperature* | K     | Initial temperature   | Yes           | N/A           |
+*operating_pressure*    | Pa    | Initial pressure      | Yes           | N/A           |
+*mode*                  | N/A   | Calculation mode      | Yes           | *isothermal*, *adiabatic*,  *fire* or *rigorous*    |
+*eos_model*             | N/A   | Equation of state     | Yes           | *PR* or *SRK* |
+*liquid_density*        | N/A   | Liquid density model  | Yes           | *eos*         |
+*max_time*              | s     | Simulation end time   | Yes           | N/A           |
+*delay*                 | s     | Delay before blowdown | No            | N/A           |
+*time_step*             | s     | Required for PPE      | No/Yes        | N/A           |
+*length*                | m     | Vessel length/height  | Yes           | N/A           |
+*diameter*              | m     | Vessel diameter       | Yes           | N/A           |
+*vessel_type*           | N/A   | Vessel end type       | Yes           | *Flat-end*, *ASME F&D* or *DIN*  |
+*orientation*           | N/A   | Vessel orientation    | Yes           | *horizontal*  or *vertical*    |
+*liquid_level*          | m     | Initial liquid level  | Yes           | N/A           |
+*back_pressure*         | Pa    | Blowdown back-pressure| Yes           | N/A           |
+*bdv_orifice_size*      | m     | BDV orifice diameter  | Yes           | N/A           |
+*bdv_orifice_cd*        | N/A   | Orifice discharge coefficient | Yes   | N/A           |
+*heat_transfer*         | N/A   | Heat transfer option  | No            | *rigorous* or *rigorous_sb_fire* |
+*external_heat_transfer_coefficient* | W/m$^2$ K | Ambient external heat transfer coefficient | No | Defaults to 8 W/m$^2$ K |
+*wall_thickness*        | m     | Material thickness    | *heat_transfer*| N/A          |
+*ambient_temperature*   | K     | Ambient temperature   | *heat_transfer*| N/A          |
+*sb_fire_type*          | N/A   | S-B fire type         | *heat_transfer* =*rigorous_sb_fire* | *api_pool*, *api_jet*, *scandpower_pool* or *scandpower_jet* |
+*peak_heat_load*        | N/A   | Peak heat load for rupture calculation | *heat_transfer*=*rigorous* or *rigorous_sb_fire* |  *scandpower_jet_peak_large*, *scandpower_jet_peak_small* or *scandpower_pool_peak* |
+*vessel_material*       |       | Material type for rupture calculation | *peak_heat_load* | *CS_235LT*, *CS_360LT*, *SS316*, *Duplex* or *6Mo* |
+*molefracs*             | N/A   | List of mole fractions| Yes           |  N/A          |
+*component_names*       | N/A   | Pure component names  | Yes           | N/A           |
+*fire_type*             | N/A   | API 521 fire type     | Yes, *mode*=*fire* | *API521* (default) or *API521_CONFINED*|
+*drain_fire_fighting*   | N/A   | API521 pool fire input| No, *mode*=*fire* and *fire_type*=*API521* | *Inadequate* (default) or *Adequate*    |
+*exposed_area*          |       | API 521 exposed area  | No, *mode*=*fire* | *Wetted* (default), *Total* or *Manual*    |
+*pseudo_names*          | N/A   | Pseudo component names | No           | N/A           |
+*pseudo_molefracs*      | N/A   | Pseudo component mole fractions| *pseudo_names*| N/A  |
+*pseudo_Tbs*            | K     | True boiling point of pseudos  | *pseudo_names*| N/A  |
+*pseudo_SG*             | N/A   | Specific gravity of pseudos    | *pseudo_names*| N/A  |
+*leak_active*           | N/A   | Additional outflow via leak at t=0 | No        | 0  or 1    |
+*leak_size*             | m     | Equivalent orifice size of leak    | *leak_active*=1 | N/A |
+*leak_cd*               | N/A   | Leak discharge coefiicient         | *leak_active*=1 | N/A |
+*leak_type*             | N/A   | Fluid released from leak           | *leak_active*=1 | *liquid*, *gas* or *two-phase* |
 
 : Input overview {#tbl:input}
 
