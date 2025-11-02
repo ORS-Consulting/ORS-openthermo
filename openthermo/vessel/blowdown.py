@@ -679,7 +679,7 @@ class Blowdown:
         if sum(self.liquid_dyn_level) > 0:
             plt.plot(peak_times, ATS_wetted / 1e6, label="ATS wetted wall")
         plt.xlabel("Time (s)")
-        plt.ylabel("Allowable Tensile Strengt / von Mises Stress (MPa)")
+        plt.ylabel("Allowable Tensile Strength / von Mises Stress (MPa)")
         plt.legend(loc="best")
         if filename is not None:
             plt.savefig(
