@@ -658,17 +658,17 @@ class Blowdown:
 
         if np.all(ATS_unwetted > von_mises_unwetted) == True:
             self.rupture_time = None
-            print("No rupture")
+            # print("No rupture")
         elif np.all(ATS_unwetted < von_mises_unwetted) == True:
             self.rupture_time = 0
-            print("Rupture at time=0")
+            # print("Rupture at time=0")
         else:
             rupture_idx = np.where(ATS_unwetted < von_mises_unwetted)[0][0]
             self.rupture_time = (
                 peak_times[rupture_idx - 1] + peak_times[rupture_idx]
             ) / 2
-            print("Rupture time +/- 5 s:", self.rupture_time)
-            print("Rupture pressure (bar)", pres(peak_times[rupture_idx - 1]))
+            # print("Rupture time +/- 5 s:", self.rupture_time)
+            # print("Rupture pressure (bar)", pres(peak_times[rupture_idx - 1]))
 
         from matplotlib import pyplot as plt
 
