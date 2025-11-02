@@ -1307,9 +1307,13 @@ def test_blowdown_sbfire_n2(plot=False):
 
 def test_blowdown_sbfire_n2_rupture(plot=False):
     """
-    Test against HYSYS Depressurisation utility for S-B pool fire
-    exposing the total area of the vessel. No water present.
-    COSTALD liquid density is applied.
+    Test for rupture evaluation. Test case is based on
+    Andreasen, A.; Borroni, F.; Zan Nieto, M.; Stegelmann, C.; P. Nielsen, R.
+    On the Adequacy of API 521 Relief-Valve Sizing Method for Gas-Filled Pressure
+    Vessels Exposed to Fire. Safety 2018, 4, 11. https://doi.org/10.3390/safety4010011
+
+    In the paper the rupture time is 1680 s, but also with slightly increased UTS.
+
     """
     input = {}
     P = 100e5
@@ -1335,8 +1339,8 @@ def test_blowdown_sbfire_n2_rupture(plot=False):
     input["bdv_orifice_size"] = 0.008  # m
     input["bdv_orifice_cd"] = 0.975
 
-    input["sb_peak_fire_type"] = "scandpower_pool_peak"
-    input["vessel_material"] = "CS_235LT"
+    input["sb_peak_fire_type"] = "scandpower_jet_peak_large"
+    input["vessel_material"] = "CS_360LT"
 
     names = ["nitrogen"]
     molefracs = [1.0]
@@ -1346,6 +1350,8 @@ def test_blowdown_sbfire_n2_rupture(plot=False):
     segment = Blowdown(input)
     segment.depressurize()
     segment.analyze_rupture()
+
+    assert segment.rupture_time == 1585
 
 
 if __name__ == "__main__":
