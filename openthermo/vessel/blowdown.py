@@ -610,11 +610,6 @@ class Blowdown:
         return res.x[0]
 
     def analyze_rupture(self, filename=None):
-        # Add material as input dict
-        # add peak heat load type
-        # call the rupture analysys from the depressurise method
-        # select peak_heat_load based on fire type
-
         pres = lambda x: np.interp(x, self.times, self.pressure)
         q_unwetted = lambda x: np.interp(x, self.times, self.heatflux_inside_gas)
         q_wetted = lambda x: np.interp(x, self.times, self.heatflux_inside_liquid)
@@ -654,16 +649,37 @@ class Blowdown:
             [von_mises(pres(time), inner_diameter, thk) for time in peak_times]
         )
 
+        self.peak_times = peak_times
+        self.von_mises = von_mises_unwetted
+        self.ATS_unwetted = ATS_unwetted
+        self.ATS_wetted = ATS_wetted
+        self.peak_T_wetted = T_wetted_wall
+        self.peak_T_unwetted = T_unwetted_wall
+
+        if np.all(ATS_unwetted > von_mises_unwetted) == True:
+            self.rupture_time = None
+            # print("No rupture")
+        elif np.all(ATS_unwetted < von_mises_unwetted) == True:
+            self.rupture_time = 0
+            # print("Rupture at time=0")
+        else:
+            rupture_idx = np.where(ATS_unwetted < von_mises_unwetted)[0][0]
+            self.rupture_time = (
+                peak_times[rupture_idx - 1] + peak_times[rupture_idx]
+            ) / 2
+            # print("Rupture time +/- 5 s:", self.rupture_time)
+            # print("Rupture pressure (bar)", pres(peak_times[rupture_idx - 1]))
+
         from matplotlib import pyplot as plt
 
         plt.figure(1)
         plt.plot(peak_times, von_mises_wetted / 1e6, label="von Mises stress")
 
-        plt.plot(peak_times, ATS_wetted / 1e6, label="ATS wetted wall")
+        plt.plot(peak_times, ATS_unwetted / 1e6, label="ATS unwetted wall")
         if sum(self.liquid_dyn_level) > 0:
-            plt.plot(peak_times, ATS_unwetted / 1e6, label="ATS unwetted wall")
+            plt.plot(peak_times, ATS_wetted / 1e6, label="ATS wetted wall")
         plt.xlabel("Time (s)")
-        plt.ylabel("Allowable Tensile Strengt / von Mises Stress (MPa)")
+        plt.ylabel("Allowable Tensile Strength / von Mises Stress (MPa)")
         plt.legend(loc="best")
         if filename is not None:
             plt.savefig(
