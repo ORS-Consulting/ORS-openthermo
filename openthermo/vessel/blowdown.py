@@ -236,7 +236,7 @@ class Blowdown:
                 sideB_k=0.17,
                 horizontal=horizontal,
             )
-        elif self.vessel_type == "Hemisperical":
+        elif self.vessel_type == "Hemispherical":
             self.vessel = TANK(
                 D=self.diameter,
                 L=self.length,
@@ -1010,7 +1010,7 @@ class Blowdown:
         # Wall temperature balances
         ##############################################################################
 
-        if self.heat_transfer == "rigorous":
+        if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
             h_amb = self.external_heat_transfer_coefficient
 
             if self.vessel_orientation == "vertical":
@@ -1027,19 +1027,24 @@ class Blowdown:
             Auw = self.vessel.A - self.wetted_area()
 
             Aw = self.wetted_area()
-            Quw = Auw * (
-                h_amb * (self.ambient_temperature - Tuw)
-                - self.h_inner_uw * (Tuw - gas.T)
-            )
-
-            Qw = Aw * (
-                h_amb * (self.ambient_temperature - Tw) - h_inner_w * (Tw - liq.T)
-            )
-
+            if self.heat_transfer == "rigorous":
+                Quw = Auw * (
+                    h_amb * (self.ambient_temperature - Tuw)
+                    - self.h_inner_uw * (Tuw - gas.T)
+                )
+                Qw = Aw * (
+                    h_amb * (self.ambient_temperature - Tw) - h_inner_w * (Tw - liq.T)
+                )
+            elif self.heat_transfer == "rigorous_sb_fire":
+                Quw = Auw * (
+                    sb_fire(Tuw, self.sb_fire_type) - h_inner_uw * (Tuw - gas.T)
+                )
+                Qw = Aw * (sb_fire(Tw, self.sb_fire_type) - h_inner_w * (Tw - liq.T))
             if self.vessel_orientation == "vertical":
                 L = self.diameter
             else:
                 L = self.length
+
             Qlg = h_inside(L, liq.T, gas.T, gas) * self.vessel.A_cross_sectional(
                 h=self.liquid_level
             )

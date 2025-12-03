@@ -141,7 +141,7 @@ def validate_mandatory_ruleset(input):
                 "ASME F&D",
                 "DIN",
                 "2:1 Semi-elliptical",
-                "Hemisperical",
+                "Hemispherical",
             ],
         },
         "leak_active": {
