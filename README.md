@@ -2,7 +2,6 @@
 [![codecov](https://codecov.io/gh/ORS-Consulting/ORS-openthermo/graph/badge.svg?token=4TBNKIGO3F)](https://codecov.io/gh/ORS-Consulting/ORS-openthermo)
 [![Python application](https://github.com/ORS-Consulting/ORS-openthermo/actions/workflows/python-app.yml/badge.svg)](https://github.com/ORS-Consulting/ORS-openthermo/actions/workflows/python-app.yml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17422203.svg)](https://doi.org/10.5281/zenodo.17422203)
-[![status](https://joss.theoj.org/papers/fe31811e49da9a8834c09c5db34e71ab/status.svg)](https://joss.theoj.org/papers/fe31811e49da9a8834c09c5db34e71ab)
 # ORS - openthermo
 ```
                           __  __                            
