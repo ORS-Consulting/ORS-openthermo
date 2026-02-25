@@ -573,7 +573,7 @@ def test_blowdown_nitrogen_co2(plot=False):
         plt.fill_between(t1, lh, ll, alpha=0.2, label="Exp. liquid")
         plt.plot(segment.times, segment.liquid_temperature, label="Model liquid")
         plt.fill_between(t2, gh, gl, alpha=0.2, label="Exp. gas")
-        plt.plot(segment.times, segment.gas_temperatrure, label="Model gas")
+        plt.plot(segment.times, segment.gas_temperature, label="Model gas")
 
         plt.plot(segment.times, segment.wetted_wall_temp, label="Model wet wall")
         plt.plot(segment.times, segment.unwetted_wall_temp, label="Model dry wall")
@@ -610,7 +610,7 @@ def test_blowdown_nitrogen_co2(plot=False):
         )
         plt.plot(
             segment.times,
-            segment.gas_temperatrure,
+            segment.gas_temperature,
             label="Model gas",
             color="tab:green",
         )
@@ -963,7 +963,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
     assert segment.pressure[-1] == pytest.approx(pres[:, 1][-1] * 1.013e5, abs=0.7e5)
     assert segment.unwetted_wall_temp[-1] == pytest.approx(iwl[-1], abs=2)
     assert segment.wetted_wall_temp[-1] == pytest.approx(liwl[-1], abs=2)
-    assert segment.gas_temperatrure[-1] == pytest.approx(gl[-1], abs=2)
+    assert segment.gas_temperature[-1] == pytest.approx(gl[-1], abs=2)
     assert segment.liquid_temperature[-1] == pytest.approx(ll[-1], abs=2)
 
     if plot:
@@ -1004,7 +1004,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
         plt.figure(3)
         plt.plot(
             segment.times,
-            np.asarray(segment.gas_temperatrure),
+            np.asarray(segment.gas_temperature),
             label="Model gas temperature",
         )
         plt.plot(
