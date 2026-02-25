@@ -872,7 +872,7 @@ class Blowdown:
                     U=Ugas / Ngas,
                     zs=z,
                     Pguess=self.pressure[-1],
-                    Tguess=self.gas_temperatrure[-1],
+                    Tguess=self.gas_temperature[-1],
                 )
 
                 lres = flash.flash(
@@ -934,13 +934,13 @@ class Blowdown:
                 return Ul - Uliq
 
             x0 = [
-                self.gas_temperatrure[-1],
+                self.gas_temperature[-1],
                 self.liquid_temperature[-1],
                 self.pressure[-1],
             ]
 
             bounds = (
-                (self.gas_temperatrure[-1] - 20, self.gas_temperatrure[-1] + 20),
+                (self.gas_temperature[-1] - 20, self.gas_temperature[-1] + 20),
                 (self.liquid_temperature[-1] - 20, self.liquid_temperature[-1] + 20),
                 (max(self.pressure[-1] - 10e5, 1.013e5), self.pressure[-1] + 10e5),
             )
@@ -1132,7 +1132,7 @@ class Blowdown:
         # self.enthalpy.append(res.U() * N)
         self.wetted_wall_temp.append(y[6])
         self.unwetted_wall_temp.append(y[5])
-        self.gas_temperatrure.append(gas.T)
+        self.gas_temperature.append(gas.T)
         self.liquid_temperature.append(liq.T)
         self.liquid_level = self.vessel.h_from_V(liq.V() * (Nliq + dNliq_dt * dt))
         self.liquid_dyn_level.append(self.liquid_level)
@@ -1174,7 +1174,7 @@ class Blowdown:
             self.water_mass,
             self.wetted_wall_temp,
             self.unwetted_wall_temp,
-            self.gas_temperatrure,
+            self.gas_temperature,
             self.liquid_temperature,
             self.liquid_dyn_level,
             self.heatflux_outside_gas,
@@ -1258,7 +1258,7 @@ class Blowdown:
         if hasattr(self, "gas_temperatrure"):
             plt.plot(
                 self.times,
-                np.asarray(self.gas_temperatrure) - 273.15,
+                np.asarray(self.gas_temperature) - 273.15,
                 label="Gas temperature",
             )
             plt.plot(

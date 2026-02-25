@@ -1427,9 +1427,83 @@ def test_blowdown_sbfire_n2_rupture(plot=False):
     assert segment.rupture_time == 1585
 
 
+def test_blowdown_ineris_exp16(plot=False):
+
+    P = 57e5
+    T = 281.0
+    input = {}
+    input["mode"] = "isentropic"
+    input["heat_transfer"] = "rigorous"
+    input["wall_thickness"] = 0.010  # m
+    input["eos_model"] = "PR"
+    input["liquid_density"] = "eos"
+    input["max_time"] = 100
+    input["delay"] = 0
+    input["length"] = 37
+    # input["diameter"] = 1.130
+    input["diameter"] = 0.050
+    input["vessel_type"] = "Flat-end"
+    input["orientation"] = "horizontal"
+    input["liquid_level"] = 0.0
+    input["water_level"] = 0.0
+    input["operating_temperature"] = T
+    input["operating_pressure"] = P
+    input["ambient_temperature"] = 281
+    input["back_pressure"] = 1.01e5
+    input["bdv_orifice_size"] = 0.006  # m
+    input["bdv_orifice_cd"] = 0.84
+    input["external_heat_transfer_coefficient"] = 0
+    input["time_step"] = 0.3
+
+    input["leak_active"] = 0
+    input["leak_size"] = 0.006  # m
+
+    input["leak_cd"] = 0.65
+    input["leak_type"] = "liquid"
+    names = ["carbon dioxide", "nitrogen", "methane"]
+    molefracs = [0.96, 0.019, 0.021]
+
+    input["molefracs"] = molefracs
+    input["component_names"] = names
+    segment = Blowdown(input)
+    segment.depressurize_euler()
+    # segment.plot()
+
+    if plot:
+        from matplotlib import pyplot as plt
+        import scienceplots
+
+        plt.style.use(["science", "nature", "scatter"])
+
+        # plt.plot(segment.times, segment.temperature, label="Fluid")
+        plt.plot(segment.times, segment.gas_temperature, label="Gas temperature")
+
+        plt.plot(segment.times, segment.liquid_temperature, label="Liquid temperature")
+        plt.plot(segment.times, segment.wetted_wall_temp, label="Wetted wall")
+        plt.plot(segment.times, segment.unwetted_wall_temp, label="Unwetted wall")
+
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel(r"Temperature (K)")
+        # plt.savefig("plots\\n2_co2_temp.png", dpi=300)
+
+        plt.figure(2)
+        plt.plot(segment.times, np.asarray(segment.pressure) / 1e5, "-", label="Model")
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Pressure (bar)")
+        # plt.savefig("plots\\n2_co2_pres.png", dpi=300)
+
+        plt.figure(3)
+        plt.plot(segment.times, segment.liquid_dyn_level, label="Liquid level")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Liquid level (m)")
+        plt.show()
+
+
 if __name__ == "__main__":
-    pass
-    test_blowdown_sbfire_multiphase(plot=True)
+    # pass
+    # test_blowdown_sbfire_multiphase(plot=True)
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
@@ -1442,3 +1516,4 @@ if __name__ == "__main__":
     # test_blowdown_sbfire_n2(plot=False)
     # test_blowdown_sbfire_n2_rupture(plot=False)
     # test_blowdown_co2(plot=True)
+    test_blowdown_ineris_exp16(plot=True)

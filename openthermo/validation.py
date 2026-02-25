@@ -180,7 +180,7 @@ def validate_mandatory_ruleset(input):
         "diameter": {
             "required": True,
             "type": "number",
-            "min": 0.1,
+            "min": 0.01,
         },
         "bdv_orifice_size": {
             "required": True,
