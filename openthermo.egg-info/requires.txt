@@ -13,3 +13,5 @@ matplotlib
 scienceplots
 PyYAML
 openpyxl
+Cerberus
+tqdm
