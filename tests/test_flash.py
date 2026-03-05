@@ -9,6 +9,27 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
+def test_flash_cold():
+    P = 12.0e5
+    T = 350.0
+
+    names = ["methane", "propane", "n-butane", "i-butane", "n-decane"]
+    molefracs = [0.8, 0.05, 0.01, 0.01, 0.10]
+
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        P=P,
+        T=T,
+        rho="eos",
+        model="PR",
+    )
+    res = flash.flash(P=P, T=T, zs=molefracs)
+
+    P_cold = flash.flash(T=273.15, V=res.V(), zs=molefracs).P
+    assert P_cold == pytest.approx(9.05e5, rel=0.001)
+
+
 def test_flash_dry():
     P = 5.0e6
     T = 300.0
@@ -281,6 +302,7 @@ def test_print_thermo():
 
 
 if __name__ == "__main__":
+    test_flash_cold()
     P = 5.0e6
     T = 300.0
     names = ["methane", "ethane", "propane", "n-butane"]

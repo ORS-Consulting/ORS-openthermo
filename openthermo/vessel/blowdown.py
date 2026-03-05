@@ -327,7 +327,7 @@ class Blowdown:
         if self.cold_blowdown:
             res = self.flash.flash(
                 T=self.ambient_temperature,
-                V=self.vessel.V_total / self.N0,
+                V=res.V(),
                 zs=self.z_adjust,
             )
             self.operating_pressure = res.P
