@@ -1,1 +1,5 @@
 *.pyc
+openthermo/vessel/__pycache__/*.pyc
+openthermo/properties/__pycache__/*.pyc
+openthermo/__pycache__/*.pyc
+tests/__pycache__/*.pyc

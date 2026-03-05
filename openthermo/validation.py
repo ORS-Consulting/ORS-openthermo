@@ -18,6 +18,11 @@ def validate_mandatory_ruleset(input):
     max_components = 20
     schema_general = {
         "eos_model": {"required": True, "type": "string", "allowed": ["SRK", "PR"]},
+        "cold_blowdown": {
+            "required": False,
+            "type": "boolean",
+            "allowed": [True, False],
+        },
         "liquid_density": {
             "required": True,
             "type": "string",
