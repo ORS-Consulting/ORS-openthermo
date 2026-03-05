@@ -4,6 +4,7 @@ pyproject.toml
 setup.cfg
 openthermo/__init__.py
 openthermo/errors.py
+openthermo/validation.py
 openthermo.egg-info/PKG-INFO
 openthermo.egg-info/SOURCES.txt
 openthermo.egg-info/dependency_links.txt
@@ -15,8 +16,11 @@ openthermo/data/update_kij.py
 openthermo/flash/__init__.py
 openthermo/flash/michelsen.py
 openthermo/properties/__init__.py
+openthermo/properties/materials.py
 openthermo/properties/pseudo.py
 openthermo/properties/transport.py
 tests/test_blowdown.py
 tests/test_flash.py
+tests/test_materials.py
 tests/test_misc.py
+tests/test_schema.py
