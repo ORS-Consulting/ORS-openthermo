@@ -1306,12 +1306,12 @@ def test_blowdown_sbfire_n2(plot=False):
 
 
 if __name__ == "__main__":
-    pass
-    test_blowdown_sbfire_multiphase(plot=True)
+    # pass
+    # test_blowdown_sbfire_multiphase(plot=True)
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
     # test_blowdown_non_condensable(plot=True)
-    # test_blowdown_api_dry_inadequate_costald(plot=True)
+    test_blowdown_api_dry_inadequate_costald(plot=True)
     # test_blowdown_nitrogen(plot=True)
     # test_blowdown_nitrogen_co2(plot=True)
     # test_isothermal(plot=True)
