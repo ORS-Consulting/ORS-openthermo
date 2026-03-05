@@ -1,7 +1,7 @@
 Metadata-Version: 2.4
 Name: openthermo
 Version: 0.0.1
-Requires-Python: <3.12
+Requires-Python: <3.12.5
 License-File: LICENSE
 Requires-Dist: thermopack
 Requires-Dist: setuptools
@@ -18,4 +18,6 @@ Requires-Dist: matplotlib
 Requires-Dist: scienceplots
 Requires-Dist: PyYAML
 Requires-Dist: openpyxl
+Requires-Dist: Cerberus
+Requires-Dist: tqdm
 Dynamic: license-file
