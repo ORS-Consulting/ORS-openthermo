@@ -236,7 +236,7 @@ class Blowdown:
                 sideB_k=0.17,
                 horizontal=horizontal,
             )
-        elif self.vessel_type == "Hemisperical":
+        elif self.vessel_type == "Hemispherical":
             self.vessel = TANK(
                 D=self.diameter,
                 L=self.length,
@@ -872,7 +872,7 @@ class Blowdown:
                     U=Ugas / Ngas,
                     zs=z,
                     Pguess=self.pressure[-1],
-                    Tguess=self.gas_temperatrure[-1],
+                    Tguess=self.gas_temperature[-1],
                 )
 
                 lres = flash.flash(
@@ -934,13 +934,13 @@ class Blowdown:
                 return Ul - Uliq
 
             x0 = [
-                self.gas_temperatrure[-1],
+                self.gas_temperature[-1],
                 self.liquid_temperature[-1],
                 self.pressure[-1],
             ]
 
             bounds = (
-                (self.gas_temperatrure[-1] - 20, self.gas_temperatrure[-1] + 20),
+                (self.gas_temperature[-1] - 20, self.gas_temperature[-1] + 20),
                 (self.liquid_temperature[-1] - 20, self.liquid_temperature[-1] + 20),
                 (max(self.pressure[-1] - 10e5, 1.013e5), self.pressure[-1] + 10e5),
             )
@@ -1010,7 +1010,7 @@ class Blowdown:
         # Wall temperature balances
         ##############################################################################
 
-        if self.heat_transfer == "rigorous":
+        if self.heat_transfer == "rigorous" or self.heat_transfer == "rigorous_sb_fire":
             h_amb = self.external_heat_transfer_coefficient
 
             if self.vessel_orientation == "vertical":
@@ -1027,19 +1027,24 @@ class Blowdown:
             Auw = self.vessel.A - self.wetted_area()
 
             Aw = self.wetted_area()
-            Quw = Auw * (
-                h_amb * (self.ambient_temperature - Tuw)
-                - self.h_inner_uw * (Tuw - gas.T)
-            )
-
-            Qw = Aw * (
-                h_amb * (self.ambient_temperature - Tw) - h_inner_w * (Tw - liq.T)
-            )
-
+            if self.heat_transfer == "rigorous":
+                Quw = Auw * (
+                    h_amb * (self.ambient_temperature - Tuw)
+                    - self.h_inner_uw * (Tuw - gas.T)
+                )
+                Qw = Aw * (
+                    h_amb * (self.ambient_temperature - Tw) - h_inner_w * (Tw - liq.T)
+                )
+            elif self.heat_transfer == "rigorous_sb_fire":
+                Quw = Auw * (
+                    sb_fire(Tuw, self.sb_fire_type) - h_inner_uw * (Tuw - gas.T)
+                )
+                Qw = Aw * (sb_fire(Tw, self.sb_fire_type) - h_inner_w * (Tw - liq.T))
             if self.vessel_orientation == "vertical":
                 L = self.diameter
             else:
                 L = self.length
+
             Qlg = h_inside(L, liq.T, gas.T, gas) * self.vessel.A_cross_sectional(
                 h=self.liquid_level
             )
@@ -1127,7 +1132,7 @@ class Blowdown:
         # self.enthalpy.append(res.U() * N)
         self.wetted_wall_temp.append(y[6])
         self.unwetted_wall_temp.append(y[5])
-        self.gas_temperatrure.append(gas.T)
+        self.gas_temperature.append(gas.T)
         self.liquid_temperature.append(liq.T)
         self.liquid_level = self.vessel.h_from_V(liq.V() * (Nliq + dNliq_dt * dt))
         self.liquid_dyn_level.append(self.liquid_level)
@@ -1169,7 +1174,7 @@ class Blowdown:
             self.water_mass,
             self.wetted_wall_temp,
             self.unwetted_wall_temp,
-            self.gas_temperatrure,
+            self.gas_temperature,
             self.liquid_temperature,
             self.liquid_dyn_level,
             self.heatflux_outside_gas,
@@ -1253,7 +1258,7 @@ class Blowdown:
         if hasattr(self, "gas_temperatrure"):
             plt.plot(
                 self.times,
-                np.asarray(self.gas_temperatrure) - 273.15,
+                np.asarray(self.gas_temperature) - 273.15,
                 label="Gas temperature",
             )
             plt.plot(

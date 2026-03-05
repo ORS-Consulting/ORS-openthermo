@@ -52,6 +52,7 @@ def test_blowdown_sbfire_multiphase(plot=False):
 
     input["leak_active"] = 0
     input["leak_size"] = 0.01  # m
+
     input["leak_cd"] = 0.65
     input["leak_type"] = "liquid"
 
@@ -572,7 +573,7 @@ def test_blowdown_nitrogen_co2(plot=False):
         plt.fill_between(t1, lh, ll, alpha=0.2, label="Exp. liquid")
         plt.plot(segment.times, segment.liquid_temperature, label="Model liquid")
         plt.fill_between(t2, gh, gl, alpha=0.2, label="Exp. gas")
-        plt.plot(segment.times, segment.gas_temperatrure, label="Model gas")
+        plt.plot(segment.times, segment.gas_temperature, label="Model gas")
 
         plt.plot(segment.times, segment.wetted_wall_temp, label="Model wet wall")
         plt.plot(segment.times, segment.unwetted_wall_temp, label="Model dry wall")
@@ -609,7 +610,7 @@ def test_blowdown_nitrogen_co2(plot=False):
         )
         plt.plot(
             segment.times,
-            segment.gas_temperatrure,
+            segment.gas_temperature,
             label="Model gas",
             color="tab:green",
         )
@@ -658,6 +659,78 @@ def test_blowdown_nitrogen_co2(plot=False):
         plt.ylabel(r"Temperature (K)")
         plt.xlim((0, 60))
         plt.savefig("plots\\n2_co2_wall_temp_HYSYS.png", dpi=300)
+        plt.show()
+
+
+def test_blowdown_co2(plot=False):
+
+    P = 16e5
+    T = 248.0
+    input = {}
+    input["mode"] = "isentropic"
+    input["heat_transfer"] = "rigorous"
+    input["wall_thickness"] = 0.020  # m
+    input["eos_model"] = "PR"
+    input["liquid_density"] = "eos"
+    input["max_time"] = 3600
+    input["delay"] = 0
+    input["length"] = 35
+    # input["diameter"] = 1.130
+    input["diameter"] = 7.8
+    input["vessel_type"] = "Hemispherical"
+    input["orientation"] = "horizontal"
+    input["liquid_level"] = 0.0
+    input["water_level"] = 0.0
+    input["operating_temperature"] = T
+    input["operating_pressure"] = P
+    input["ambient_temperature"] = 293
+    input["back_pressure"] = 1.01e5
+    input["bdv_orifice_size"] = 0.04  # m
+    input["bdv_orifice_cd"] = 0.84
+    input["external_heat_transfer_coefficient"] = 0
+    input["time_step"] = 10
+
+    input["leak_active"] = 0
+    input["leak_size"] = 0.01  # m
+
+    input["leak_cd"] = 0.65
+    input["leak_type"] = "liquid"
+    names = ["carbon dioxide", "nitrogen"]
+    molefracs = [0.95, 0.05]
+
+    input["molefracs"] = molefracs
+    input["component_names"] = names
+    segment = Blowdown(input)
+    segment.depressurize_euler()
+    # segment.plot()
+
+    if plot:
+        from matplotlib import pyplot as plt
+        import scienceplots
+
+        plt.style.use(["science", "nature", "scatter"])
+
+        plt.plot(segment.times, segment.temperature, label="Fluid")
+
+        plt.plot(segment.times, segment.wetted_wall_temp, label="Wetted wall")
+        plt.plot(segment.times, segment.unwetted_wall_temp, label="Unwetted wall")
+
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel(r"Temperature (K)")
+        # plt.savefig("plots\\n2_co2_temp.png", dpi=300)
+
+        plt.figure(2)
+        plt.plot(segment.times, np.asarray(segment.pressure) / 1e5, "-", label="Model")
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Pressure (bar)")
+        # plt.savefig("plots\\n2_co2_pres.png", dpi=300)
+
+        plt.figure(3)
+        plt.plot(segment.times, segment.liquid_dyn_level, label="Liquid level")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Liquid level (m)")
         plt.show()
 
 
@@ -890,7 +963,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
     assert segment.pressure[-1] == pytest.approx(pres[:, 1][-1] * 1.013e5, abs=0.7e5)
     assert segment.unwetted_wall_temp[-1] == pytest.approx(iwl[-1], abs=2)
     assert segment.wetted_wall_temp[-1] == pytest.approx(liwl[-1], abs=2)
-    assert segment.gas_temperatrure[-1] == pytest.approx(gl[-1], abs=2)
+    assert segment.gas_temperature[-1] == pytest.approx(gl[-1], abs=2)
     assert segment.liquid_temperature[-1] == pytest.approx(ll[-1], abs=2)
 
     if plot:
@@ -931,7 +1004,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
         plt.figure(3)
         plt.plot(
             segment.times,
-            np.asarray(segment.gas_temperatrure),
+            np.asarray(segment.gas_temperature),
             label="Model gas temperature",
         )
         plt.plot(
@@ -1354,8 +1427,82 @@ def test_blowdown_sbfire_n2_rupture(plot=False):
     assert segment.rupture_time == 1585
 
 
+def test_blowdown_ineris_exp16(plot=False):
+
+    P = 57e5
+    T = 281.0
+    input = {}
+    input["mode"] = "isentropic"
+    input["heat_transfer"] = "rigorous"
+    input["wall_thickness"] = 0.010  # m
+    input["eos_model"] = "PR"
+    input["liquid_density"] = "eos"
+    input["max_time"] = 100
+    input["delay"] = 0
+    input["length"] = 37
+    # input["diameter"] = 1.130
+    input["diameter"] = 0.050
+    input["vessel_type"] = "Flat-end"
+    input["orientation"] = "horizontal"
+    input["liquid_level"] = 0.0
+    input["water_level"] = 0.0
+    input["operating_temperature"] = T
+    input["operating_pressure"] = P
+    input["ambient_temperature"] = 281
+    input["back_pressure"] = 1.01e5
+    input["bdv_orifice_size"] = 0.006  # m
+    input["bdv_orifice_cd"] = 0.84
+    input["external_heat_transfer_coefficient"] = 0
+    input["time_step"] = 0.3
+
+    input["leak_active"] = 0
+    input["leak_size"] = 0.006  # m
+
+    input["leak_cd"] = 0.65
+    input["leak_type"] = "liquid"
+    names = ["carbon dioxide", "nitrogen", "methane"]
+    molefracs = [0.96, 0.019, 0.021]
+
+    input["molefracs"] = molefracs
+    input["component_names"] = names
+    segment = Blowdown(input)
+    segment.depressurize_euler()
+    # segment.plot()
+
+    if plot:
+        from matplotlib import pyplot as plt
+        import scienceplots
+
+        plt.style.use(["science", "nature", "scatter"])
+
+        # plt.plot(segment.times, segment.temperature, label="Fluid")
+        plt.plot(segment.times, segment.gas_temperature, label="Gas temperature")
+
+        plt.plot(segment.times, segment.liquid_temperature, label="Liquid temperature")
+        plt.plot(segment.times, segment.wetted_wall_temp, label="Wetted wall")
+        plt.plot(segment.times, segment.unwetted_wall_temp, label="Unwetted wall")
+
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel(r"Temperature (K)")
+        # plt.savefig("plots\\n2_co2_temp.png", dpi=300)
+
+        plt.figure(2)
+        plt.plot(segment.times, np.asarray(segment.pressure) / 1e5, "-", label="Model")
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Pressure (bar)")
+        # plt.savefig("plots\\n2_co2_pres.png", dpi=300)
+
+        plt.figure(3)
+        plt.plot(segment.times, segment.liquid_dyn_level, label="Liquid level")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Liquid level (m)")
+        plt.show()
+
+
 if __name__ == "__main__":
-    pass
+    # pass
     # test_blowdown_sbfire_multiphase(plot=True)
     # test_blowdown_condensable_gas(plot=True)
     # test_blowdown_condensable_gas_rig(plot=True)
@@ -1367,4 +1514,6 @@ if __name__ == "__main__":
     # test_adiabatic(plot=True)
     # test_isentropic(plot=True)
     # test_blowdown_sbfire_n2(plot=False)
-    test_blowdown_sbfire_n2_rupture(plot=False)
+    # test_blowdown_sbfire_n2_rupture(plot=False)
+    # test_blowdown_co2(plot=True)
+    test_blowdown_ineris_exp16(plot=True)
