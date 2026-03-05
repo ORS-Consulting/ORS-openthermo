@@ -52,3 +52,6 @@ openthermo/__pycache__/validation.cpython-311.pyc
 openthermo/properties/__pycache__/materials.cpython-311.pyc
 openthermo/properties/__pycache__/transport.cpython-311.pyc
 openthermo/vessel/__pycache__/blowdown.cpython-311.pyc
+openthermo/vessel/__pycache__/blowdown.cpython-311.opt-2.pyc
+openthermo/vessel/__pycache__/fire.cpython-311.opt-1.pyc
+openthermo/vessel/__pycache__/flowdevices.cpython-311.opt-1.pyc
