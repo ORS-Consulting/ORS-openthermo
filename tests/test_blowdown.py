@@ -316,7 +316,7 @@ def test_blowdown_condensable_gas(plot=False):
     input["max_time"] = 1500
     input["delay"] = 0
 
-    input["length"] = 2.25
+    input["length"] = 2.75
     input["diameter"] = 1.13
     input["vessel_type"] = "ASME F&D"
     input["orientation"] = "horizontal"
@@ -327,7 +327,7 @@ def test_blowdown_condensable_gas(plot=False):
     input["ambient_temperature"] = 293.0
     input["back_pressure"] = 1.01e5
     input["bdv_orifice_size"] = 0.01  # m
-    input["bdv_orifice_cd"] = 0.8
+    input["bdv_orifice_cd"] = 0.975
 
     input["leak_active"] = 0
     input["leak_size"] = 0.01  # m
@@ -777,7 +777,7 @@ def test_blowdown_non_condensable(plot=False):
     input["liquid_density"] = "eos"
     input["max_time"] = 2000
     input["delay"] = 0
-    input["length"] = 2.25
+    input["length"] = 2.75
     # input["diameter"] = 1.130
     input["diameter"] = 1.13
     input["vessel_type"] = "ASME F&D"
@@ -789,7 +789,7 @@ def test_blowdown_non_condensable(plot=False):
     input["ambient_temperature"] = 293.0
     input["back_pressure"] = 1.01e5
     input["bdv_orifice_size"] = 0.00635  # m
-    input["bdv_orifice_cd"] = 0.85
+    input["bdv_orifice_cd"] = 0.975
 
     input["leak_active"] = 0
     input["leak_size"] = 0.01  # m
@@ -921,7 +921,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
     input["delay"] = 0
     input["time_step"] = 10
 
-    input["length"] = 2.25
+    input["length"] = 2.75
     # input["diameter"] = 1.130
     input["diameter"] = 1.13
     input["vessel_type"] = "ASME F&D"
@@ -937,7 +937,7 @@ def test_blowdown_condensable_gas_rig(plot=False):
     input["ambient_temperature"] = 293.0
     input["back_pressure"] = 1.01e5
     input["bdv_orifice_size"] = 0.01  # m
-    input["bdv_orifice_cd"] = 0.8
+    input["bdv_orifice_cd"] = 0.975
 
     input["leak_active"] = 0
     input["leak_size"] = 0.01  # m
@@ -1512,8 +1512,8 @@ if __name__ == "__main__":
     # test_blowdown_nitrogen_co2(plot=True)
     # test_isothermal(plot=True)
     # test_adiabatic(plot=True)
-    # test_isentropic(plot=True)
+    test_isentropic(plot=True)
     # test_blowdown_sbfire_n2(plot=False)
     # test_blowdown_sbfire_n2_rupture(plot=False)
     # test_blowdown_co2(plot=True)
-    test_blowdown_ineris_exp16(plot=True)
+    # test_blowdown_ineris_exp16(plot=True)
