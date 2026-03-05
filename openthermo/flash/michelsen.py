@@ -327,6 +327,9 @@ class FlashVL:
                     bounds=(100, 1000e5),
                 )
                 x = res.x
+            if not np.isscalar(x):
+                x  = x[0]
+                
             if abs(dV(x) / V) > 1e-4:
                 raise ValueError("VT-flash failed to converge")
             if x < 0:
@@ -410,6 +413,8 @@ class FlashVL:
     def PT_flash(self, T=None, P=None):
 
         # res = self.flashvln.flash(T=T, P=P, zs=self.zs)
+        if not np.isscalar(P):
+            P = P[0]
         flash = self.eos.two_phase_tpflash(temp=T, press=P, z=self.zs)
 
         if flash.betaL > 0 and flash.betaL < 1:

@@ -1,3 +1,21 @@
+"""
+Heat and mass transfer correlations for vessel blowdown calculations.
+
+This module provides functions for calculating:
+- Dimensionless numbers (Grashof, Prandtl, Nusselt, Rayleigh)
+- Heat transfer coefficients for natural convection (gas and liquid)
+- Nucleate boiling heat transfer using Rohsenow correlation
+- Liquid density estimation using COSTALD correlation
+
+The correlations are based on established literature including:
+- Geankoplis, Transport Processes and Unit Operations (Natural convection)
+- Rohsenow correlation for nucleate pool boiling (ht package)
+- COSTALD correlation for saturated liquid densities
+
+All functions use SI units unless otherwise specified.
+The thermo package is used as the thermodynamic backend for fluid property calculations.
+"""
+
 import math
 import copy
 from scipy.constants import g
@@ -9,6 +27,33 @@ warnings.simplefilter("once", UserWarning)
 
 
 def COSTALD_rho(phase):
+    """
+    Calculate liquid mass density using COSTALD correlation.
+
+    The COSTALD (Corresponding States Liquid Density) correlation provides more
+    accurate saturated liquid densities compared to cubic equations of state,
+    especially for hydrocarbon mixtures.
+
+    Parameters
+    ----------
+    phase : thermo.EquilibriumState
+        Liquid phase object containing composition, temperature, and critical properties
+
+    Returns
+    -------
+    float
+        Liquid mass density [kg/m³]
+
+    Notes
+    -----
+    Uses COSTALD_Vm to calculate molar volume, then converts to mass density
+    using the phase molecular weight.
+
+    References
+    ----------
+    Hankinson, R. W., & Thomson, G. H. (1979). A new correlation for saturated
+    densities of liquids and their mixtures. AIChE Journal, 25(4), 653-663.
+    """
     # Vm = COSTALD_mixture(phase.zs, phase.T, phase.Tcs, phase.Vcs, phase.omegas)
     Vm = COSTALD_Vm(phase)
     rho = 1 / Vm * phase.MW() / 1000
@@ -16,6 +61,38 @@ def COSTALD_rho(phase):
 
 
 def COSTALD_Vm(phase):
+    """
+    Calculate liquid molar volume using COSTALD correlation with corrected parameters.
+
+    Uses component-specific characteristic volumes (Vchar) and SRK omega values
+    for improved accuracy compared to using critical volumes directly. Falls back
+    to standard parameters for components not in the special list.
+
+    Parameters
+    ----------
+    phase : thermo.EquilibriumState
+        Liquid phase object containing composition, temperature, and critical properties
+
+    Returns
+    -------
+    float
+        Liquid molar volume [m³/mol]
+
+    Notes
+    -----
+    The function maintains a database of corrected parameters for common components:
+    - Light gases: N₂, CO₂, CH₄
+    - Hydrocarbons: C₂-C₁₀ (including isomers)
+    - Other: H₂O, H₂S
+
+    For components not in the database, uses critical volume and acentric factor
+    from the phase object directly.
+
+    References
+    ----------
+    Hankinson, R. W., & Thomson, G. H. (1979). A new correlation for saturated
+    densities of liquids and their mixtures. AIChE Journal, 25(4), 653-663.
+    """
     name = [
         "nitrogen",
         "hydrogen sulfide",
@@ -86,23 +163,46 @@ def COSTALD_Vm(phase):
 
 def h_inside(L, Tvessel, Tfluid, fluid):
     """
-    Calculation of internal natural convective heat transfer coefficient from Nusselt number
+    Calculate internal natural convective heat transfer coefficient for gas phase.
+
+    Uses empirical correlations for natural convection from vertical surfaces or
+    horizontal cylinders. Properties are evaluated at the film temperature (average
+    of bulk fluid and wall temperatures) for improved accuracy.
 
     Parameters
     ----------
     L : float
-        Vessel length
-    Tfluid : float
-        Temperature of the bulk fluid inventory
+        Characteristic length [m]
+        For vertical vessels: vessel height
+        For horizontal vessels: vessel diameter
     Tvessel : float
-        Temperature of the vessel wall (bulk)
-    fluid : obj
-            Gas object equilibrated at film temperature
+        Temperature of the vessel wall [K]
+    Tfluid : float
+        Temperature of the bulk fluid [K]
+    fluid : thermo.EquilibriumState
+        Gas phase object equilibrated at film temperature [(Tfluid + Tvessel)/2]
 
     Returns
+    -------
+    float
+        Internal heat transfer coefficient [W/(m²·K)]
+
+    Notes
+    -----
+    The calculation follows these steps:
+    1. Calculate Prandtl number: Pr = Cp·μ/k
+    2. Calculate Grashof number: Gr = g·β·ΔT·L³/ν²
+    3. Calculate Rayleigh number: Ra = Pr·Gr
+    4. Calculate Nusselt number from Ra (see Nu function)
+    5. Calculate h = Nu·k/L
+
+    Includes fallback values for thermal conductivity (0.023 W/(m·K)) and
+    viscosity (1×10⁻⁵ Pa·s) if property evaluation fails.
+
+    References
     ----------
-    h_inner : float
-        Heat transfer coefficient (W/m2 K)
+    Geankoplis, C. J. (1993). Transport Processes and Unit Operations,
+    International Edition, Prentice-Hall. Equations 4.7-4 and Table 4.7-1.
     """
     cond = fluid.k()
     if math.isnan(cond):
@@ -124,23 +224,41 @@ def h_inside(L, Tvessel, Tfluid, fluid):
 
 def h_inside_liquid(L, Tvessel, Tfluid, fluid):
     """
-    Calculation of internal natural convective heat transfer coefficient from Nusselt number
+    Calculate internal natural convective heat transfer coefficient for liquid phase.
+
+    Similar to gas phase natural convection but uses liquid-specific properties.
+    Thermal conductivity is calculated using mass-weighted mixing rule for
+    multi-component liquids.
 
     Parameters
     ----------
     L : float
-        Vessel length
-    Tfluid : float
-        Temperature of the bulk fluid inventory
+        Characteristic length [m]
     Tvessel : float
-        Temperature of the vessel wall (bulk)
-    fluid : obj
-            Gas object equilibrated at film temperature
+        Temperature of the vessel wall [K]
+    Tfluid : float
+        Temperature of the bulk liquid [K]
+    fluid : thermo.EquilibriumState
+        Liquid phase object
 
     Returns
+    -------
+    float
+        Internal heat transfer coefficient [W/(m²·K)]
+
+    Notes
+    -----
+    For mixtures, thermal conductivity is calculated using a mass-weighted
+    average of pure component liquid thermal conductivities:
+    k_mix = Σ(w_i · k_i)
+
+    where w_i is the mass fraction and k_i is the thermal conductivity of
+    component i.
+
+    References
     ----------
-    h_inner : float
-        Heat transfer coefficient (W/m2 K)
+    Geankoplis, C. J. (1993). Transport Processes and Unit Operations,
+    International Edition, Prentice-Hall.
     """
 
     cond = sum([k * w for k, w in zip(fluid.ws(), fluid.kls())])
@@ -157,23 +275,50 @@ def h_inside_liquid(L, Tvessel, Tfluid, fluid):
 
 def h_inside_wetted(L, Tvessel, Tfluid, fluid):
     """
-    Calculation of internal heat transfer coefficient for boiling liquid
+    Calculate internal heat transfer coefficient for boiling liquid using Rohsenow correlation.
+
+    Combines nucleate pool boiling and natural convection, returning the maximum
+    of the two mechanisms with practical bounds (1000-3000 W/(m²·K)).
 
     Parameters
     ----------
     L : float
-        Vessel length
-    Tfluid : float
-        Temperature of the bulk fluid inventory
+        Characteristic length [m]
     Tvessel : float
-        Temperature of the vessel wall (bulk)
-    fluid : obj
-            Gas object equilibrated at film temperature
+        Temperature of the vessel wall [K]
+    Tfluid : float
+        Temperature of the bulk liquid [K]
+    fluid : thermo.FlashPureVLS
+        Two-phase flash result containing liquid and vapor phases
 
     Returns
+    -------
+    float
+        Internal heat transfer coefficient [W/(m²·K)]
+        Bounded between 1000 and 3000 W/(m²·K)
+
+    Notes
+    -----
+    The Rohsenow correlation is used for nucleate pool boiling:
+
+    h = μ_L · ΔH_vap · [g(ρ_L - ρ_V)/σ]^0.5 · [C_p,L · ΔT_e / (C_sf · ΔH_vap · Pr_L^n)]^3
+
+    Parameters:
+    - C_sf = 0.013 (surface-fluid combination factor)
+    - n = 1.7 (exponent, typical for non-water fluids)
+    - ΔT_e = excess wall temperature (capped at 30 K for stability)
+
+    Falls back to natural convection if boiling calculation fails.
+    Uses default surface tension (0.0175 N/m) if evaluation fails.
+
+    References
     ----------
-    h_inner : float
-        Heat transfer coefficient (W/m2 K)
+    Rohsenow, W. M. (1951). A method of correlating heat transfer data for
+    surface boiling of liquids. Technical Report.
+
+    Pioro, I. L., et al. (1999). Experimental evaluation of constants for the
+    Rohsenow pool boiling correlation. International Journal of Heat and Mass
+    Transfer, 42(11), 2003-2013.
     """
     liq = fluid.liquid_bulk
     # if liq.beta == 0:
@@ -216,38 +361,83 @@ def h_inside_wetted(L, Tvessel, Tfluid, fluid):
 
 def Pr(cp, mu, k):
     """
-    Calculation of Prandtl number, eq. 4.5-6 in
-    C. J. Geankoplis Transport Processes and Unit Operations, International Edition,
-    Prentice-Hall, 1993
+    Calculate Prandtl number.
+
+    The Prandtl number is a dimensionless number representing the ratio of
+    momentum diffusivity (kinematic viscosity) to thermal diffusivity.
 
     Parameters
     ----------
+    cp : float
+        Specific heat capacity at constant pressure [J/(kg·K)]
+    mu : float
+        Dynamic viscosity [Pa·s]
+    k : float
+        Thermal conductivity [W/(m·K)]
 
     Returns
+    -------
+    float
+        Prandtl number [-]
+
+    Notes
+    -----
+    Pr = (μ · Cp) / k = ν / α
+
+    where:
+    - ν is kinematic viscosity
+    - α is thermal diffusivity
+
+    Typical values:
+    - Gases: 0.7-1.0
+    - Water: 2-13 (decreases with temperature)
+    - Oils: 50-100,000
+
+    References
     ----------
-    Pr : float
-        Prantdl number
+    Geankoplis, C. J. (1993). Transport Processes and Unit Operations,
+    International Edition, Prentice-Hall. Equation 4.5-6.
     """
     return cp * mu / k
 
 
 def Nu(Ra, Pr):
     """
-    Calculation of Nusselt number for natural convection. See eq. 4.7-4  and Table 4.7-1 in
-    C. J. Geankoplis Transport Processes and Unit Operations, International Edition,
-    Prentice-Hall, 1993
+    Calculate Nusselt number for natural convection from vertical surfaces.
+
+    The Nusselt number represents the ratio of convective to conductive heat
+    transfer normal to a boundary. Different correlations are used depending
+    on the Rayleigh number regime.
 
     Parameters
     ----------
     Ra : float
-        Raleigh number
+        Rayleigh number [-]
     Pr : float
-        Prandtl number
+        Prandtl number [-] (not currently used in calculation)
 
     Returns
+    -------
+    float
+        Nusselt number [-]
+
+    Notes
+    -----
+    The correlation depends on the Rayleigh number regime:
+
+    - Ra ≥ 10⁹ (turbulent): Nu = 0.13 · Ra^(1/3)
+    - 10⁴ < Ra < 10⁹ (transition): Nu = 0.59 · Ra^(1/4)
+    - Ra ≤ 10⁴ (laminar): Nu = 1.36 · Ra^(1/5)
+
+    Once Nu is known, the heat transfer coefficient is calculated as:
+    h = Nu · k / L
+
+    where k is thermal conductivity and L is the characteristic length.
+
+    References
     ----------
-    Nu : float
-        Nusselt number
+    Geankoplis, C. J. (1993). Transport Processes and Unit Operations,
+    International Edition, Prentice-Hall. Equation 4.7-4 and Table 4.7-1.
     """
     if Ra >= 1e9:
         NNu = 0.13 * Ra**0.333
