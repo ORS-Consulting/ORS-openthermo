@@ -139,6 +139,10 @@ class Blowdown:
             self.dt = input["time_step"]
         else:
             self.dt = 1
+        if "cold_blowdown" in input:
+            self.cold_blowdown = input["cold_blowdown"]
+        else:
+            self.cold_blowdown = False
 
     def _liq_density(self, phase):
         if self.liq_density == "eos":
@@ -319,6 +323,15 @@ class Blowdown:
         self.m0 = V_gas * res.gas.rho_mass() + V_liquid * liq_rho + V_water * water_rho
         self.N0 = N_tot
         self.z_adjust = zs
+
+        if self.cold_blowdown:
+            res = self.flash.flash(
+                T=self.ambient_temperature,
+                V=res.V(),
+                zs=self.z_adjust,
+            )
+            self.operating_pressure = res.P
+            self.operating_temperature = res.T
 
     def _blowdown_gov_eqns(
         self, t, y
