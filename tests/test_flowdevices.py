@@ -1,28 +1,52 @@
 from openthermo.vessel import flowdevices as tp
-from CoolProp.CoolProp import PropsSI
-import CoolProp.CoolProp as CP
+from openthermo.flash.michelsen import get_flash_dry
 import pytest
 
 
 def test_orifice():
     P1 = 10.0e5
     P2 = 5.5e5
-    D = PropsSI("D", "P", P1, "T", 298.15, "HEOS::N2")
-    cpcv = PropsSI("CP0MOLAR", "T", 298.15, "P", P1, "HEOS::N2") / PropsSI(
-        "CVMOLAR", "T", 298.15, "P", P1, "HEOS::N2"
+    T = 298.15
+    names = ["nitrogen"]
+    molefracs = [1.0]
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        P=P1,
+        T=T,
+        rho="eos",
+        model="PR",
     )
+
+    res = flash.flash(P=P1, T=T, zs=molefracs)
+    D = res.rho_mass()
+    cpcv = res.Cp_ideal_gas() / res.Cv()
+
     assert tp.gas_release_rate(
         P1, P2, D, cpcv, 0.85, 0.01**2 / 4 * 3.1415
-    ) == pytest.approx(9.2 / 60, rel=0.001)
+    ) == pytest.approx(9.2 / 60, rel=0.002)
 
 
 def test_orifice1():
     P1 = 10.0e5
     P2 = 6.5e5
-    D = PropsSI("D", "P", P1, "T", 298.15, "HEOS::N2")
-    cpcv = PropsSI("CP0MOLAR", "T", 298.15, "P", P1, "HEOS::N2") / PropsSI(
-        "CVMOLAR", "T", 298.15, "P", P1, "HEOS::N2"
+
+    T = 298.15
+    names = ["nitrogen"]
+    molefracs = [1.0]
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        P=P1,
+        T=T,
+        rho="eos",
+        model="PR",
     )
+
+    res = flash.flash(P=P1, T=T, zs=molefracs)
+    D = res.rho_mass()
+    cpcv = res.Cp_ideal_gas() / res.Cv()
+
     assert tp.gas_release_rate(
         P1, P2, D, cpcv, 0.85, 0.01**2 / 4 * 3.1415
     ) == pytest.approx(9.2 / 60, rel=0.2)
@@ -32,11 +56,23 @@ def test_controlvalve():
     P1 = 10.0e5
     P2 = 5.5e5
     T1 = 20.0 + 273.15
-    MW = PropsSI("M", "P", P1, "T", T1, "HEOS::N2")
-    Z1 = PropsSI("Z", "P", P1, "T", T1, "HEOS::N2")
-    gamma = PropsSI("CP0MOLAR", "T", T1, "P", P1, "HEOS::N2") / PropsSI(
-        "CVMOLAR", "T", T1, "P", P1, "HEOS::N2"
+    names = ["nitrogen"]
+    molefracs = [1.0]
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        P=P1,
+        T=T1,
+        rho="eos",
+        model="PR",
     )
+
+    res = flash.flash(P=P1, T=T1, zs=molefracs)
+
+    MW = res.MW() / 1000
+    Z1 = res.Z()
+    gamma = res.Cp_ideal_gas() / res.Cv()
+
     assert tp.control_valve(P1, P2, T1, Z1, MW, gamma, 500) == pytest.approx(
         21.92, rel=0.05
     )
@@ -59,11 +95,22 @@ def test_psv3():
     blowdown = 0.1
     P1 = 0.99 * Pset * (1 - blowdown)
     T1 = 100.0 + 273.15
-    Z = PropsSI("Z", "P", P1, "T", T1, "HEOS::N2")
-    MW = PropsSI("M", "HEOS::N2")
-    gamma = PropsSI("CP0MOLAR", "T", T1, "P", P1, "HEOS::N2") / PropsSI(
-        "CVMOLAR", "T", T1, "P", P1, "HEOS::N2"
+
+    names = ["nitrogen"]
+    molefracs = [1.0]
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        P=P1,
+        T=T1,
+        rho="eos",
+        model="PR",
     )
+    res = flash.flash(P=P1, T=T1, zs=molefracs)
+
+    Z = res.Z()
+    MW = res.MW() / 1000
+    gamma = res.Cp_ideal_gas() / res.Cv()
     CD = 0.975
     area = 71e-6
     assert tp.relief_valve(P1, Pback, Pset, blowdown, gamma, CD, T1, Z, MW, area) == 0
@@ -80,11 +127,21 @@ def test_psv2():
     Pset = 20.99e5
     blowdown = 0.1
     T1 = 100.0 + 273.15
-    Z = PropsSI("Z", "P", P1, "T", T1, "HEOS::N2")
-    MW = PropsSI("M", "HEOS::N2")
-    gamma = PropsSI("CP0MOLAR", "T", T1, "P", P1, "HEOS::N2") / PropsSI(
-        "CVMOLAR", "T", T1, "P", P1, "HEOS::N2"
+    names = ["nitrogen"]
+    molefracs = [1.0]
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        P=P1,
+        T=T1,
+        rho="eos",
+        model="PR",
     )
+    res = flash.flash(P=P1, T=T1, zs=molefracs)
+
+    Z = res.Z()
+    MW = res.MW() / 1000
+    gamma = res.Cp_ideal_gas() / res.Cv()
     CD = 0.975
     area = 71e-6
     assert tp.relief_valve(
@@ -102,11 +159,24 @@ def test_psv():
     Pset = 99.2e5
     blowdown = 0.1
     T1 = 25.0 + 273.15
-    Z = PropsSI("Z", "P", P1, "T", T1, "HEOS::N2")
-    MW = PropsSI("M", "HEOS::N2")
-    gamma = PropsSI("CP0MOLAR", "T", T1, "P", P1, "HEOS::N2") / PropsSI(
-        "CVMOLAR", "T", T1, "P", P1, "HEOS::N2"
+    names = ["nitrogen"]
+    molefracs = [1.0]
+    flash = get_flash_dry(
+        names,
+        molefracs,
+        P=P1,
+        T=T1,
+        rho="eos",
+        model="PR",
     )
+    res = flash.flash(P=P1, T=T1, zs=molefracs)
+
+    Z = res.Z()
+    MW = res.MW() / 1000
+    gamma = res.Cp_ideal_gas() / res.Cv()
+    CD = 0.975
+    area = 71e-6
+
     CD = 0.975
     area = 71e-6
     assert tp.relief_valve(
