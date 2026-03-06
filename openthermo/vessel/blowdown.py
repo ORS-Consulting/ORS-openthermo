@@ -144,6 +144,20 @@ class Blowdown:
         else:
             self.cold_blowdown = False
 
+        if "flow_device" in input:
+            self.flow_device = input["flow_device"]
+            if self.flow_device == "relief_valve":
+                if "psv_set_pressure" in input:
+                    self.psv_set_pressure = input["psv_set_pressure"]
+                else:
+                    raise ValueError("Missing input for PSV set pressure")
+                if "psv_blowdown" in input:
+                    self.psv_blowdown = input["psv_blowdown"]
+                else:
+                    raise ValueError("Missing input for PSV blowdown")
+        else:
+            self.flow_device = "orifice"
+
     def _liq_density(self, phase):
         if self.liq_density == "eos":
             return phase.rho_mass()
@@ -400,14 +414,19 @@ class Blowdown:
         static_height = self.liquid_level - self.water_level
         k = res.gas.Cp_ideal_gas() / res.gas.Cv_ideal_gas()
 
-        dm_dt_bdv = self.shutdown * -gas_release_rate(
-            res.P,
-            self.back_pressure,
-            res.gas.rho_mass(),
-            k,
-            self.orifice_cd,
-            self.orifice_area,
-        )
+        if self.flow_device == "orifice":
+            mass_rate = -gas_release_rate(
+                res.P,
+                self.back_pressure,
+                res.gas.rho_mass(),
+                k,
+                self.orifice_cd,
+                self.orifice_area,
+            )
+        else:
+            raise errors.InputError("Unsupported flow device")
+
+        dm_dt_bdv = self.shutdown * mass_rate
 
         if self.leak_type == "gas":
             dm_dt_leak = self.leak_active * -gas_release_rate(
@@ -998,14 +1017,32 @@ class Blowdown:
 
         k = gas.gas.Cp_ideal_gas() / gas.gas.Cv_ideal_gas()
 
-        dm_dt_bdv = self.shutdown * -gas_release_rate(
-            gas.P,
-            self.back_pressure,
-            gas.gas.rho_mass(),
-            k,
-            self.orifice_cd,
-            self.orifice_area,
-        )
+        if self.flow_device == "orifice":
+            mass_rate = -gas_release_rate(
+                gas.P,
+                self.back_pressure,
+                gas.gas.rho_mass(),
+                k,
+                self.orifice_cd,
+                self.orifice_area,
+            )
+        elif self.flow_device == "relief_valve":
+            mass_rate = -relief_valve(
+                gas.P,
+                self.back_pressure,
+                self.psv_set_pressure,
+                self.psv_blowdown,
+                k,
+                self.orifice_cd,
+                gas.T,
+                gas.gas.Z(),
+                gas.gas.MW() / 1000,
+                self.orifice_area,
+            )
+        else:
+            raise errors.InputError("Unsupported flow device")
+
+        dm_dt_bdv = self.shutdown * mass_rate
 
         dN_dt_bdv = dm_dt_bdv / (gas.MW() / 1000)
 
