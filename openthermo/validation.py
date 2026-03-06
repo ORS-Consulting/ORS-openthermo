@@ -23,6 +23,27 @@ def validate_mandatory_ruleset(input):
             "type": "boolean",
             "allowed": [True, False],
         },
+        "flow_device": {
+            "required": False,
+            "type": "string",
+            "allowed": [
+                "orifice",
+                "relief_valve",
+            ],  # "control_valve"],
+        },
+        "psv_blowdown": {
+            "required": False,
+            "type": "number",
+            "min": 0.01,
+            "max": 0.99,
+            "dependencies": {"flow_device": "relief_valve"},
+        },
+        "psv_set_pressure": {
+            "required": False,
+            "type": "number",
+            "min": 0.0,
+            "dependencies": {"flow_device": "relief_valve"},
+        },
         "liquid_density": {
             "required": True,
             "type": "string",

@@ -1351,7 +1351,14 @@ def test_blowdown_sbfire_n2(plot=False):
     input["operating_pressure"] = P
     input["ambient_temperature"] = 298
     input["back_pressure"] = 1.01e5
-    input["bdv_orifice_size"] = 0.02  # m
+
+    input["max_time"] = 700
+    input["time_step"] = 1
+    input["flow_device"] = "relief_valve"
+    input["psv_set_pressure"] = 110.0e5
+    input["psv_blowdown"] = 0.1
+
+    input["bdv_orifice_size"] = 0.02 * 2  # m
     input["bdv_orifice_cd"] = 0.975
 
     names = ["nitrogen"]
@@ -1360,7 +1367,7 @@ def test_blowdown_sbfire_n2(plot=False):
     input["molefracs"] = molefracs
     input["component_names"] = names
     segment = Blowdown(input)
-    segment.depressurize()
+    segment.depressurize_euler()
     import matplotlib.pyplot as plt
 
     segment.plot()  # filename="plots\\SB_fire_nitrogen"
@@ -1466,7 +1473,7 @@ def test_blowdown_sbfire_n2_rupture(plot=False):
     input["component_names"] = names
     segment = Blowdown(input)
     segment.depressurize()
-    segment.analyze_rupture()
+    segment.analyze_rupture("rupture")
 
     assert segment.rupture_time == 1585
 
@@ -1556,9 +1563,9 @@ if __name__ == "__main__":
     # test_blowdown_nitrogen_co2(plot=True)
     # test_isothermal(plot=True)
     # test_adiabatic(plot=True)
-    test_adiabatic_cold(plot=True)
+    # test_adiabatic_cold(plot=True)
     # test_isentropic(plot=True)
-    # test_blowdown_sbfire_n2(plot=False)
+    test_blowdown_sbfire_n2(plot=False)
     # test_blowdown_sbfire_n2_rupture(plot=False)
     # test_blowdown_co2(plot=True)
     # test_blowdown_ineris_exp16(plot=True)

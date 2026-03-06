@@ -1,6 +1,8 @@
 import math
 from scipy.constants import g
 
+psv_state = "closed"
+
 
 def hem_release_rate():
     pass
