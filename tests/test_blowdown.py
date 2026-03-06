@@ -1232,7 +1232,6 @@ def test_adiabatic_cold(plot=False):
 
     segment = Blowdown(input)
     segment.depressurize()
-    segment.plot()
 
 
 def test_isentropic(plot=False):
@@ -1275,7 +1274,7 @@ def test_isentropic(plot=False):
 
     segment = Blowdown(input)
     segment.depressurize()
-    segment.plot("dummy")
+    # segment.plot("dummy")
     import matplotlib.pyplot as plt
 
     name = "plots\\isentropic_multiphase"
