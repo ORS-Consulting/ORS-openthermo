@@ -411,10 +411,16 @@ class FlashVL:
         return nVm_gas + nVm_liquid + nVm_water
 
     def PT_flash(self, T=None, P=None):
-
-        # res = self.flashvln.flash(T=T, P=P, zs=self.zs)
-        # if not np.isscalar(P):
-        # s    P = P[0]
+        if type(P) == np.ndarray:
+            if P.ndim == 0:
+                P = float(P)
+            else:
+                P = P[0]
+        if type(T) == np.ndarray:
+            if T.ndim == 0:
+                T = float(T)
+            else:
+                T = T[0]
         flash = self.eos.two_phase_tpflash(temp=T, press=P, z=self.zs)
 
         if flash.betaL > 0 and flash.betaL < 1:

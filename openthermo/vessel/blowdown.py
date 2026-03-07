@@ -738,7 +738,10 @@ class Blowdown:
         plt.xlabel("Time (s)")
         plt.ylabel("Pressure (bar)")
         plt.legend(loc="best")
-
+        if filename is not None:
+            plt.savefig(
+                filename + "_pressure.png",
+            )
         if filename is None:
             plt.show()
 
