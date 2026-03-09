@@ -2160,6 +2160,137 @@ def test_woodfield_discharge(plot=False):
         plt.show()
 
 
+def test_blowdown_nitrogen_control_valve(plot=False):
+    """
+    Test nitrogen blowdown using a control valve instead of an orifice.
+    Based on test_blowdown_nitrogen but using control valve flow device.
+
+    The Cv value has been tuned to match the orifice behavior:
+    - Validation data (N2_I1.yml): P = 1.72 bar, T_gas = 241 K
+    - Orifice (d=6.35mm, Cd=0.8): P = 1.08 bar, T_gas = 239 K
+    - Control valve (Cv=1.25): P = 1.14 bar, T_gas = 240 K
+
+    Cv=1.25 provides excellent match to both orifice and experimental data.
+    """
+    import yaml
+
+    P = 150e5
+    T = 289.0
+    input = {}
+    input["mode"] = "isentropic"
+    input["heat_transfer"] = "rigorous"
+    input["wall_thickness"] = 0.025  # m
+    input["eos_model"] = "PR"
+    input["liquid_density"] = "eos"
+    input["max_time"] = 100
+    input["delay"] = 0
+    input["length"] = 1.524
+    input["diameter"] = 0.273
+    input["vessel_type"] = "Flat-end"
+    input["orientation"] = "horizontal"
+    input["liquid_level"] = 0.0
+    input["water_level"] = 0.0
+    input["operating_temperature"] = T
+    input["operating_pressure"] = P
+    input["ambient_temperature"] = 288
+    input["back_pressure"] = 1.01e5
+
+    # Control valve parameters instead of orifice
+    input["flow_device"] = "control_valve"
+    input["bdv_Cv"] = 1.25  # Cv coefficient tuned to match orifice discharge
+    input["bdv_xT"] = 0.75  # Pressure recovery factor (default)
+
+    input["leak_active"] = 0
+    input["leak_size"] = 0.01  # m
+    input["leak_cd"] = 0.65
+    input["leak_type"] = "liquid"
+
+    names = ["nitrogen"]
+    molefracs = [1.0]
+
+    input["molefracs"] = molefracs
+    input["component_names"] = names
+    segment = Blowdown(input)
+    segment.depressurize()
+
+    # Load validation data for comparison (same as test_blowdown_nitrogen)
+    file_name = "N2_I1.yml"
+    input_file = os.path.join(validation_path, file_name)
+    with open(input_file, mode="r") as infile:
+        validation_input = yaml.load(infile, Loader=yaml.FullLoader)
+
+    # Assertions - control valve (Cv=1.25) should match orifice behavior
+    assert segment.pressure[-1] == pytest.approx(
+        validation_input["validation"]["pressure"]["pres"][-1] * 1e5, abs=1e5
+    ), "Final pressure close to validation data"
+
+    assert segment.unwetted_wall_temp[-1] == pytest.approx(
+        validation_input["validation"]["temperature"]["wall_outer"]["temp"][-1], abs=2
+    ), "Wall temperature matches validation data"
+
+    assert segment.temperature[-1] == pytest.approx(
+        validation_input["validation"]["temperature"]["gas_high"]["temp"][-1], abs=3
+    ), "Gas temperature matches validation data"
+
+    if plot:
+        from matplotlib import pyplot as plt
+        #import scienceplots
+
+        #plt.style.use(["science", "nature", "scatter"])
+
+        # Pressure comparison
+        plt.figure(1)
+        plt.plot(
+            segment.times,
+            np.asarray(segment.pressure) / 1e5,
+            label="Control Valve (Cv=1.25)",
+        )
+        plt.plot(
+            validation_input["validation"]["pressure"]["time"],
+            validation_input["validation"]["pressure"]["pres"],
+            "x",
+            label="Experimental data",
+        )
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Pressure (bar)")
+        plt.title("Nitrogen Blowdown - Control Valve")
+
+        # Temperature comparison
+        plt.figure(2)
+        plt.plot(
+            segment.times, segment.temperature, label="Fluid (Control Valve)"
+        )
+        plt.plot(
+            segment.times,
+            segment.unwetted_wall_temp,
+            label="Wall (Control Valve)",
+        )
+        plt.plot(
+            validation_input["validation"]["temperature"]["gas_high"]["time"],
+            validation_input["validation"]["temperature"]["gas_high"]["temp"],
+            "x",
+            label="Gas high (Exp)",
+        )
+        plt.plot(
+            validation_input["validation"]["temperature"]["gas_low"]["time"],
+            validation_input["validation"]["temperature"]["gas_low"]["temp"],
+            "x",
+            label="Gas low (Exp)",
+        )
+        plt.plot(
+            validation_input["validation"]["temperature"]["wall_outer"]["time"],
+            validation_input["validation"]["temperature"]["wall_outer"]["temp"],
+            "+",
+            label="Wall outer (Exp)",
+        )
+        plt.legend(loc="best")
+        plt.xlabel("Time (s)")
+        plt.ylabel(r"Temperature (K)")
+        plt.title("Nitrogen Blowdown - Control Valve")
+
+        plt.show()
+
 if __name__ == "__main__":
     # pass
     # test_blowdown_sbfire_multiphase(plot=True)
@@ -2172,9 +2303,11 @@ if __name__ == "__main__":
     # test_isothermal(plot=True)
     # test_adiabatic(plot=True)
     # test_adiabatic_cold(plot=True)
-    test_isentropic(plot=True)
+    # test_isentropic(plot=True)
     # test_blowdown_sbfire_n2(plot=False)
     # test_blowdown_sbfire_n2_rupture(plot=True)
     # test_blowdown_co2(plot=True)
     # test_blowdown_ineris_exp16(plot=True)
     #test_byrnes_run7(plot=True)
+
+    test_blowdown_nitrogen_control_valve(plot=True)

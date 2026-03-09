@@ -131,9 +131,15 @@ class Blowdown:
         self.ambient_temperature = input["ambient_temperature"]
         self.operating_pressure = input["operating_pressure"]
         self.back_pressure = input["back_pressure"]
-        self.orifice_size = input["bdv_orifice_size"]
-        self.orifice_cd = input["bdv_orifice_cd"]
-        self.orifice_area = self.orifice_size**2 / 4 * math.pi
+
+        # Handle flow device parameters
+        if "flow_device" not in input or input["flow_device"] in ["orifice", "relief_valve"]:
+            if "bdv_orifice_size" not in input or "bdv_orifice_cd" not in input:
+                raise ValueError("bdv_orifice_size and bdv_orifice_cd are required for orifice and relief_valve flow devices")
+            self.orifice_size = input["bdv_orifice_size"]
+            self.orifice_cd = input["bdv_orifice_cd"]
+            self.orifice_area = self.orifice_size**2 / 4 * math.pi
+
         self.leak_area = self.leak_size**2 / 4 * math.pi
         if "time_step" in input:
             self.dt = input["time_step"]
@@ -155,6 +161,13 @@ class Blowdown:
                     self.psv_blowdown = input["psv_blowdown"]
                 else:
                     raise ValueError("Missing input for PSV blowdown")
+            elif self.flow_device == "control_valve":
+                if "bdv_Cv" in input:
+                    self.Cv = input["bdv_Cv"]
+                else:
+                    raise ValueError("Missing input for control valve Cv")
+                # Optional parameter with default
+                self.xT = input.get("bdv_xT", 0.75)
         else:
             self.flow_device = "orifice"
 
@@ -422,6 +435,17 @@ class Blowdown:
                 k,
                 self.orifice_cd,
                 self.orifice_area,
+            )
+        elif self.flow_device == "control_valve":
+            mass_rate = -control_valve(
+                res.P,
+                self.back_pressure,
+                res.gas.T,
+                res.gas.Z(),
+                res.gas.MW() / 1000,
+                k,
+                self.Cv,
+                self.xT,
             )
         else:
             raise errors.InputError("Unsupported flow device")
@@ -1041,6 +1065,17 @@ class Blowdown:
                 gas.gas.Z(),
                 gas.gas.MW() / 1000,
                 self.orifice_area,
+            )
+        elif self.flow_device == "control_valve":
+            mass_rate = -control_valve(
+                gas.P,
+                self.back_pressure,
+                gas.T,
+                gas.gas.Z(),
+                gas.gas.MW() / 1000,
+                k,
+                self.Cv,
+                self.xT,
             )
         else:
             raise errors.InputError("Unsupported flow device")
