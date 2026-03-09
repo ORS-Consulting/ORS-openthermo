@@ -311,6 +311,10 @@ Input field             | Unit  | Description           | Mandatory? / Depends o
 *back_pressure*         | Pa    | Blowdown back-pressure| Yes           | N/A           |
 *bdv_orifice_size*      | m     | BDV orifice diameter  | Yes           | N/A           |
 *bdv_orifice_cd*        | N/A   | Orifice discharge coefficient | Yes   | N/A           |
+*flow_device*           | N/A   | Flow device type      | No            | *orifice* (default) or *relief_valve* |
+*psv_set_pressure*      | Pa    | Relief valve set pressure | *flow_device*=*relief_valve* | N/A |
+*psv_blowdown*          | N/A   | Relief valve blowdown fraction | *flow_device*=*relief_valve* | N/A |
+*cold_blowdown*         | N/A   | Cool vessel to ambient before blowdown | No | *True* or *False* (default) |
 *heat_transfer*         | N/A   | Heat transfer option  | No            | *rigorous* or *rigorous_sb_fire* |
 *external_heat_transfer_coefficient* | W/m$^2$ K | Ambient external heat transfer coefficient | No | Defaults to 8 W/m$^2$ K |
 *wall_thickness*        | m     | Material thickness    | *heat_transfer*| N/A          |
@@ -453,6 +457,125 @@ $$ \dot{m}_{flow}= C_d  \cdot A \cdot\sqrt{\left ( \frac{2 k}{k-1}\right )  \cdo
 - $\dot{m}_{flow}$ is the mass flow through the orifice. $[kg/s]$
 - $C_d$ is the discharge coefficient of the orifice opening. $[-]$
 - $A$ is the cross sectional area of the orifice. $[m^2]$
+
+### Pressure safety valve / Relief valve
+A PSV / relief valve is a mechanical device actuated by the static pressure in the vessel and a conventional PSV is often used for gas/vapor systems.
+A conventional PSV is a spring-loaded device which will activate at a predetermined opening pressure, and relieve the vessel pressure until a given reseat pressure has been reached.
+Both the opening pressure and the reset pressure is above the vessel operating pressure and the PSV will remain closed until the pressure inside the vessel increases to the opening pressure.
+The operation of a conventional spring-loaded PSV is based on a force balance.
+A conventional PSV can be seen in [@Fig:psv].
+A spring exerts a force on a disc blocking the inlet of the PSV.
+When the pressure inside the vessels reaches the opening pressure, the force exerted on the disc by the gas will be larger than the force exerted by the spring and the PSV will open and allow the gas to flow out of the vessel.
+The flow of gas out of the vessels will lower the pressure and thereby also the force exerted on the disc.
+When the pressure in the vessels is reduced to the reset pressure, the PSV will close and the disc will again hinder the gas flow.
+
+![Conventional/pop action PSV adapted from [@iskov] and [@API520]](docs/img/PSV.pdf){#fig:psv width=30%}
+
+The relief valve model implemented in *openthermo* is the API 520 equations [@API520] for gas relief for both sonic/critical as well as subcritical flow. No corrections factors are implemented.
+
+For sonic flow (critical flow), as indicated in equation, the  mass flow through the PSV can be determined by equation [@eq:Stationary_sizing_sonic].
+
+$$ W = \frac{A {C \cdot K_d \cdot  K_b \cdot  K_c \cdot  P_1}}{\sqrt{\frac{T\cdot Z}{M}}} $$ {#eq:Stationary_sizing_sonic}
+
+- A is the effective discharge area. [mm$^2$]
+- W is the mass flow through the device. [kg/h]
+- C is a coefficient, as a function of k, as defined in equation [@eq:Stationary_sizing_C_function].
+- $K_d$, $K_b$, and $K_c$ are correction factors.
+- $P_1$ is the allowable upstream absolute pressure. [kPa]
+- T is the temperature of the inlet gas at relieving conditions. [K]
+- M is the molecular mass of the gas at relieving conditions. [kg/kmol]
+- Z is the compressibility factor for the gas.
+
+$K_d$ is the effective coefficient of discharge, with a typical value of 0.975, for an installed PSV.
+$K_b$ is a back-pressure correction factor between 0 and 1, assumed to be 1.
+$K_c$ is a correction factor used when a rupture disk is installed upstream, otherwise it is 1.
+In the present implementation a value of 1 is assumed.
+
+$$ C=0.03948 \sqrt{k \left (\frac{2}{k+1}\right)^{\left (\frac{k+1}{k-1}\right)}} $$ {#eq:Stationary_sizing_C_function}
+
+For subsonic flow (subcritical flow), the effective discharge area of the PSV is determined by equation [@eq:Stationary_sizing_subsonic].
+
+$$ W = \frac{A \cdot {F_2 \cdot K_d  \cdot  K_c }}{17.9 \sqrt{\frac{T\cdot Z}{M\cdot P_1\cdot (P_1-P_2)}}} $$ {#eq:Stationary_sizing_subsonic}
+
+F$_2$ is the coefficient of subcritical flow which can be determined from [@eq:Stationary_sizing_F2].
+
+$$ F_2=\sqrt{\left ( \frac{k}{k-1} \right ) r^{\left (\frac{2}{k} \right )} \left (  \frac{1-r^{\left ( \frac{k-1}{k} \right )}}{1-r}\right )} $$ {#eq:Stationary_sizing_F2}
+
+where $r$ is the ratio of backpressure to upstream relieving pressure, $P_2 / P_1$.
+
+When modelling a pop action PSV/relief valve under dynamic conditions, the valve will go from closed to fully open in a short period of time when the set pressure, $P_{set}$, is reached.
+The pop action is illustrated in [@Fig:psv_hyst] which shows the opening and closing hysteresis of the PSV as a function of pressure.
+In order to close the pressure shall be reduced below the reseat pressure.
+
+![Relief valve hysteresis adapted from [@iskov]](docs/img/hysteresis.pdf){#fig:psv_hyst width=80%}
+
+When specifying PSVs it common to use standard API sizes as shown in [@tbl:psv_sizes]
+
+Size    | Area [in$^2$]     |   Area [m$^2$]
+--------|-------------------|----------------------------
+D       |   0.110           |   7.09676 $\cdot$ 10$^{-5}$
+E       |   0.196           |   1.26451 $\cdot$ 10$^{-4}$
+F       |   0.307           |   1.98064 $\cdot$ 10$^{-4}$
+G       |   0.503           |   3.24515 $\cdot$ 10$^{-4}$
+H       |   0.785           |   5.06450 $\cdot$ 10$^{-4}$
+J       |   1.287           |   8.30320 $\cdot$ 10$^{-4}$
+K       |   1.838           |   1.18580 $\cdot$ 10$^{-3}$
+L       |   2.853           |   1.84064 $\cdot$ 10$^{-3}$
+M       |   3.600           |   2.32257 $\cdot$ 10$^{-3}$
+N       |   4.340           |   2.79999 $\cdot$ 10$^{-3}$
+P       |   6.380           |   4.11612 $\cdot$ 10$^{-3}$
+Q       |   11.050          |   7.12901 $\cdot$ 10$^{-3}$
+R       |   16.000          |   1.03225 $\cdot$ 10$^{-2}$
+T       |   26.000          |   1.67741 $\cdot$ 10$^{-2}$
+
+: Standard PSV orifice sizes according to API {#tbl:psv_sizes}
+
+### Control Valve
+For calculating the mass flow through a control valve, the ANSI/ISA [@borden][@ISA] methodology also described in IEC 60534 [@IEC60534] is applied.
+
+The flow model for a compressible fluid in the turbulent regime is:
+
+$$ W = C N_6 F_P Y \sqrt{x_{sizing} p_1 \rho_1} $$
+
+or equivalently:
+
+$$ W = C N_8 F_P p_1 Y \sqrt{\frac{x_{sizing}M}{T_1 Z_1}} $$
+
+- C is the flow coefficient ($C_v$ or $K_v$)
+- $N_8$ is a unit specific constant, 94.8 for $C_v$ and bar as pressure unit
+- $F_P$ is a piping geometry factor [-]
+- Y is the expansion factor [-]
+- $x_{sizing}$ is is the pressure drop used for sizing[-]
+- $p_1$ is the upstream pressure [bar]
+- $\rho_1$ is the upstream density [kg/m$^3$]
+- M is the molecular weight [kg/kmol]
+- $T_1$ is the upstream temperature [K]
+- $Z_1$ is the upstream compressibility [-]
+
+In *openthermo*, the piping geometry factor is not yet implemented and assumed to be 1.
+The pressure drop ratio $x_{sizing}$ used for sizing is determined as the lesser of the actual pressure drop ratio, $x$, and the choked pressure drop ratio $x_{choked}$.
+The actual pressure drop ratio is given by:
+
+$$ x = \frac{\Delta p}{p_1}$$
+
+The pressure drop ratio at which flow no longer increases with increased value in pressure drop ratio is the choked pressure drop ratio, given by the following equation:
+
+$$ x_{choked} = F_\gamma x_{TP} $$
+
+The factor $x_T$ is based on air near atmospheric pressure as the flowing fluid with a specific heat ratio of 1.40.
+If the specific heat ratio for the flowing fluid is not 1.40, the factor $F_\gamma$ is used to adjust $x_T$.
+Use the following equation to calculate the specific heat ratio factor:
+
+$$ F_\gamma = \frac{\gamma}{1.4} $$
+
+where $\gamma$ is the ideal gas $C_p/C_v$.
+It should be noted that the above equation has been derived from perfect gas behaviour and extension of an orifice model with $\gamma$ in the range of 1.08 to 1.65.
+If used outside the assumptions flow calculations may become inaccurate.
+
+The expansion factor Y accounts for the change in density as the fluid passes from the valve inlet to the vena contracta.
+It also accounts for the change in the vena contracta area as the pressure differential is varied.
+
+$$ Y = 1 -  \frac{x_{sizing}}{3x_{choked}}$$
 
 ### Leaks
 In addition to the vapour outflow through a Blowdown valve/orifice it is also possible to include leaks. Three leak types are possible: 
