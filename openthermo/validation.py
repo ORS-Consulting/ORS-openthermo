@@ -29,7 +29,8 @@ def validate_mandatory_ruleset(input):
             "allowed": [
                 "orifice",
                 "relief_valve",
-            ],  # "control_valve"],
+                "control_valve",
+            ],
         },
         "psv_blowdown": {
             "required": False,
@@ -209,15 +210,28 @@ def validate_mandatory_ruleset(input):
             "min": 0.01,
         },
         "bdv_orifice_size": {
-            "required": True,
+            "required": False,
             "type": "number",
             "min": 1e-4,
         },
         "bdv_orifice_cd": {
-            "required": True,
+            "required": False,
             "type": "number",
             "min": 0.1,
             "max": 1.0,
+        },
+        "bdv_Cv": {
+            "required": False,
+            "type": "number",
+            "min": 1e-6,
+            "dependencies": {"flow_device": "control_valve"},
+        },
+        "bdv_xT": {
+            "required": False,
+            "type": "number",
+            "min": 0.1,
+            "max": 1.0,
+            "dependencies": {"flow_device": "control_valve"},
         },
         "wall_thickness": {
             "required": False,
