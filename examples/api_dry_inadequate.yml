@@ -1,0 +1,170 @@
+metadata:
+  description: API 521 pool fire with inadequate drainage - dry vessel, COSTALD density
+  reference: HYSYS Depressurisation - API 521 fire sizing
+  test_name: test_blowdown_api_dry_inadequate_costald
+  validation_files:
+  - Water_dry_API_inadequate_costald_history.csv
+solver_method: depressurize
+mode: fire
+drain_fire_fighting: Inadequate
+eos_model: PR
+liquid_density: costald
+max_time: 900
+delay: 0
+time_step: 5
+length: 10
+diameter: 3
+vessel_type: Flat-end
+orientation: horizontal
+liquid_level: 1.5
+water_level: 0.0
+operating_temperature: 298.15
+operating_pressure: 1200000
+ambient_temperature: 273
+back_pressure: 101000
+bdv_orifice_size: 0.03
+bdv_orifice_cd: 0.84
+leak_active: 0
+leak_size: 0.01
+leak_cd: 0.65
+leak_type: liquid
+component_names:
+- methane
+- propane
+- n-butane
+- i-butane
+- n-decane
+molefracs:
+- 0.8
+- 0.05
+- 0.01
+- 0.01
+- 0.1
+validation:
+  pressure:
+    time:
+    - 0.0
+    - 50.0
+    - 100.0
+    - 150.0
+    - 200.0
+    - 250.0
+    - 300.0
+    - 350.0
+    - 400.0
+    - 450.0
+    - 500.0
+    - 550.0
+    - 600.0
+    - 650.0
+    - 700.0
+    - 750.0
+    - 800.0
+    - 850.0
+    - 900.0
+    pres:
+    - 11.9998
+    - 10.8381
+    - 9.78495
+    - 8.849540000000001
+    - 8.01783
+    - 7.2801599999999995
+    - 6.6252699999999995
+    - 6.0450099999999996
+    - 5.53078
+    - 5.07499
+    - 4.67159
+    - 4.31421
+    - 3.99794
+    - 3.71788
+    - 3.46976
+    - 3.25005
+    - 3.05535
+    - 2.88269
+    - 2.72961
+    comment: Pressure in bar (absolute), converted from gauge by adding 1.013 bar, downsampled (every 100th point)
+  temperature:
+    fluid_mean:
+      time:
+      - 0.0
+      - 50.0
+      - 100.0
+      - 150.0
+      - 200.0
+      - 250.0
+      - 300.0
+      - 350.0
+      - 400.0
+      - 450.0
+      - 500.0
+      - 550.0
+      - 600.0
+      - 650.0
+      - 700.0
+      - 750.0
+      - 800.0
+      - 850.0
+      - 900.0
+      temp:
+      - 298.15
+      - 299.59189999999995
+      - 301.09049999999996
+      - 302.6076
+      - 304.14029999999997
+      - 305.6866
+      - 307.2441
+      - 308.81129999999996
+      - 310.3866
+      - 311.9684
+      - 313.5558
+      - 315.14759999999995
+      - 316.7428
+      - 318.3408
+      - 319.9407
+      - 321.5419
+      - 323.144
+      - 324.7464
+      - 326.3488
+      comment: Converted from Celsius to Kelvin, downsampled (every 100th point)
+  mass_flow:
+    time:
+    - 0.0
+    - 50.0
+    - 100.0
+    - 150.0
+    - 200.0
+    - 250.0
+    - 300.0
+    - 350.0
+    - 400.0
+    - 450.0
+    - 500.0
+    - 550.0
+    - 600.0
+    - 650.0
+    - 700.0
+    - 750.0
+    - 800.0
+    - 850.0
+    - 900.0
+    mdot:
+    - -0.0
+    - -1.1891583333333333
+    - -1.0757
+    - -0.9757
+    - -0.8874305555555555
+    - -0.8096666666666668
+    - -0.7410722222222222
+    - -0.6806500000000001
+    - -0.6274083333333333
+    - -0.5804666666666666
+    - -0.5391277777777778
+    - -0.5026833333333334
+    - -0.47058055555555556
+    - -0.44228333333333336
+    - -0.4173222222222222
+    - -0.3953166666666667
+    - -0.37590555555555555
+    - -0.3587694444444444
+    - -0.34364722222222227
+    comment: Converted from kg/h to kg/s, negative indicates discharge, downsampled (every 100th point)

@@ -1,0 +1,74 @@
+# INERIS Experiment 16 - CO2 Pipeline Blowdown
+#
+# Description:
+#   INERIS CO2-rich mixture blowdown from long pipeline geometry.
+#   Tests multiphase CO2 behavior with very high aspect ratio (L/D = 740).
+#   Small diameter, long pipeline with adiabatic external conditions.
+#
+# Reference:
+#   test_blowdown_ineris_exp16 in test_blowdown.py
+#   INERIS CO2 pipeline safety experiments
+#
+# Test name: test_blowdown_ineris_exp16
+#
+# Expected results:
+#   Rapid CO2 condensation and re-evaporation
+#   Liquid level formation during blowdown
+#   Temperature stratification between gas and liquid phases
+
+metadata:
+  description: "INERIS Exp 16 - CO2-rich pipeline blowdown"
+  reference: "INERIS CO2 pipeline safety experiments"
+  test_name: "test_blowdown_ineris_exp16"
+
+# Solver configuration
+solver_method: depressurize_euler  # Use Euler solver for multiphase CO2
+
+# Thermodynamic mode and models
+mode: isentropic
+heat_transfer: rigorous
+eos_model: PR
+liquid_density: eos
+
+# Time settings
+max_time: 100  # seconds
+delay: 0
+time_step: 0.3  # seconds (small time step for stability)
+
+# Vessel geometry (pipeline)
+length: 37  # m (long pipeline)
+diameter: 0.050  # m (50 mm ID)
+vessel_type: Flat-end
+orientation: horizontal
+wall_thickness: 0.010  # m (10 mm)
+
+# Initial conditions
+liquid_level: 0.0  # m - initially all gas
+water_level: 0.0  # m
+operating_temperature: 281.0  # K (8°C)
+operating_pressure: 5700000  # Pa (57 bar)
+
+# Environmental conditions
+ambient_temperature: 281  # K (8°C)
+back_pressure: 101000  # Pa (atmospheric)
+external_heat_transfer_coefficient: 0  # W/(m²·K) - adiabatic
+
+# Discharge device (orifice)
+bdv_orifice_size: 0.006  # m (6 mm)
+bdv_orifice_cd: 0.84
+
+# Leak parameters (inactive)
+leak_active: 0
+leak_size: 0.006  # m
+leak_cd: 0.65
+leak_type: liquid
+
+# Fluid composition (CO2-rich with impurities)
+component_names:
+  - carbon dioxide
+  - nitrogen
+  - methane
+molefracs:
+  - 0.96  # CO2 (96%)
+  - 0.019  # N2 (1.9%)
+  - 0.021  # CH4 (2.1%)

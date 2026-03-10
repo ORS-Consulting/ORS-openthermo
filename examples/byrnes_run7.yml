@@ -1,0 +1,217 @@
+# Byrnes Run 7 - Fast Hydrogen Discharge
+#
+# Description:
+#   Validation against Byrnes et al. hydrogen blowdown experiment Run 7.
+#   Fast discharge case with 2.7 mm orifice from 138 bar initial pressure.
+#   Tests rapid hydrogen depressurization with significant gas cooling.
+#
+# Reference:
+#   Byrnes, W. R., R. C. Reid, and F. E. Ruccia. 1964. "Rapid Depressurization
+#   of Gas Storage Cylinder." Industrial & Engineering Chemistry Process Design
+#   and Development 3 (3): 206–9. https://doi.org/10.1021/i260011a004.
+#
+#   Test case parameters from HydDown validation.
+#
+# Test name: test_byrnes_run7
+#
+# Expected results:
+#   Final pressure: ~14 bar (within 15% of experiment)
+#   Final gas temp: ~227-233 K (within 5% of experiment)
+#   Matches HydDown predictions within 10%
+
+metadata:
+  description: "Byrnes Run 7 - Fast H2 discharge (2.7mm orifice, 138 bar)"
+  reference: "Byrnes et al. (1964), HydDown validation"
+  test_name: "test_byrnes_run7"
+  validation_type: "experimental"
+
+# Solver configuration
+solver_method: depressurize
+
+# Thermodynamic mode and models
+mode: isentropic
+heat_transfer: rigorous
+eos_model: PR
+liquid_density: eos
+
+# Time settings
+max_time: 30  # seconds (fast discharge)
+delay: 0
+time_step: 0.05  # seconds (small step for fast transient)
+
+# Vessel geometry (vertical cylinder)
+length: 1.394  # m
+diameter: 0.21742  # m
+vessel_type: Flat-end
+orientation: vertical
+wall_thickness: 0.0072  # m (7.2 mm)
+
+# Initial conditions
+liquid_level: 0.0  # m - pure gas
+water_level: 0.0  # m
+operating_temperature: 299.0  # K (26°C)
+operating_pressure: 13800000  # Pa (138 bar)
+
+# Environmental conditions
+ambient_temperature: 299.0  # K (26°C)
+back_pressure: 100000  # Pa (1 bar, atmospheric)
+external_heat_transfer_coefficient: 0.0  # W/(m²·K) - no external heat transfer
+
+# Discharge device (orifice)
+bdv_orifice_size: 0.0027  # m (2.7 mm - fast discharge)
+bdv_orifice_cd: 0.84
+
+# Fluid composition (pure hydrogen)
+component_names:
+  - hydrogen
+molefracs:
+  - 1.0
+
+# Validation data
+validation:
+  pressure:
+    experimental:
+      time:
+      - 0.116
+      - 3.41
+      - 6.71
+      - 9.96
+      - 13.3
+      - 16.6
+      - 19.8
+      - 23.2
+      - 26.4
+      - 29.7
+      pres:
+      - 136.0
+      - 104.0
+      - 77.4
+      - 57.3
+      - 42.8
+      - 32.9
+      - 26.4
+      - 21.5
+      - 17.3
+      - 13.8
+    hyddown:
+      time:
+      - 0.0
+      - 3.0
+      - 6.0
+      - 9.0
+      - 12.0
+      - 15.0
+      - 18.0
+      - 21.0
+      - 24.0
+      - 27.0
+      - 30.0
+      pres:
+      - 138.0
+      - 99.76
+      - 74.67
+      - 57.6
+      - 45.51
+      - 36.62
+      - 29.85
+      - 24.56
+      - 20.34
+      - 16.9
+      - 14.1
+  temperature:
+    gas_experimental:
+      time:
+      - 0.275
+      - 3.6
+      - 6.86
+      - 10.1
+      - 13.5
+      - 16.7
+      - 20.0
+      - 23.3
+      - 26.6
+      - 29.9
+      temp:
+      - 300.0
+      - 275.7
+      - 256.3
+      - 241.3
+      - 230.6
+      - 225.7
+      - 222.5
+      - 222.7
+      - 225.9
+      - 233.0
+    gas_hyddown:
+      time:
+      - 0.0
+      - 3.0
+      - 6.0
+      - 9.0
+      - 12.0
+      - 15.0
+      - 18.0
+      - 21.0
+      - 24.0
+      - 27.0
+      - 30.0
+      temp:
+      - 299.0
+      - 273.14
+      - 254.54
+      - 241.85
+      - 233.63
+      - 228.67
+      - 226.06
+      - 225.08
+      - 225.22
+      - 226.13
+      - 227.5
+    wall_experimental:
+      time:
+      - 0.334
+      - 3.56
+      - 6.79
+      - 10.0
+      - 13.2
+      - 16.5
+      - 19.8
+      - 23.0
+      - 26.2
+      - 29.4
+      temp:
+      - 299.3
+      - 300.1
+      - 299.7
+      - 299.2
+      - 298.4
+      - 297.8
+      - 297.1
+      - 296.2
+      - 295.3
+      - 294.4
+    wall_hyddown:
+      time:
+      - 0.0
+      - 3.0
+      - 6.0
+      - 9.0
+      - 12.0
+      - 15.0
+      - 18.0
+      - 21.0
+      - 24.0
+      - 27.0
+      - 30.0
+      temp:
+      - 299.0
+      - 297.7
+      - 296.1
+      - 294.7
+      - 293.5
+      - 292.6
+      - 291.9
+      - 291.4
+      - 291.1
+      - 291.2
+      - 291.4

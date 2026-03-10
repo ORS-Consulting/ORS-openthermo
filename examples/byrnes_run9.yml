@@ -1,0 +1,208 @@
+# Byrnes Run 9 - Medium Hydrogen Discharge
+#
+# Description:
+#   Validation against Byrnes et al. hydrogen blowdown experiment Run 9.
+#   Medium discharge case with 4 mm orifice from 138 bar initial pressure.
+#   Tests intermediate discharge rate between fast (Run 7) and slow (Run 8) cases.
+#
+# Reference:
+#   Byrnes, W. R., R. C. Reid, and F. E. Ruccia. 1964. "Rapid Depressurization
+#   of Gas Storage Cylinder." Industrial & Engineering Chemistry Process Design
+#   and Development 3 (3): 206–9. https://doi.org/10.1021/i260011a004.
+#
+#   Test case parameters from HydDown validation.
+#
+# Test name: test_byrnes_run9
+#
+# Expected results:
+#   Final pressure: ~11-15 bar (within 3.5 bar absolute of experiment)
+#   Final gas temp: ~193-195 K (within 10% of experiment)
+#   Intermediate cooling between fast and slow discharge
+#   Matches HydDown predictions within 10%
+
+metadata:
+  description: "Byrnes Run 9 - Medium H2 discharge (4mm orifice, 138 bar)"
+  reference: "Byrnes et al. (1964), HydDown validation"
+  test_name: "test_byrnes_run9"
+  validation_type: "experimental"
+
+# Solver configuration
+solver_method: depressurize
+
+# Thermodynamic mode and models
+mode: isentropic
+heat_transfer: rigorous
+eos_model: PR
+liquid_density: eos
+
+# Time settings
+max_time: 15  # seconds (medium-speed discharge)
+delay: 0
+time_step: 0.01  # seconds (small step for accuracy)
+
+# Vessel geometry (vertical cylinder)
+length: 1.394  # m
+diameter: 0.21742  # m
+vessel_type: Flat-end
+orientation: vertical
+wall_thickness: 0.0072  # m (7.2 mm)
+
+# Initial conditions
+liquid_level: 0.0  # m - pure gas
+water_level: 0.0  # m
+operating_temperature: 294.0  # K (21°C)
+operating_pressure: 13800000  # Pa (138 bar)
+
+# Environmental conditions
+ambient_temperature: 294.0  # K (21°C)
+back_pressure: 100000  # Pa (1 bar, atmospheric)
+external_heat_transfer_coefficient: 0.0  # W/(m²·K) - no external heat transfer
+
+# Discharge device (orifice)
+bdv_orifice_size: 0.004  # m (4 mm - medium discharge)
+bdv_orifice_cd: 0.84
+
+# Fluid composition (pure hydrogen)
+component_names:
+  - hydrogen
+molefracs:
+  - 1.0
+
+# Validation data
+validation:
+  pressure:
+    experimental:
+      time:
+      - 0.118
+      - 1.65
+      - 3.19
+      - 4.73
+      - 6.27
+      - 7.81
+      - 9.34
+      - 10.9
+      - 12.4
+      - 14.0
+      pres:
+      - 140.0
+      - 102.0
+      - 77.4
+      - 59.7
+      - 46.7
+      - 36.9
+      - 29.6
+      - 23.7
+      - 18.9
+      - 14.9
+    hyddown:
+      time:
+      - 0.0
+      - 1.49
+      - 2.99
+      - 4.49
+      - 5.99
+      - 7.49
+      - 8.99
+      - 10.49
+      - 11.99
+      - 13.49
+      - 14.99
+      pres:
+      - 138.0
+      - 96.97
+      - 70.25
+      - 52.39
+      - 40.05
+      - 31.27
+      - 24.85
+      - 20.02
+      - 16.32
+      - 13.41
+      - 11.09
+  temperature:
+    gas_experimental:
+      time:
+      - 0.0242
+      - 1.56
+      - 3.12
+      - 4.67
+      - 6.22
+      - 7.76
+      - 9.3
+      - 10.8
+      - 12.4
+      - 13.9
+      temp:
+      - 294.6
+      - 271.0
+      - 251.0
+      - 234.4
+      - 221.6
+      - 211.2
+      - 203.7
+      - 200.5
+      - 197.1
+      - 194.9
+    gas_hyddown:
+      time:
+      - 0.0
+      - 1.49
+      - 2.99
+      - 4.49
+      - 5.99
+      - 7.49
+      - 8.99
+      - 10.49
+      - 11.99
+      - 13.49
+      - 14.99
+      temp:
+      - 294.0
+      - 265.91
+      - 243.96
+      - 227.28
+      - 214.89
+      - 205.96
+      - 199.79
+      - 195.85
+      - 193.66
+      - 192.85
+      - 193.11
+    wall_experimental:
+      time:
+      - 0.0516
+      - 3.32
+      - 6.62
+      - 9.92
+      - 13.2
+      temp:
+      - 296.3
+      - 295.1
+      - 294.1
+      - 293.0
+      - 291.8
+    wall_hyddown:
+      time:
+      - 0.0
+      - 1.49
+      - 2.99
+      - 4.49
+      - 5.99
+      - 7.49
+      - 8.99
+      - 10.49
+      - 11.99
+      - 13.49
+      - 14.99
+      temp:
+      - 294.0
+      - 293.87
+      - 293.47
+      - 292.91
+      - 292.27
+      - 291.62
+      - 290.99
+      - 290.41
+      - 289.89
+      - 289.42
+      - 289.01

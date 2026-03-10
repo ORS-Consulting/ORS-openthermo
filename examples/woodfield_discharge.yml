@@ -1,0 +1,298 @@
+# Woodfield Hydrogen Discharge Experiment
+#
+# Description:
+#   Validation against Woodfield et al. hydrogen discharge experiment.
+#   Hydrogen discharge from 100 bar in small vessel with two temperature
+#   measurement locations. Tests heat transfer in small vessels.
+#
+# Reference:
+#   Woodfield, P.L., et al., "Measurement of averaged heat transfer
+#   coefficients in high-pressure vessel during charging with hydrogen,
+#   nitrogen or argon gas," Journal of Thermal Science and Technology,
+#   Vol. 2, No. 2, 2007.
+#
+#   Test case parameters from HydDown validation.
+#
+# Test name: test_woodfield_discharge
+#
+# Expected results:
+#   Discharge to near-atmospheric pressure (~0.3-1 bar)
+#   Gas temperature variations at different locations
+#   Wall temperature remains nearly constant
+#   May have platform-specific convergence issues on Linux
+
+metadata:
+  description: "Woodfield H2 discharge experiment - small vessel (0.5mm orifice)"
+  reference: "Woodfield et al. (2007), HydDown validation"
+  test_name: "test_woodfield_discharge"
+  validation_type: "experimental"
+  notes: "May have platform-specific convergence issues on Linux"
+
+# Solver configuration
+solver_method: depressurize
+
+# Thermodynamic mode and models
+mode: isentropic
+heat_transfer: rigorous
+eos_model: PR
+liquid_density: eos
+
+# Time settings
+max_time: 50  # seconds
+delay: 0
+time_step: 1  # seconds
+
+# Vessel geometry (small vertical cylinder)
+length: 0.212  # m
+diameter: 0.075  # m
+vessel_type: Flat-end
+orientation: vertical
+wall_thickness: 0.030  # m (30 mm - thick wall)
+
+# Initial conditions
+liquid_level: 0.0  # m - pure gas
+water_level: 0.0  # m
+operating_temperature: 305.0  # K (32°C)
+operating_pressure: 10000000  # Pa (100 bar)
+
+# Environmental conditions
+ambient_temperature: 305.0  # K (32°C)
+back_pressure: 100000  # Pa (1 bar, atmospheric)
+external_heat_transfer_coefficient: 5.0  # W/(m²·K)
+
+# Discharge device (very small orifice)
+bdv_orifice_size: 0.0005  # m (0.5 mm - very slow discharge)
+bdv_orifice_cd: 0.84
+
+# Fluid composition (hydrogen with trace N2 for flash convergence)
+component_names:
+  - hydrogen
+  - nitrogen
+molefracs:
+  - 0.9999  # H2 (99.99%)
+  - 0.0001  # N2 (0.01% - improves convergence)
+
+# Validation data
+validation:
+  pressure:
+    experimental:
+      time:
+      - 0.16798
+      - 2.5253
+      - 4.8189
+      - 7.1829
+      - 9.4805
+      - 11.846
+      - 14.145
+      - 16.512
+      - 18.812
+      - 21.112
+      - 23.479
+      - 25.779
+      - 28.147
+      - 30.447
+      - 32.815
+      - 35.116
+      - 37.483
+      - 39.784
+      - 42.152
+      - 44.452
+      pres:
+      - 96.551
+      - 64.814
+      - 44.663
+      - 32.512
+      - 24.224
+      - 18.142
+      - 13.715
+      - 10.392
+      - 8.1721
+      - 6.2283
+      - 4.836
+      - 3.7198
+      - 2.6033
+      - 2.3148
+      - 2.0258
+      - 1.4614
+      - 0.62078
+      - 0.33223
+      - 0.31916
+      - 0.30647
+    hyddown:
+      time:
+      - 0.0
+      - 3.57
+      - 7.14
+      - 10.71
+      - 14.28
+      - 17.85
+      - 21.42
+      - 24.99
+      - 28.56
+      - 32.13
+      - 35.7
+      - 39.27
+      - 42.84
+      - 46.41
+      - 49.99
+      pres:
+      - 100.0
+      - 52.29
+      - 31.65
+      - 19.96
+      - 13.0
+      - 8.52
+      - 5.55
+      - 3.58
+      - 2.3
+      - 1.47
+      - 1.06
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+  temperature:
+    gas_high_experimental:
+      time:
+      - 0.125
+      - 1.33
+      - 2.54
+      - 3.28
+      - 5.3
+      - 7.46
+      - 9.29
+      - 12.0
+      - 16.7
+      - 20.7
+      - 26.1
+      - 30.4
+      - 34.4
+      - 38.0
+      - 42.7
+      - 47.1
+      - 49.6
+      temp:
+      - 308.0
+      - 295.4
+      - 279.1
+      - 270.9
+      - 258.3
+      - 255.1
+      - 252.5
+      - 253.2
+      - 255.8
+      - 260.5
+      - 267.2
+      - 273.3
+      - 276.8
+      - 281.5
+      - 287.7
+      - 292.7
+      - 294.2
+    gas_low_experimental:
+      time:
+      - 0.26
+      - 1.33
+      - 2.14
+      - 3.14
+      - 4.42
+      - 6.51
+      - 7.46
+      - 8.87
+      - 9.82
+      - 11.3
+      - 13.9
+      - 17.7
+      - 22.1
+      - 26.7
+      - 31.9
+      - 37.0
+      - 41.8
+      - 46.7
+      - 49.5
+      temp:
+      - 307.0
+      - 295.7
+      - 284.2
+      - 270.2
+      - 255.0
+      - 244.1
+      - 242.0
+      - 240.0
+      - 238.4
+      - 237.0
+      - 239.8
+      - 242.5
+      - 247.8
+      - 254.5
+      - 263.1
+      - 269.0
+      - 275.3
+      - 280.3
+      - 282.2
+    gas_hyddown:
+      time:
+      - 0.0
+      - 3.57
+      - 7.14
+      - 10.71
+      - 14.28
+      - 17.85
+      - 21.42
+      - 24.99
+      - 28.56
+      - 32.13
+      - 35.7
+      - 39.27
+      - 42.84
+      - 46.41
+      - 49.99
+      temp:
+      - 305.0
+      - 262.59
+      - 252.41
+      - 249.74
+      - 254.46
+      - 261.5
+      - 268.32
+      - 274.27
+      - 279.31
+      - 283.87
+      - 291.77
+      - 301.26
+      - 303.66
+      - 304.3
+      - 304.47
+    wall_hyddown:
+      time:
+      - 0.0
+      - 3.57
+      - 7.14
+      - 10.71
+      - 14.28
+      - 17.85
+      - 21.42
+      - 24.99
+      - 28.56
+      - 32.13
+      - 35.7
+      - 39.27
+      - 42.84
+      - 46.41
+      - 49.99
+      temp:
+      - 305.0
+      - 304.93
+      - 304.81
+      - 304.73
+      - 304.66
+      - 304.62
+      - 304.59
+      - 304.57
+      - 304.56
+      - 304.55
+      - 304.55
+      - 304.55
+      - 304.55
+      - 304.55
+      - 304.55

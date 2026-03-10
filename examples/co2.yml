@@ -1,0 +1,71 @@
+# CO2 Blowdown - Large Vessel
+#
+# Description:
+#   Long-duration CO2-rich mixture blowdown from large horizontal vessel.
+#   Tests multiphase behavior with CO2 condensation and evaporation.
+#   External heat transfer coefficient set to zero (adiabatic walls).
+#
+# Reference:
+#   test_blowdown_co2 in test_blowdown.py
+#
+# Test name: test_blowdown_co2
+#
+# Expected results:
+#   Long blowdown time (1 hour) to atmospheric pressure
+#   Liquid formation and re-evaporation during depressurization
+#   Wall temperature tracking with no external heat transfer
+
+metadata:
+  description: "Large vessel CO2-rich mixture blowdown with multiphase tracking"
+  reference: "test_blowdown_co2"
+  test_name: "test_blowdown_co2"
+
+# Solver configuration
+solver_method: depressurize_euler  # Use Euler solver for multiphase
+
+# Thermodynamic mode and models
+mode: isentropic
+heat_transfer: rigorous
+eos_model: PR
+liquid_density: eos
+
+# Time settings
+max_time: 3600  # seconds (1 hour)
+delay: 0
+time_step: 10  # seconds (explicit time step)
+
+# Vessel geometry
+length: 35  # m (large vessel)
+diameter: 7.8  # m
+vessel_type: Hemispherical
+orientation: horizontal
+wall_thickness: 0.020  # m (20 mm)
+
+# Initial conditions
+liquid_level: 0.0  # m - initially all gas
+water_level: 0.0  # m
+operating_temperature: 248.0  # K (-25°C, cold storage)
+operating_pressure: 1600000  # Pa (16 bar)
+
+# Environmental conditions
+ambient_temperature: 293  # K (20°C)
+back_pressure: 101000  # Pa (atmospheric)
+external_heat_transfer_coefficient: 0  # W/(m²·K) - adiabatic walls
+
+# Discharge device (orifice)
+bdv_orifice_size: 0.04  # m (40 mm)
+bdv_orifice_cd: 0.84
+
+# Leak parameters (inactive)
+leak_active: 0
+leak_size: 0.01  # m
+leak_cd: 0.65
+leak_type: liquid
+
+# Fluid composition (CO2-rich with trace N2)
+component_names:
+  - carbon dioxide
+  - nitrogen
+molefracs:
+  - 0.95  # CO2 (95%)
+  - 0.05  # N2 (5%)
