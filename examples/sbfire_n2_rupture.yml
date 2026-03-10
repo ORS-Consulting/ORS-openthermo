@@ -1,0 +1,74 @@
+# S-B Fire with Rupture Evaluation
+#
+# Description:
+#   Test case for vessel rupture time evaluation under fire exposure.
+#   Based on Andreasen et al. study of API 521 relief valve sizing adequacy
+#   for gas-filled pressure vessels exposed to fire. Tests rupture analysis
+#   using temperature-dependent material properties.
+#
+# Reference:
+#   Andreasen, A.; Borroni, F.; Zan Nieto, M.; Stegelmann, C.; P. Nielsen, R.
+#   "On the Adequacy of API 521 Relief-Valve Sizing Method for Gas-Filled Pressure
+#   Vessels Exposed to Fire." Safety 2018, 4, 11. https://doi.org/10.3390/safety4010011
+#
+#   test_blowdown_sbfire_n2_rupture in test_blowdown.py
+#
+# Test name: test_blowdown_sbfire_n2_rupture
+#
+# Expected results:
+#   Rupture time: ~1585 seconds (paper reports 1680s with slightly higher UTS)
+#   Wall temperature increases until material strength degradation
+#   Vessel ruptures when hoop stress exceeds temperature-dependent UTS
+
+metadata:
+  description: "S-B fire with vessel rupture time evaluation"
+  reference: "Andreasen et al. (2018) - API 521 adequacy study"
+  test_name: "test_blowdown_sbfire_n2_rupture"
+
+# Solver configuration
+solver_method: depressurize  # Standard solver, rupture analyzed post-simulation
+
+# Thermodynamic mode and models
+mode: isentropic
+heat_transfer: rigorous_sb_fire
+sb_fire_type: api_jet  # API jet fire model
+sb_peak_fire_type: scandpower_jet_peak_large  # Peak fire for rupture analysis
+eos_model: PR
+liquid_density: eos
+
+# Time settings
+max_time: 3600  # seconds (1 hour - run until rupture or max time)
+delay: 0
+time_step: 5  # seconds
+
+# Vessel geometry
+length: 9  # m
+diameter: 3  # m
+vessel_type: Flat-end
+orientation: horizontal
+wall_thickness: 0.1363  # m (136.3 mm - thick wall vessel)
+
+# Material properties for rupture analysis
+vessel_material: CS_360LT  # Carbon steel grade for low temperature service
+
+# Initial conditions
+liquid_level: 0.0  # m - pure gas
+water_level: 0.0  # m
+operating_temperature: 298.15  # K (25°C)
+operating_pressure: 10000000  # Pa (100 bar)
+
+# Environmental conditions
+ambient_temperature: 298  # K (25°C)
+back_pressure: 101000  # Pa (atmospheric)
+
+# Discharge device (small orifice - undersized relief)
+bdv_orifice_size: 0.008  # m (8 mm - intentionally small)
+bdv_orifice_cd: 0.975
+
+# Fluid composition (pure nitrogen)
+component_names:
+  - nitrogen
+molefracs:
+  - 1.0
+
+# Note: After running depressurize(), call analyze_rupture("rupture") to evaluate rupture time

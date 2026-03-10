@@ -1,0 +1,57 @@
+# Isothermal Blowdown Test
+# Based on test_isothermal from tests/test_blowdown.py (line ~1025)
+#
+# This example demonstrates isothermal blowdown where no heat transfer occurs
+# to the wall and the gas temperature remains constant at the operating temperature.
+#
+# Expected behavior:
+# - Temperature remains constant at 298.15 K (25°C) throughout blowdown
+# - Pressure decreases from 12 bar to atmospheric
+# - Multi-phase mixture (methane-rich with heavier hydrocarbons)
+
+metadata:
+  description: "Isothermal blowdown test with no heat transfer to wall"
+  reference: "test_isothermal"
+  test_name: "test_isothermal"
+
+# Solver configuration
+solver_method: depressurize  # Use 'depressurize' or 'depressurize_euler'
+
+# Thermodynamic model
+eos_model: PR
+liquid_density: eos
+mode: isothermal
+
+# Vessel geometry
+length: 10  # m
+diameter: 3  # m
+vessel_type: Flat-end
+orientation: horizontal
+
+# Initial conditions
+operating_pressure: 1200000  # Pa (12 bar)
+operating_temperature: 298.15  # K (25°C)
+ambient_temperature: 273  # K (0°C)
+back_pressure: 101000  # Pa (1.01 bar)
+
+# Fluid levels
+liquid_level: 1.5  # m (half-filled vessel)
+water_level: 0.0  # m
+
+# Flow device configuration
+bdv_orifice_size: 0.03  # m (30 mm orifice)
+bdv_orifice_cd: 0.84  # Orifice discharge coefficient
+
+# Leak configuration (inactive in this case)
+leak_active: 0
+leak_size: 0.01  # m
+leak_cd: 0.65
+leak_type: liquid
+
+# Fluid composition (methane-rich hydrocarbon mixture)
+component_names: [methane, propane, n-butane, i-butane, n-decane]
+molefracs: [0.8, 0.05, 0.01, 0.01, 0.10]
+
+# Simulation control
+max_time: 900  # s (15 minutes)
+delay: 0  # s

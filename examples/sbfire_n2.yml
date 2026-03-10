@@ -1,0 +1,66 @@
+# S-B Fire with Nitrogen and Relief Valve
+#
+# Description:
+#   Validation of Scandpower-Bjordal (S-B) fire model with pure nitrogen.
+#   Tests relief valve operation with API jet fire model. Valve opens when
+#   pressure reaches set pressure (110 bar) and closes at blowdown pressure.
+#
+# Reference:
+#   test_blowdown_sbfire_n2 in test_blowdown.py
+#
+# Test name: test_blowdown_sbfire_n2
+#
+# Expected results:
+#   Relief valve cycles based on set pressure and blowdown
+#   Wall temperatures increase due to fire exposure
+#   Pressure controlled by relief valve operation
+
+metadata:
+  description: "S-B fire with nitrogen using relief valve"
+  reference: "test_blowdown_sbfire_n2 - API jet fire model"
+  test_name: "test_blowdown_sbfire_n2"
+
+# Solver configuration
+solver_method: depressurize_euler  # Use Euler solver for fire case
+
+# Thermodynamic mode and models
+mode: isentropic
+heat_transfer: rigorous_sb_fire
+sb_fire_type: api_jet  # API jet fire model (conservative)
+eos_model: PR
+liquid_density: eos
+
+# Time settings
+max_time: 700  # seconds
+delay: 0
+time_step: 1  # seconds (explicit time step for fire)
+
+# Vessel geometry
+length: 10  # m
+diameter: 3  # m
+vessel_type: Flat-end
+orientation: horizontal
+wall_thickness: 0.01  # m (10 mm - thin wall)
+
+# Initial conditions
+liquid_level: 0.0  # m - pure gas
+water_level: 0.0  # m
+operating_temperature: 298.15  # K (25°C)
+operating_pressure: 10000000  # Pa (100 bar)
+
+# Environmental conditions
+ambient_temperature: 298  # K (25°C)
+back_pressure: 101000  # Pa (atmospheric)
+
+# Relief valve configuration
+flow_device: relief_valve
+psv_set_pressure: 11000000  # Pa (110 bar) - valve opens at this pressure
+psv_blowdown: 0.1  # 10% blowdown - valve closes at 99 bar (90% of set)
+bdv_orifice_size: 0.04  # m (40 mm - 2 * 0.02)
+bdv_orifice_cd: 0.975  # Higher Cd for relief valve
+
+# Fluid composition (pure nitrogen)
+component_names:
+  - nitrogen
+molefracs:
+  - 1.0

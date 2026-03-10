@@ -1,0 +1,200 @@
+metadata:
+  description: Non-condensable gas blowdown experiment - Haque et al.
+  reference: Haque et al. (1992), Wong (1998)
+  test_name: test_blowdown_non_condensable
+  validation_files:
+  - non-condensable_pressure.txt
+  - non-condensable_gas_temp_higher.txt
+  - non-condensable_gas_temp_lower.txt
+  - non-condensable_wall_temp.txt
+solver_method: depressurize
+mode: isentropic
+heat_transfer: rigorous
+eos_model: PR
+liquid_density: eos
+max_time: 2000
+delay: 0
+time_step: 10
+length: 2.25
+diameter: 1.13
+vessel_type: ASME F&D
+orientation: horizontal
+wall_thickness: 0.059
+liquid_level: 0.0
+water_level: 0.0
+operating_temperature: 303.0
+operating_pressure: 12156000
+ambient_temperature: 293.0
+back_pressure: 101000
+bdv_orifice_size: 0.00635
+bdv_orifice_cd: 0.85
+leak_active: 0
+leak_size: 0.01
+leak_cd: 0.65
+leak_type: liquid
+component_names:
+- methane
+- ethane
+molefracs:
+- 0.91
+- 0.09
+validation:
+  temperature:
+    gas_high:
+      time:
+      - -2.1462
+      - 26.955
+      - 48.045
+      - 66.41
+      - 89.262
+      - 134.62
+      - 210.74
+      - 323.1
+      - 409.46
+      - 616.24
+      - 708.68
+      - 829.79
+      - 972.56
+      - 1079.6
+      - 1172.5
+      - 1419.8
+      - 1645.4
+      - 1803.2
+      - 1918.0
+      - 1993.4
+      temp:
+      - 302.98
+      - 297.0
+      - 290.16
+      - 287.43
+      - 282.24
+      - 278.21
+      - 273.1
+      - 268.71
+      - 266.56
+      - 264.27
+      - 264.49
+      - 265.0
+      - 265.88
+      - 266.53
+      - 267.19
+      - 269.58
+      - 271.69
+      - 273.36
+      - 274.59
+      - 275.46
+    gas_low:
+      time:
+      - 1.4002
+      - 21.646
+      - 52.991
+      - 78.853
+      - 129.85
+      - 170.97
+      - 224.57
+      - 296.51
+      - 385.96
+      - 535.54
+      - 651.8
+      - 754.65
+      - 864.81
+      - 986.0
+      - 1210.4
+      - 1357.4
+      - 1475.8
+      - 1597.9
+      - 1788.0
+      - 1931.4
+      - 1978.2
+      temp:
+      - 302.98
+      - 295.35
+      - 288.15
+      - 282.46
+      - 277.06
+      - 272.38
+      - 269.43
+      - 267.05
+      - 264.47
+      - 261.74
+      - 261.03
+      - 261.03
+      - 261.26
+      - 261.84
+      - 262.8
+      - 264.25
+      - 265.63
+      - 267.0
+      - 269.03
+      - 270.56
+      - 271.14
+    wall_mean:
+      time:
+      - -2.9159
+      - 93.949
+      - 191.94
+      - 296.4
+      - 395.13
+      - 502.59
+      - 594.53
+      - 699.89
+      - 797.49
+      - 895.17
+      - 997.3
+      - 1091.2
+      - 1189.8
+      - 1296.8
+      - 1395.6
+      - 1498.7
+      - 1606.0
+      - 2001.9
+      temp:
+      - 303.06
+      - 301.04
+      - 298.06
+      - 295.84
+      - 294.43
+      - 293.17
+      - 292.23
+      - 291.63
+      - 291.19
+      - 290.77
+      - 290.46
+      - 290.15
+      - 290.02
+      - 289.97
+      - 289.92
+      - 289.92
+      - 289.93
+      - 289.94
+  pressure:
+    time:
+    - -4.7502
+    - 27.587
+    - 53.257
+    - 78.926
+    - 116.01
+    - 168.08
+    - 242.44
+    - 335.53
+    - 443.87
+    - 578.24
+    - 742.58
+    - 1049.3
+    - 1395.5
+    - 1997.3
+    pres:
+    - 120.15
+    - 108.2
+    - 98.171
+    - 88.14
+    - 78.537
+    - 68.933
+    - 58.902
+    - 48.872
+    - 39.482
+    - 29.665
+    - 19.848
+    - 10.244
+    - 5.122
+    - 2.3476

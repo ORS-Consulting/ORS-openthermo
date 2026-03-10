@@ -1,0 +1,161 @@
+metadata:
+  description: Isentropic blowdown test validated against HYSYS
+  reference: Water_dry_isentropic_history.csv validation data
+  test_name: test_isentropic
+solver_method: depressurize
+eos_model: PR
+liquid_density: eos
+mode: isentropic
+length: 10
+diameter: 3
+vessel_type: Flat-end
+orientation: horizontal
+operating_pressure: 1200000
+operating_temperature: 298.15
+ambient_temperature: 273
+back_pressure: 101000
+liquid_level: 1.5
+water_level: 0.0
+bdv_orifice_size: 0.03
+bdv_orifice_cd: 0.84
+component_names:
+- methane
+- propane
+- n-butane
+- i-butane
+- n-decane
+molefracs:
+- 0.8
+- 0.05
+- 0.01
+- 0.01
+- 0.1
+max_time: 900
+validation:
+  pressure:
+    time:
+    - 0.0
+    - 50.0
+    - 100.0
+    - 150.0
+    - 200.0
+    - 250.0
+    - 300.0
+    - 350.0
+    - 400.0
+    - 450.0
+    - 500.0
+    - 550.0
+    - 600.0
+    - 650.0
+    - 700.0
+    - 750.0
+    - 800.0
+    - 850.0
+    - 900.0
+    pres:
+    - 11.9998
+    - 10.67551
+    - 9.51406
+    - 8.4922
+    - 7.59279
+    - 6.80082
+    - 6.10311
+    - 5.48809
+    - 4.94562
+    - 4.46679
+    - 4.04381
+    - 3.66981
+    - 3.33882
+    - 3.04557
+    - 2.7854599999999996
+    - 2.5544599999999997
+    - 2.3490399999999996
+    - 2.1661099999999998
+    - 2.0029779999999997
+    comment: Pressure in bar (absolute), converted from gauge by adding 1.013 bar, downsampled (every 100th point)
+  temperature:
+    fluid_mean:
+      time:
+      - 0.0
+      - 50.0
+      - 100.0
+      - 150.0
+      - 200.0
+      - 250.0
+      - 300.0
+      - 350.0
+      - 400.0
+      - 450.0
+      - 500.0
+      - 550.0
+      - 600.0
+      - 650.0
+      - 700.0
+      - 750.0
+      - 800.0
+      - 850.0
+      - 900.0
+      temp:
+      - 298.15
+      - 297.871
+      - 297.61789999999996
+      - 297.38809999999995
+      - 297.179
+      - 296.9881
+      - 296.8135
+      - 296.6533
+      - 296.506
+      - 296.3701
+      - 296.24429999999995
+      - 296.1276
+      - 296.0191
+      - 295.9178
+      - 295.823
+      - 295.73409999999996
+      - 295.6504
+      - 295.57149999999996
+      - 295.4969
+      comment: Vapour temperature, converted from Celsius to Kelvin, downsampled (every 100th point)
+  mass_flow:
+    time:
+    - 0.0
+    - 50.0
+    - 100.0
+    - 150.0
+    - 200.0
+    - 250.0
+    - 300.0
+    - 350.0
+    - 400.0
+    - 450.0
+    - 500.0
+    - 550.0
+    - 600.0
+    - 650.0
+    - 700.0
+    - 750.0
+    - 800.0
+    - 850.0
+    - 900.0
+    mdot:
+    - -0.0
+    - -1.1604305555555556
+    - -1.0385305555555555
+    - -0.931386111111111
+    - -0.83715
+    - -0.7541972222222223
+    - -0.6811222222222222
+    - -0.6166944444444444
+    - -0.5598333333333334
+    - -0.5096027777777777
+    - -0.4651777777777778
+    - -0.4258444444444444
+    - -0.390975
+    - -0.36001944444444445
+    - -0.3325
+    - -0.3079972222222222
+    - -0.28615
+    - -0.26663194444444444
+    - -0.2491688888888889
+    comment: Converted from kg/h to kg/s, negative indicates discharge, downsampled (every 100th point)

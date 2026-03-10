@@ -1,0 +1,242 @@
+# Byrnes Run 8 - Slow Hydrogen Discharge
+#
+# Description:
+#   Validation against Byrnes et al. hydrogen blowdown experiment Run 8.
+#   Slow discharge case with 0.7 mm orifice from 138 bar to 13.5 bar back pressure.
+#   Tests hydrogen depressurization with elevated back pressure and external heat transfer.
+#
+# Reference:
+#   Byrnes, W. R., R. C. Reid, and F. E. Ruccia. 1964. "Rapid Depressurization
+#   of Gas Storage Cylinder." Industrial & Engineering Chemistry Process Design
+#   and Development 3 (3): 206–9. https://doi.org/10.1021/i260011a004.
+#
+#   Test case parameters from HydDown validation.
+#
+# Test name: test_byrnes_run8
+#
+# Expected results:
+#   Final pressure: ~14 bar (approaches 13.5 bar back pressure within 15%)
+#   Final gas temp: ~274-276 K (within 5% of experiment)
+#   Long duration allows heat equilibration with surroundings
+#   Matches HydDown predictions within 10%
+
+metadata:
+  description: "Byrnes Run 8 - Slow H2 discharge (0.7mm orifice, elevated back pressure)"
+  reference: "Byrnes et al. (1964), HydDown validation"
+  test_name: "test_byrnes_run8"
+  validation_type: "experimental"
+
+# Solver configuration
+solver_method: depressurize
+
+# Thermodynamic mode and models
+mode: isentropic
+heat_transfer: rigorous
+eos_model: PR
+liquid_density: eos
+
+# Time settings
+max_time: 480  # seconds (8 minutes - slow discharge)
+delay: 0
+time_step: 0.1  # seconds
+
+# Vessel geometry (vertical cylinder)
+length: 1.394  # m
+diameter: 0.21742  # m
+vessel_type: Flat-end
+orientation: vertical
+wall_thickness: 0.0072  # m (7.2 mm)
+
+# Initial conditions
+liquid_level: 0.0  # m - pure gas
+water_level: 0.0  # m
+operating_temperature: 294.0  # K (21°C)
+operating_pressure: 13800000  # Pa (138 bar)
+
+# Environmental conditions
+ambient_temperature: 294.0  # K (21°C)
+back_pressure: 1350000  # Pa (13.5 bar - elevated back pressure)
+external_heat_transfer_coefficient: 10.0  # W/(m²·K) - natural convection
+
+# Discharge device (small orifice)
+bdv_orifice_size: 0.0007  # m (0.7 mm - slow discharge)
+bdv_orifice_cd: 0.84
+
+# Fluid composition (pure hydrogen)
+component_names:
+  - hydrogen
+molefracs:
+  - 1.0
+
+# Validation data
+validation:
+  pressure:
+    experimental:
+      time:
+      - 0.945
+      - 54.3
+      - 106.0
+      - 159.0
+      - 213.0
+      - 266.0
+      - 319.0
+      - 372.0
+      - 425.0
+      - 478.0
+      pres:
+      - 137.0
+      - 102.0
+      - 75.5
+      - 56.8
+      - 44.0
+      - 34.9
+      - 28.0
+      - 22.1
+      - 17.4
+      - 13.3
+    hyddown:
+      time:
+      - 0.0
+      - 34.2
+      - 68.5
+      - 102.8
+      - 137.1
+      - 171.3
+      - 205.6
+      - 239.9
+      - 274.2
+      - 308.5
+      - 342.7
+      - 377.0
+      - 411.3
+      - 445.6
+      - 479.9
+      pres:
+      - 138.0
+      - 110.13
+      - 91.34
+      - 76.57
+      - 64.48
+      - 54.5
+      - 46.16
+      - 39.17
+      - 33.3
+      - 28.34
+      - 24.17
+      - 20.68
+      - 17.89
+      - 15.8
+      - 14.41
+  temperature:
+    gas_experimental:
+      time:
+      - 0.0
+      - 52.1
+      - 105.0
+      - 158.0
+      - 211.0
+      - 263.0
+      - 317.0
+      - 370.0
+      - 423.0
+      - 476.0
+      temp:
+      - 291.8
+      - 278.6
+      - 275.0
+      - 273.5
+      - 273.3
+      - 273.5
+      - 273.8
+      - 274.3
+      - 274.9
+      - 275.6
+    gas_hyddown:
+      time:
+      - 0.0
+      - 34.2
+      - 68.5
+      - 102.8
+      - 137.1
+      - 171.3
+      - 205.6
+      - 239.9
+      - 274.2
+      - 308.5
+      - 342.7
+      - 377.0
+      - 411.3
+      - 445.6
+      - 479.9
+      temp:
+      - 294.0
+      - 280.75
+      - 276.94
+      - 275.16
+      - 273.91
+      - 272.97
+      - 272.24
+      - 271.69
+      - 271.3
+      - 271.04
+      - 270.9
+      - 270.98
+      - 271.44
+      - 272.36
+      - 273.81
+    wall_experimental:
+      time:
+      - 1.05
+      - 54.2
+      - 106.0
+      - 159.0
+      - 212.0
+      - 264.0
+      - 317.0
+      - 370.0
+      - 423.0
+      - 476.0
+      temp:
+      - 293.4
+      - 291.5
+      - 290.0
+      - 289.1
+      - 288.6
+      - 287.8
+      - 286.9
+      - 285.7
+      - 284.4
+      - 283.0
+    wall_hyddown:
+      time:
+      - 0.0
+      - 34.2
+      - 68.5
+      - 102.8
+      - 137.1
+      - 171.3
+      - 205.6
+      - 239.9
+      - 274.2
+      - 308.5
+      - 342.7
+      - 377.0
+      - 411.3
+      - 445.6
+      - 479.9
+      temp:
+      - 294.0
+      - 292.71
+      - 290.42
+      - 288.32
+      - 286.56
+      - 285.1
+      - 283.88
+      - 282.88
+      - 282.05
+      - 281.38
+      - 280.84
+      - 280.41
+      - 280.08
+      - 279.87
+      - 279.77

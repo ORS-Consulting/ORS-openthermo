@@ -1,0 +1,62 @@
+# Adiabatic Cold Blowdown Test
+# Based on test_adiabatic_cold from tests/test_blowdown.py (line ~1193)
+#
+# This example demonstrates adiabatic blowdown with cold blowdown enabled.
+# The vessel is initially cooled to ambient temperature before blowdown begins.
+#
+# Expected behavior:
+# - Initial cooling phase: vessel cools from 350 K (77°C) to ambient (273 K / 0°C)
+# - Blowdown phase: temperature decreases further due to expansion cooling
+# - Pressure decreases from 12 bar to atmospheric
+# - Multi-phase mixture (methane-rich with heavier hydrocarbons)
+# - No heat exchange with wall during blowdown (adiabatic)
+
+metadata:
+  description: "Adiabatic cold blowdown test - vessel cooled to ambient before blowdown"
+  reference: "test_adiabatic_cold"
+  test_name: "test_adiabatic_cold"
+
+# Solver configuration
+solver_method: depressurize  # Use 'depressurize' or 'depressurize_euler'
+
+# Thermodynamic model
+eos_model: PR
+liquid_density: eos
+mode: adiabatic
+
+# Cold blowdown configuration
+cold_blowdown: true  # Enable initial cooling to ambient temperature
+
+# Vessel geometry
+length: 10  # m
+diameter: 3  # m
+vessel_type: Flat-end
+orientation: horizontal
+
+# Initial conditions
+operating_pressure: 1200000  # Pa (12 bar)
+operating_temperature: 350  # K (77°C) - will cool to ambient before blowdown
+ambient_temperature: 273  # K (0°C) - target temperature for cooling phase
+back_pressure: 101000  # Pa (1.01 bar)
+
+# Fluid levels
+liquid_level: 1.5  # m (half-filled vessel)
+water_level: 0.0  # m
+
+# Flow device configuration
+bdv_orifice_size: 0.03  # m (30 mm orifice)
+bdv_orifice_cd: 0.84  # Orifice discharge coefficient
+
+# Leak configuration (inactive in this case)
+leak_active: 0
+leak_size: 0.01  # m
+leak_cd: 0.65
+leak_type: liquid
+
+# Fluid composition (methane-rich hydrocarbon mixture)
+component_names: [methane, propane, n-butane, i-butane, n-decane]
+molefracs: [0.8, 0.05, 0.01, 0.01, 0.10]
+
+# Simulation control
+max_time: 900  # s (15 minutes)
+delay: 0  # s
