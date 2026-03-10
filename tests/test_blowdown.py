@@ -2166,11 +2166,13 @@ def test_blowdown_nitrogen_control_valve(plot=False):
     Based on test_blowdown_nitrogen but using control valve flow device.
 
     The Cv value has been tuned to match the orifice behavior:
-    - Validation data (N2_I1.yml): P = 1.72 bar, T_gas = 241 K
+    - Validation data (N2_I1.yml): P = 1.72 bar, T_gas_high = 241 K, T_gas_low = 215 K
     - Orifice (d=6.35mm, Cd=0.8): P = 1.08 bar, T_gas = 239 K
     - Control valve (Cv=1.25): P = 1.14 bar, T_gas = 240 K
 
     Cv=1.25 provides excellent match to both orifice and experimental data.
+    The simulated gas temperature falls between experimental gas_low and gas_high
+    measurements, as expected for a well-mixed gas model.
     """
     import yaml
 
@@ -2232,6 +2234,14 @@ def test_blowdown_nitrogen_control_valve(plot=False):
         validation_input["validation"]["temperature"]["gas_high"]["temp"][-1], abs=3
     ), "Gas temperature matches validation data"
 
+    # Additional validation: gas temperature should be between gas_low and gas_high
+    gas_low_final = validation_input["validation"]["temperature"]["gas_low"]["temp"][-1]
+    gas_high_final = validation_input["validation"]["temperature"]["gas_high"]["temp"][-1]
+    assert gas_low_final <= segment.temperature[-1] <= gas_high_final + 3, (
+        f"Gas temperature {segment.temperature[-1]:.2f} K should be between "
+        f"gas_low ({gas_low_final:.2f} K) and gas_high ({gas_high_final:.2f} K)"
+    )
+
     if plot:
         from matplotlib import pyplot as plt
         #import scienceplots
@@ -2243,51 +2253,54 @@ def test_blowdown_nitrogen_control_valve(plot=False):
         plt.plot(
             segment.times,
             np.asarray(segment.pressure) / 1e5,
-            label="Control Valve (Cv=1.25)",
+            "-",
+            label="Simulated (Control Valve, Cv=1.25)",
         )
         plt.plot(
             validation_input["validation"]["pressure"]["time"],
             validation_input["validation"]["pressure"]["pres"],
             "x",
-            label="Experimental data",
+            label="Experimental",
         )
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel("Pressure (bar)")
-        plt.title("Nitrogen Blowdown - Control Valve")
+        plt.title("Nitrogen Blowdown - Pressure Comparison")
 
         # Temperature comparison
         plt.figure(2)
         plt.plot(
-            segment.times, segment.temperature, label="Fluid (Control Valve)"
+            segment.times, segment.temperature, "-", label="Simulated Gas Temperature"
         )
         plt.plot(
             segment.times,
             segment.unwetted_wall_temp,
-            label="Wall (Control Valve)",
+            "-",
+            label="Simulated Wall Temperature",
         )
         plt.plot(
             validation_input["validation"]["temperature"]["gas_high"]["time"],
             validation_input["validation"]["temperature"]["gas_high"]["temp"],
             "x",
-            label="Gas high (Exp)",
+            label="Experimental Gas (high)",
         )
         plt.plot(
             validation_input["validation"]["temperature"]["gas_low"]["time"],
             validation_input["validation"]["temperature"]["gas_low"]["temp"],
-            "x",
-            label="Gas low (Exp)",
+            "o",
+            fillstyle="none",
+            label="Experimental Gas (low)",
         )
         plt.plot(
             validation_input["validation"]["temperature"]["wall_outer"]["time"],
             validation_input["validation"]["temperature"]["wall_outer"]["temp"],
             "+",
-            label="Wall outer (Exp)",
+            label="Experimental Wall (outer)",
         )
         plt.legend(loc="best")
         plt.xlabel("Time (s)")
         plt.ylabel(r"Temperature (K)")
-        plt.title("Nitrogen Blowdown - Control Valve")
+        plt.title("Nitrogen Blowdown - Temperature Comparison")
 
         plt.show()
 
