@@ -235,11 +235,15 @@ def run_blowdown(input_file, plot=False, disable_pbar=False):
                                 "o", fillstyle="none", label="HydDown")
                 elif "time" in pres_val and "pres" in pres_val:
                     # Infer label based on temperature data structure
-                    # HYSYS cases use "fluid_mean", experimental cases use "gas_high/gas_low"
+                    # Unisim cases have "wall_unwetted_inner" or "gas_mean"+"wall_unwetted_inner"
+                    # HYSYS cases use "fluid_mean"
+                    # Experimental cases use "gas_high/gas_low"
                     pres_label = "HYSYS"
                     if "temperature" in validation_data:
                         temp_val = validation_data["temperature"]
-                        if "gas_high" in temp_val or "gas_low" in temp_val:
+                        if "wall_unwetted_inner" in temp_val or "wall_wetted_inner" in temp_val:
+                            pres_label = "Unisim"
+                        elif "gas_high" in temp_val or "gas_low" in temp_val:
                             pres_label = "Experimental"
                     ax1.plot(pres_val["time"], pres_val["pres"], "x", label=pres_label)
             ax1.set_xlabel("Time (s)")
@@ -274,8 +278,10 @@ def run_blowdown(input_file, plot=False, disable_pbar=False):
                                 "x", label="HYSYS Fluid")
                 elif "gas_mean" in temp_val:
                     if "time" in temp_val["gas_mean"] and "temp" in temp_val["gas_mean"]:
+                        # Determine if this is Unisim or experimental data
+                        gas_label = "Unisim Gas" if ("wall_unwetted_inner" in temp_val or "wall_wetted_inner" in temp_val) else "Experimental Gas (mean)"
                         ax2.plot(temp_val["gas_mean"]["time"], temp_val["gas_mean"]["temp"],
-                                "x", label="Experimental Gas (mean)")
+                                "x", label=gas_label)
                 elif "gas_experimental" in temp_val:
                     # Byrnes-style nested structure
                     if "time" in temp_val["gas_experimental"] and "temp" in temp_val["gas_experimental"]:

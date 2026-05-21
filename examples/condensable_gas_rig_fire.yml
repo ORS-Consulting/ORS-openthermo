@@ -1,0 +1,38 @@
+solver_method: depressurize
+mode: isentropic
+heat_transfer: rigorous_sb_fire
+sb_fire_type: scandpower_jet
+sb_peak_fire_type: scandpower_jet_peak_large
+vessel_material: "CS_360LT"
+eos_model: PR
+liquid_density: eos
+max_time: 1500
+delay: 0
+time_step: 10
+length: 2.25
+diameter: 1.13
+vessel_type: ASME F&D
+orientation: vertical
+wall_thickness: 0.032
+liquid_level: 1.0
+water_level: 0.0
+operating_temperature: 293.0
+operating_pressure: 7500000
+ambient_temperature: 265.0
+back_pressure: 101000
+bdv_orifice_size: 0.01
+bdv_orifice_cd: 0.8
+leak_active: 0
+leak_size: 0.01
+leak_cd: 0.65
+leak_type: liquid
+component_names:
+- methane
+- ethane
+- propane
+- n-butane
+molefracs:
+- 0.64
+- 0.06
+- 0.28
+- 0.023

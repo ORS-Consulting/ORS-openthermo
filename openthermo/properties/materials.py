@@ -272,7 +272,7 @@ def von_mises(p, d, wt, sigma_a=30e6):
     -----
     The von Mises stress is calculated as:
 
-    σ_e = √(3 · (p·D²/(D²-d²))² + σ_a)
+    σ_e = √(3 · (p·D²/(D²-d²))² + σ_a**2)
 
     where D = d + 2·wt is the outer diameter.
 
@@ -305,7 +305,7 @@ def von_mises(p, d, wt, sigma_a=30e6):
 
     D = d + 2 * wt
 
-    sigma_e = math.sqrt(3 * ((p * D**2) / (D**2 - d**2)) ** 2 + sigma_a)
+    sigma_e = math.sqrt(3 * ((p * D**2) / (D**2 - d**2)) ** 2) # + sigma_a**2)
     return sigma_e
 
 
